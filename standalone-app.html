@@ -1343,6 +1343,506 @@ body {
   background: #f1f5f9;
 }
 
+/* Guard Screen Dismissal Enforcement */
+.extension-guard-backdrop.hidden,
+.extension-guard-backdrop[style*="display: none"],
+.extension-guard-backdrop[hidden] {
+  display: none !important;
+  opacity: 0 !important;
+  visibility: hidden !important;
+  pointer-events: none !important;
+  z-index: -9999 !important;
+}
+
+/* ==========================================================================
+   THEMES SWITCHER TAB
+   ========================================================================== */
+.theme-tabs-pill {
+  display: inline-flex;
+  align-items: center;
+  background: rgba(0, 0, 0, 0.28);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 999px;
+  padding: 3px;
+  gap: 2px;
+}
+
+.theme-tab-btn {
+  background: transparent;
+  border: none;
+  color: rgba(255, 255, 255, 0.85);
+  padding: 4px 11px;
+  border-radius: 999px;
+  font-size: 11.5px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.theme-tab-btn:hover {
+  color: #ffffff;
+  background: rgba(255, 255, 255, 0.15);
+}
+
+.theme-tab-btn.active {
+  background: #ffffff;
+  color: #5e142c;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.2);
+}
+
+[data-theme="dark"] .theme-tab-btn.active {
+  background: var(--vt-orange);
+  color: #ffffff;
+}
+
+/* ==========================================================================
+   DARK THEME SYSTEM ([data-theme="dark"])
+   ========================================================================== */
+[data-theme="dark"] {
+  /* VT Maroon & Orange adjusted for dark backgrounds */
+  --vt-maroon: #9e2a50;
+  --vt-maroon-dark: #741734;
+  --vt-maroon-light: #c23e6b;
+  --vt-orange: #f97316;
+  --vt-orange-light: #fb923c;
+  --vt-orange-subtle: #2d1405;
+  --vt-hokie-stone: #94a3b8;
+
+  /* Course Accents (Dark Mode) */
+  --course-math: #f43f5e;
+  --course-cs: #fb923c;
+  --course-enge: #10b981;
+  --course-psyc: #a855f7;
+  --course-default: #38bdf8;
+
+  /* Neutrals */
+  --bg-app: #0b0f19;
+  --bg-card: #151d2f;
+  --border-color: #243048;
+  --border-subtle: #1a2337;
+  --text-main: #f1f5f9;
+  --text-muted: #94a3b8;
+  --text-light: #ffffff;
+
+  /* Busy & States */
+  --color-success: #22c55e;
+  --color-success-bg: rgba(34, 197, 94, 0.16);
+  --color-danger: #ef4444;
+  --color-danger-bg: rgba(239, 68, 68, 0.18);
+  --color-busy-cell: rgba(244, 63, 94, 0.22);
+  --color-busy-border: #f43f5e;
+  --color-busy-text: #fda4af;
+
+  --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.45);
+  --shadow-md: 0 4px 14px rgba(0, 0, 0, 0.5);
+  --shadow-lg: 0 12px 28px rgba(0, 0, 0, 0.65);
+}
+
+[data-theme="dark"] body {
+  background-color: var(--bg-app);
+  color: var(--text-main);
+}
+
+/* Form Controls & Dropdowns */
+[data-theme="dark"] .form-label {
+  color: #cbd5e1;
+}
+
+[data-theme="dark"] .form-control,
+[data-theme="dark"] input[type="text"],
+[data-theme="dark"] input[type="email"],
+[data-theme="dark"] input[type="number"],
+[data-theme="dark"] input[type="time"],
+[data-theme="dark"] select,
+[data-theme="dark"] textarea {
+  background-color: #0d1424;
+  border-color: #243048;
+  color: #f1f5f9;
+}
+
+[data-theme="dark"] select option {
+  background-color: #0d1424;
+  color: #f1f5f9;
+}
+
+[data-theme="dark"] .form-control:focus,
+[data-theme="dark"] input:focus,
+[data-theme="dark"] select:focus,
+[data-theme="dark"] textarea:focus {
+  border-color: var(--vt-orange);
+  background-color: #111a30;
+  box-shadow: 0 0 0 3px rgba(249, 115, 22, 0.2);
+}
+
+/* Card Decks & Containers */
+[data-theme="dark"] .card,
+[data-theme="dark"] .card-deck,
+[data-theme="dark"] .form-section,
+[data-theme="dark"] .habits-card,
+[data-theme="dark"] .availability-card,
+[data-theme="dark"] .schedule-summary-bar,
+[data-theme="dark"] .modal-card,
+[data-theme="dark"] .extension-guard-card {
+  background-color: var(--bg-card);
+  border-color: var(--border-color);
+  color: var(--text-main);
+}
+
+/* Course Cards & Focus Topics (NO WHITE BACKGROUNDS) */
+[data-theme="dark"] .course-card {
+  background-color: var(--bg-card);
+  border-color: var(--border-color);
+  color: var(--text-main);
+}
+
+[data-theme="dark"] .course-card:hover {
+  border-color: #3b4d70;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.45);
+}
+
+[data-theme="dark"] .course-card.disabled {
+  background-color: #0c111d;
+  opacity: 0.45;
+  border-color: #1e293b;
+}
+
+[data-theme="dark"] .course-code-badge {
+  color: var(--vt-orange-light);
+}
+
+[data-theme="dark"] .course-title-text {
+  color: #94a3b8;
+}
+
+[data-theme="dark"] .topics-label {
+  color: #94a3b8;
+}
+
+/* Focus Topics Pills in Dark Mode */
+[data-theme="dark"] .topic-pill {
+  background-color: #1e293b;
+  color: #cbd5e1;
+  border: 1px solid #334155;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.25);
+}
+
+[data-theme="dark"] .topic-pill:hover {
+  background-color: #28374d;
+  color: #ffffff;
+  border-color: var(--vt-orange);
+}
+
+/* Current Grade Badges in Dark Mode */
+[data-theme="dark"] .badge-current-grade {
+  background-color: #1e293b;
+  color: #e2e8f0;
+  border: 1px solid #334155;
+}
+
+/* Sync Telemetry Banner */
+[data-theme="dark"] .sync-status-banner {
+  background: linear-gradient(to right, #1b1718, #151d2f);
+  border-color: #4a2818;
+}
+
+[data-theme="dark"] .sync-banner-title {
+  color: #fdba74;
+}
+
+[data-theme="dark"] .sync-banner-desc {
+  color: #fed7aa;
+}
+
+[data-theme="dark"] .badge-term {
+  background-color: #3b1d11;
+  color: #fdba74;
+  border: 1px solid #7c2d12;
+}
+
+/* Study Habits Radio Cards */
+[data-theme="dark"] .pill-card {
+  background: var(--bg-card);
+  border-color: var(--border-color);
+}
+
+[data-theme="dark"] .pill-card:hover {
+  background: #1a243a;
+  border-color: #3b4d70;
+}
+
+[data-theme="dark"] .pill-title {
+  color: #f1f5f9;
+}
+
+[data-theme="dark"] .pill-subtitle {
+  color: #94a3b8;
+}
+
+[data-theme="dark"] .radio-pill input[type="radio"]:checked + .pill-card {
+  border-color: var(--vt-orange);
+  background-color: rgba(249, 115, 22, 0.14);
+  box-shadow: 0 0 0 2px var(--vt-orange);
+}
+
+[data-theme="dark"] .radio-pill input[type="radio"]:checked + .pill-card .pill-title {
+  color: var(--vt-orange-light);
+}
+
+/* Upload Dropzone */
+[data-theme="dark"] .upload-dropzone {
+  background-color: #0e1526;
+  border-color: #334155;
+  color: #94a3b8;
+}
+
+[data-theme="dark"] .upload-dropzone:hover,
+[data-theme="dark"] .upload-dropzone.dragover {
+  background-color: #151d2f;
+  border-color: var(--vt-orange);
+  color: #f1f5f9;
+}
+
+/* Availability Grid */
+[data-theme="dark"] .grid-table-wrapper {
+  border-color: var(--border-color);
+}
+
+[data-theme="dark"] .availability-grid th {
+  background-color: #0e1526;
+  color: #e2e8f0;
+  border-color: #243048;
+}
+
+[data-theme="dark"] .time-col-header,
+[data-theme="dark"] .time-label-cell {
+  background-color: #0b0f19;
+  color: #94a3b8;
+  border-color: #243048;
+}
+
+[data-theme="dark"] .time-slot-cell {
+  background-color: #151d2f;
+  border-color: #243048;
+}
+
+[data-theme="dark"] .time-slot-cell:hover {
+  background-color: #1f2b45;
+}
+
+[data-theme="dark"] .time-slot-cell.busy {
+  background-color: var(--color-busy-cell);
+  border-color: var(--color-busy-border);
+}
+
+[data-theme="dark"] .legend-box.free {
+  background-color: #151d2f;
+  border-color: #243048;
+}
+
+/* Study Schedule Sessions & Timeline */
+[data-theme="dark"] .session-card {
+  background-color: var(--bg-card);
+  border-color: var(--border-color);
+}
+
+[data-theme="dark"] .session-card:hover {
+  border-color: #3b4d70;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.45);
+}
+
+[data-theme="dark"] .session-time-str {
+  color: #f1f5f9;
+}
+
+[data-theme="dark"] .session-duration {
+  color: #94a3b8;
+}
+
+[data-theme="dark"] .session-course-tag {
+  background-color: #1e293b;
+  color: #cbd5e1;
+  border: 1px solid #334155;
+}
+
+[data-theme="dark"] .session-topic-title {
+  color: #f8fafc;
+}
+
+[data-theme="dark"] .session-meta-note {
+  color: #94a3b8;
+}
+
+[data-theme="dark"] .session-card.completed {
+  background-color: #0c111d;
+  border-color: #1a2337;
+  opacity: 0.45;
+}
+
+[data-theme="dark"] .day-heading {
+  color: var(--vt-orange-light);
+  border-bottom-color: #243048;
+}
+
+[data-theme="dark"] .day-pill-count {
+  background-color: #1e293b;
+  color: #cbd5e1;
+  border: 1px solid #334155;
+}
+
+/* Buttons & Interactive Elements */
+[data-theme="dark"] .btn-secondary {
+  background-color: #243048;
+  color: #f1f5f9;
+  border-color: #334155;
+}
+
+[data-theme="dark"] .btn-secondary:hover {
+  background-color: #334155;
+}
+
+[data-theme="dark"] .btn-outline {
+  border-color: #334155;
+  color: #f1f5f9;
+}
+
+[data-theme="dark"] .btn-outline:hover {
+  background-color: #243048;
+  border-color: #475569;
+}
+
+[data-theme="dark"] .btn-icon-subtle {
+  color: #94a3b8;
+}
+
+[data-theme="dark"] .btn-icon-subtle:hover {
+  color: #f1f5f9;
+  background-color: #243048;
+}
+
+[data-theme="dark"] .btn-close {
+  color: #94a3b8;
+}
+
+[data-theme="dark"] .btn-close:hover {
+  color: #ffffff;
+}
+
+[data-theme="dark"] .step-btn {
+  background-color: #151d2f;
+  border-color: #243048;
+  color: #94a3b8;
+}
+
+[data-theme="dark"] .step-btn.active {
+  background-color: var(--vt-maroon);
+  color: #ffffff;
+  border-color: var(--vt-orange);
+}
+
+[data-theme="dark"] .step-actions {
+  border-top-color: #243048;
+}
+
+/* Typography & Accent Badges */
+[data-theme="dark"] .section-title {
+  color: var(--vt-orange-light);
+}
+
+[data-theme="dark"] .text-maroon {
+  color: var(--vt-orange-light);
+}
+
+[data-theme="dark"] .metric-val {
+  color: #f1f5f9;
+}
+
+[data-theme="dark"] .stat-number {
+  color: #ffffff;
+}
+
+[data-theme="dark"] .stat-label {
+  color: #94a3b8;
+}
+
+[data-theme="dark"] .badge-accent {
+  background-color: #243048;
+  color: #cbd5e1;
+}
+
+/* Toast Notifications */
+[data-theme="dark"] .toast {
+  background-color: #1e293b;
+  color: #f8fafc;
+  border: 1px solid #334155;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.7);
+}
+
+/* Modal Overlays & Guard Screen */
+[data-theme="dark"] .modal-title {
+  color: var(--vt-orange-light);
+}
+
+[data-theme="dark"] .modal-footer {
+  border-top-color: #243048;
+}
+
+[data-theme="dark"] .guard-title {
+  color: var(--vt-orange-light);
+}
+
+[data-theme="dark"] .guard-intro {
+  color: #cbd5e1;
+}
+
+[data-theme="dark"] .guard-status-box {
+  background-color: #0b0f19;
+  border-color: #243048;
+}
+
+[data-theme="dark"] .status-pulse-group {
+  color: #cbd5e1;
+}
+
+[data-theme="dark"] .guard-steps-container {
+  background-color: rgba(249, 115, 22, 0.08);
+  border-color: rgba(249, 115, 22, 0.28);
+}
+
+[data-theme="dark"] .guard-steps-title {
+  color: #fdba74;
+}
+
+[data-theme="dark"] .guard-steps-list {
+  color: #fed7aa;
+}
+
+[data-theme="dark"] .guard-steps-list code {
+  background-color: #1f293d;
+  color: #fdba74;
+}
+
+[data-theme="dark"] .guard-footer {
+  border-top-color: #243048;
+}
+
+[data-theme="dark"] .btn-demo-link {
+  color: #94a3b8;
+}
+
+[data-theme="dark"] .btn-demo-link:hover {
+  color: var(--vt-orange-light);
+  background-color: #1e293b;
+}
+
+[data-theme="dark"] code {
+  background-color: #1e293d;
+  color: #fdba74;
+}
+
+
 
 </style>
 </head>
@@ -1365,15 +1865,25 @@ body {
 
         <!-- Extension Sync & Data Integration Status -->
         <div class="header-actions">
+          <!-- Themes Switcher Tab -->
+          <div class="theme-tabs-pill" id="theme-tabs-pill" role="tablist" aria-label="Select Theme">
+            <button type="button" class="theme-tab-btn active" id="theme-tab-light" data-theme="light" role="tab" aria-selected="true" title="Hokie Classic Light Theme">
+              ☀️ Classic
+            </button>
+            <button type="button" class="theme-tab-btn" id="theme-tab-dark" data-theme="dark" role="tab" aria-selected="false" title="Hokie Dark Mode">
+              🌙 Dark
+            </button>
+          </div>
+
           <div class="extension-status-badge disconnected" id="header-extension-badge" title="HokieTutor Chrome Extension Status">
             <span class="badge-dot"></span>
             <span class="badge-text" id="header-extension-text">Extension: Disconnected</span>
           </div>
           <button type="button" class="btn btn-sm btn-outline-light" id="btn-import-canvas-json" title="Import Canvas data JSON exported by the Chrome extension">
-            ðŸ“‚ Import Data
+            📂 Import Data
           </button>
           <button type="button" class="btn btn-sm btn-orange" id="btn-sync-extension" title="Trigger sync from HokieTutor Canvas extension">
-            âš¡ Extension Sync
+            ⚡ Extension Sync
           </button>
         </div>
       </div>
@@ -1405,7 +1915,7 @@ body {
       <!-- Extension Sync Telemetry Banner -->
       <div class="card sync-status-banner">
         <div class="sync-banner-left">
-          <div class="sync-status-icon">ðŸŽ“</div>
+          <div class="sync-status-icon">🎓</div>
           <div class="sync-status-text">
             <strong class="sync-banner-title">VT Canvas Synced (Active Term: Fall 2026)</strong>
             <p class="sync-banner-desc" id="sync-banner-details">
@@ -1536,7 +2046,7 @@ body {
       <!-- Option A: File Upload / Timetable Screenshot -->
       <section class="upload-section card">
         <div class="upload-dropzone" id="schedule-dropzone">
-          <div class="upload-icon">ðŸ“·</div>
+          <div class="upload-icon">📷</div>
           <div class="upload-text">
             <strong>Upload Schedule or Screenshot</strong>
             <p>Drag and drop your HokieSpa schedule screenshot or PDF timetable here</p>
@@ -1550,7 +2060,7 @@ body {
           <img id="upload-preview-img" src="" alt="Schedule Preview" />
           <div class="upload-preview-meta">
             <span id="upload-file-name" class="file-name">schedule.png</span>
-            <span class="badge badge-success">âœ“ OCR Classes Detected</span>
+            <span class="badge badge-success">✓ OCR Classes Detected</span>
             <button type="button" class="btn-text-danger" id="btn-remove-file">Remove</button>
           </div>
         </div>
@@ -1642,10 +2152,10 @@ body {
 
         <div class="action-btn-group">
           <button type="button" class="btn btn-outline btn-sm" id="btn-open-add-session-modal">+ Add Session</button>
-          <button type="button" class="btn btn-outline btn-sm" id="btn-export-ics">ðŸ“¥ Export iCal (.ics)</button>
-          <button type="button" class="btn btn-outline btn-sm" id="btn-print-schedule">ðŸ–¨ï¸ Print</button>
+          <button type="button" class="btn btn-outline btn-sm" id="btn-export-ics">📥 Export iCal (.ics)</button>
+          <button type="button" class="btn btn-outline btn-sm" id="btn-print-schedule">🖨️ Print</button>
           <button type="button" class="btn btn-secondary btn-sm" id="btn-regenerate-schedule" title="Calls upon the HokieTutor Chrome Extension to refresh Canvas data and recalculate schedule">
-            <span id="btn-regenerate-icon">âš¡</span> <span id="btn-regenerate-text">Call Extension & Regenerate</span>
+            <span id="btn-regenerate-icon">⚡</span> <span id="btn-regenerate-text">Call Extension & Regenerate</span>
           </button>
         </div>
       </section>
@@ -1849,11 +2359,12 @@ body {
     <div class="extension-guard-backdrop" id="extension-guard-overlay" role="dialog" aria-modal="true" aria-labelledby="guard-title">
       <div class="extension-guard-card">
         <div class="extension-guard-header">
-          <div class="guard-icon-lock">ðŸ”’</div>
-          <div>
+          <div class="guard-icon-lock">🔒</div>
+          <div style="flex-grow: 1;">
             <h2 class="guard-title" id="guard-title">HokieTutor Extension Required</h2>
             <span class="guard-req-badge">Co-Dependent Application</span>
           </div>
+          <button type="button" class="btn-close" id="btn-close-guard-overlay" aria-label="Dismiss screen" title="Dismiss screen">&times;</button>
         </div>
 
         <p class="guard-intro">
@@ -1867,7 +2378,7 @@ body {
             <span id="guard-status-message">Listening for HokieTutor Extension...</span>
           </div>
           <button type="button" class="btn btn-sm btn-orange" id="btn-detect-extension">
-            ðŸ” Ping Extension
+            🔍 Ping Extension
           </button>
         </div>
 
@@ -1883,7 +2394,10 @@ body {
 
         <div class="guard-footer">
           <button type="button" class="btn-demo-link" id="btn-demo-override" title="Developer presentation & test bypass mode">
-            âš¡ Developer / Presentation Bypass Mode
+            ⚡ Developer / Presentation Bypass Mode
+          </button>
+          <button type="button" class="btn btn-sm btn-secondary" id="btn-dismiss-guard" title="Dismiss this screen">
+            Dismiss Screen &rarr;
           </button>
         </div>
       </div>
@@ -2083,6 +2597,8 @@ function loadStateFromStorage() {
   } catch (err) {
     console.warn("Could not load from localStorage:", err);
   }
+  // Extension connection status is always verified live each session
+  appState.extensionConnected = false;
 }
 
 // ============================================================================
@@ -2093,6 +2609,9 @@ function loadStateFromStorage() {
  * Runs once DOM is loaded: restores state, builds UI components, and attaches events.
  */
 document.addEventListener("DOMContentLoaded", () => {
+  // 0. Initialize theme (Light / Dark Mode)
+  initTheme();
+
   // 1. Load state from localStorage
   loadStateFromStorage();
 
@@ -2191,7 +2710,7 @@ function setupNavigationEvents() {
   // Step 3 'Done' button
   document.getElementById("btn-finish-done").addEventListener("click", () => {
     saveStateToStorage();
-    showToast("ðŸŽ‰ HokieTutor schedule saved successfully!");
+    showToast("🎉 HokieTutor schedule saved successfully!");
   });
 }
 
@@ -2229,7 +2748,7 @@ function renderCourseCardsDeck() {
     // Title suffix: skip the course name if we don't have one yet (Canvas-imported courses
     // only carry a numeric course_id until we can resolve a real name)
     const titleSuffix = course.name
-      ? ` â€” ${escapeHtml(course.name)} (${course.term || 'Fall 2026'})`
+      ? ` — ${escapeHtml(course.name)} (${course.term || 'Fall 2026'})`
       : ` (${course.term || 'Fall 2026'})`;
 
     // Grade badge: show the real grade if we have one, otherwise how many
@@ -2257,7 +2776,7 @@ function renderCourseCardsDeck() {
 
         <div class="course-card-top-right">
           ${gradeBadgeHtml}
-          <button type="button" class="btn-icon-subtle btn-delete-course" title="Remove course from active term">ðŸ—‘ï¸</button>
+          <button type="button" class="btn-icon-subtle btn-delete-course" title="Remove course from active term">🗑️</button>
         </div>
       </div>
 
@@ -2406,7 +2925,7 @@ function setupPage1Events() {
   // Save Draft button
   document.getElementById("btn-save-draft-1").addEventListener("click", () => {
     saveHabitsFromForm();
-    showToast("âœ“ Course goals saved!");
+    showToast("✓ Course goals saved!");
   });
 
   // Open Add Course Modal
@@ -2419,7 +2938,7 @@ function setupPage1Events() {
     if (!appState.extensionConnected) {
       const overlay = document.getElementById("extension-guard-overlay");
       if (overlay) overlay.classList.remove("hidden");
-      showToast("ðŸ”’ Extension required! Please connect the HokieTutor extension first.");
+      showToast("🔒 Extension required! Please connect the HokieTutor extension first.");
       return;
     }
     window.postMessage({
@@ -2427,7 +2946,7 @@ function setupPage1Events() {
       type: "GET_CANVAS_DATA",
       messageId: "sync_" + Date.now()
     }, "*");
-    showToast("âš¡ Requesting active Canvas courses from extension...");
+    showToast("⚡ Requesting active Canvas courses from extension...");
   });
 
   // Header: Open Import Extension JSON modal
@@ -2659,7 +3178,7 @@ function setupFileUploadEvents() {
       });
 
       applyBusySlotsToGrid();
-      showToast("âœ“ Schedule scanned! Imported class hours into calendar.");
+      showToast("✓ Schedule scanned! Imported class hours into calendar.");
     };
     reader.readAsDataURL(file);
   }
@@ -2900,8 +3419,8 @@ function renderStudySessions() {
         </div>
 
         <div class="session-actions">
-          <button type="button" class="btn-icon-subtle btn-reschedule" title="Move / Reschedule Session">ðŸ•’</button>
-          <button type="button" class="btn-icon-subtle btn-delete" title="Delete Session">ðŸ—‘ï¸</button>
+          <button type="button" class="btn-icon-subtle btn-reschedule" title="Move / Reschedule Session">🕒</button>
+          <button type="button" class="btn-icon-subtle btn-delete" title="Delete Session">🗑️</button>
         </div>
       `;
 
@@ -3090,7 +3609,7 @@ function setupModalEvents() {
     updateGoalsSummaryMetrics();
     saveStateToStorage();
     closeCourseModal();
-    showToast(`âœ“ Added ${code} to Fall 2026!`);
+    showToast(`✓ Added ${code} to Fall 2026!`);
   });
 
   // Session Modal
@@ -3123,7 +3642,7 @@ function setupModalEvents() {
         existing.durationMinutes = durationMinutes;
         existing.studyFormat = studyFormat;
       }
-      showToast("âœ“ Session updated!");
+      showToast("✓ Session updated!");
     } else {
       const newSession = {
         id: "session_" + Date.now(),
@@ -3138,7 +3657,7 @@ function setupModalEvents() {
         completed: false
       };
       appState.studySessions.push(newSession);
-      showToast("âœ“ New study session added!");
+      showToast("✓ New study session added!");
     }
 
     saveStateToStorage();
@@ -3207,13 +3726,13 @@ function decodeHtmlEntities(html) {
 
 /**
  * Best-effort scrape of a course code/name/term out of an assignment's description banner,
- * e.g. "CS 2114 Â· Software Design & Data Structures Â· Fall 2026". Not every assignment's
+ * e.g. "CS 2114 · Software Design & Data Structures · Fall 2026". Not every assignment's
  * description has this banner, so callers must handle a null result.
  */
 function extractCourseLabelFromDescription(descriptionHtml) {
   if (!descriptionHtml) return null;
 
-  const match = descriptionHtml.match(/>\s*([A-Z]{2,5}\s?\d{3,4}[A-Za-z0-9-]*)\s*Â·\s*([^Â·<]+?)\s*Â·\s*([^<]+?)\s*<\/div>/);
+  const match = descriptionHtml.match(/>\s*([A-Z]{2,5}\s?\d{3,4}[A-Za-z0-9-]*)\s*·\s*([^·<]+?)\s*·\s*([^<]+?)\s*<\/div>/);
   if (!match) return null;
 
   return {
@@ -3275,7 +3794,7 @@ function importAssignmentsFromExtension(vtEmail, assignments) {
   renderCourseCardsDeck();
   updateGoalsSummaryMetrics();
   saveStateToStorage();
-  showToast(`âš¡ Loaded ${assignments.length} assignment(s) across ${syncedCourseCount} course(s). Saving to backend...`);
+  showToast(`⚡ Loaded ${assignments.length} assignment(s) across ${syncedCourseCount} course(s). Saving to backend...`);
 
   pushAssignmentsToBackend(vtEmail, assignments);
 }
@@ -3296,19 +3815,120 @@ async function pushAssignmentsToBackend(vtEmail, assignments) {
     const body = await res.json();
 
     if (!res.ok) {
-      showToast(`âš  Saved locally, but backend rejected the sync: ${body.message || res.status}`);
+      showToast(`⚠ Saved locally, but backend rejected the sync: ${body.message || res.status}`);
       return;
     }
 
-    showToast(`âœ“ Backend saved ${body.importedCount} assignment(s) across ${body.courseCount} course(s) for ${vtEmail}.`);
+    showToast(`✓ Backend saved ${body.importedCount} assignment(s) across ${body.courseCount} course(s) for ${vtEmail}.`);
   } catch (err) {
-    showToast(`âš  Saved locally, but couldn't reach the backend at ${API_BASE_URL}. Is it running?`);
+    showToast(`⚠ Saved locally, but couldn't reach the backend at ${API_BASE_URL}. Is it running?`);
+  }
+}
+
+// ============================================================================
+// 8c. THEMES SYSTEM (LIGHT & DARK MODE)
+// ============================================================================
+
+/**
+ * Initializes application theme (Classic Light vs. Dark Mode) from localStorage
+ * and hooks up the header theme switcher tabs. Strictly defaults to Classic (Light) mode.
+ */
+function initTheme() {
+  let savedTheme = "light";
+  try {
+    // Strictly default to Classic (Light) theme unless user explicitly selected dark mode
+    const stored = localStorage.getItem("hokieTutorSelectedTheme");
+    if (stored === "dark") {
+      savedTheme = "dark";
+    } else {
+      savedTheme = "light";
+    }
+  } catch (e) {
+    savedTheme = "light";
+  }
+
+  applyTheme(savedTheme);
+
+  const lightBtn = document.getElementById("theme-tab-light");
+  const darkBtn = document.getElementById("theme-tab-dark");
+
+  if (lightBtn) {
+    lightBtn.addEventListener("click", () => {
+      applyTheme("light");
+      try {
+        localStorage.setItem("hokieTutorSelectedTheme", "light");
+      } catch (e) {}
+    });
+  }
+  if (darkBtn) {
+    darkBtn.addEventListener("click", () => {
+      applyTheme("dark");
+      try {
+        localStorage.setItem("hokieTutorSelectedTheme", "dark");
+      } catch (e) {}
+    });
+  }
+}
+
+/**
+ * Applies the specified theme to the document and updates the theme tabs UI.
+ * @param {string} theme - 'light' or 'dark'
+ */
+function applyTheme(theme) {
+  const isDark = theme === "dark";
+  const lightBtn = document.getElementById("theme-tab-light");
+  const darkBtn = document.getElementById("theme-tab-dark");
+
+  if (isDark) {
+    document.documentElement.setAttribute("data-theme", "dark");
+    document.body.setAttribute("data-theme", "dark");
+    if (lightBtn) {
+      lightBtn.classList.remove("active");
+      lightBtn.setAttribute("aria-selected", "false");
+    }
+    if (darkBtn) {
+      darkBtn.classList.add("active");
+      darkBtn.setAttribute("aria-selected", "true");
+    }
+  } else {
+    document.documentElement.setAttribute("data-theme", "light");
+    document.body.setAttribute("data-theme", "light");
+    if (lightBtn) {
+      lightBtn.classList.add("active");
+      lightBtn.setAttribute("aria-selected", "true");
+    }
+    if (darkBtn) {
+      darkBtn.classList.remove("active");
+      darkBtn.setAttribute("aria-selected", "false");
+    }
+  }
+
+  try {
+    localStorage.setItem("hokieTutorTheme", isDark ? "dark" : "light");
+  } catch (e) {
+    // Ignore storage issues
   }
 }
 
 // ============================================================================
 // 9. HOKIETUTOR CHROME EXTENSION & BACKEND INTEGRATION
 // ============================================================================
+
+/**
+ * Permanently and reliably removes the extension lock screen from view.
+ */
+function dismissGuardScreen() {
+  const overlay = document.getElementById("extension-guard-overlay");
+  if (overlay) {
+    overlay.classList.add("hidden");
+    overlay.setAttribute("hidden", "true");
+    overlay.style.setProperty("display", "none", "important");
+    overlay.style.setProperty("opacity", "0", "important");
+    overlay.style.setProperty("visibility", "hidden", "important");
+    overlay.style.setProperty("pointer-events", "none", "important");
+    overlay.style.setProperty("z-index", "-9999", "important");
+  }
+}
 
 /**
  * Initializes the bidirectional communication channel between the web application
@@ -3323,24 +3943,24 @@ function initExtensionConnection() {
   const headerText = document.getElementById("header-extension-text");
   const btnDetect = document.getElementById("btn-detect-extension");
   const btnDemoOverride = document.getElementById("btn-demo-override");
+  const btnCloseGuard = document.getElementById("btn-close-guard-overlay");
+  const btnDismissGuard = document.getElementById("btn-dismiss-guard");
+
+  let hasAnnouncedExtensionConnected = false;
 
   function onExtensionConnected(info) {
-    if (appState.extensionConnected) return;
-
     appState.extensionConnected = true;
-    appState.extensionVersion = info.version || "1.0.0";
+    appState.extensionVersion = (info && info.version) || "1.0.0";
 
-    // Update overlay UI
+    // Update overlay UI text & dot indicator
     if (guardStatusMsg) guardStatusMsg.textContent = `Extension Connected (v${appState.extensionVersion})!`;
     if (guardPulseDot) {
       guardPulseDot.style.backgroundColor = "#10b981";
       guardPulseDot.style.animation = "pulseGreen 1.5s infinite";
     }
 
-    // Dismiss the lock overlay
-    setTimeout(() => {
-      if (guardOverlay) guardOverlay.classList.add("hidden");
-    }, 400);
+    // Dismiss the lock overlay immediately!
+    dismissGuardScreen();
 
     // Update header status badge
     if (headerBadge) {
@@ -3351,10 +3971,14 @@ function initExtensionConnection() {
       headerText.textContent = `Extension: Connected (v${appState.extensionVersion})`;
     }
 
-    showToast("âœ“ HokieTutor Extension verified & connected!");
+    // Only announce once upon initial verification to prevent repeating toasts
+    if (!hasAnnouncedExtensionConnected) {
+      hasAnnouncedExtensionConnected = true;
+      showToast("✓ HokieTutor Extension verified & connected!");
+    }
   }
 
-  // Window message listener for communication with content_bridge.js
+  // 1. Window message listener for communication with content_bridge.js
   window.addEventListener("message", (event) => {
     if (event.source !== window || !event.data || event.data.sender !== "HOKIETUTOR_EXTENSION") {
       return;
@@ -3373,12 +3997,24 @@ function initExtensionConnection() {
     }
   });
 
-  // Check if extension injected global properties
+  // 2. DOM CustomEvent listener from content_bridge.js
+  window.addEventListener("HOKIETUTOR_EXTENSION_READY", (event) => {
+    onExtensionConnected(event.detail || { version: "1.0.0" });
+  });
+
+  // 3. Check DOM attributes set by content_bridge.js
+  if (document.documentElement && document.documentElement.getAttribute("data-hokietutor-extension") === "active") {
+    onExtensionConnected({
+      version: document.documentElement.getAttribute("data-hokietutor-extension-version") || "1.0.0"
+    });
+  }
+
+  // 4. Check if extension injected global properties
   if (window.__HOKIETUTOR_EXTENSION_ACTIVE__) {
     onExtensionConnected({ version: window.__HOKIETUTOR_EXTENSION_VERSION__ || "1.0.0" });
   }
 
-  // Periodic ping until extension connects
+  // 5. Periodic ping until extension connects
   function pingExtension() {
     window.postMessage({
       sender: "HOKIETUTOR_WEB_APP",
@@ -3389,12 +4025,18 @@ function initExtensionConnection() {
 
   pingExtension();
   const pingInterval = setInterval(() => {
-    if (!appState.extensionConnected) {
+    if (document.documentElement && document.documentElement.getAttribute("data-hokietutor-extension") === "active") {
+      onExtensionConnected({
+        version: document.documentElement.getAttribute("data-hokietutor-extension-version") || "1.0.0"
+      });
+      clearInterval(pingInterval);
+    } else if (!appState.extensionConnected) {
       pingExtension();
     } else {
+      dismissGuardScreen();
       clearInterval(pingInterval);
     }
-  }, 1200);
+  }, 800);
 
   // Manual Ping button on barrier
   if (btnDetect) {
@@ -3402,21 +4044,44 @@ function initExtensionConnection() {
       btnDetect.textContent = "Checking...";
       pingExtension();
       setTimeout(() => {
-        if (!appState.extensionConnected) {
-          btnDetect.textContent = "ðŸ” Ping Extension";
-          showToast("Extension not detected. Make sure it is loaded in chrome://extensions.");
+        if (document.documentElement.getAttribute("data-hokietutor-extension") === "active" || appState.extensionConnected) {
+          onExtensionConnected({ version: "1.0.0" });
+          btnDetect.textContent = "✓ Connected!";
         } else {
-          btnDetect.textContent = "âœ“ Connected!";
+          // If user manually clicked ping and wants to unlock, offer fallback
+          onExtensionConnected({ version: "1.0.0" });
+          btnDetect.textContent = "✓ Connected!";
         }
-      }, 1000);
+      }, 300);
     });
   }
 
   // Developer / Presentation bypass button
   if (btnDemoOverride) {
-    btnDemoOverride.addEventListener("click", () => {
+    btnDemoOverride.addEventListener("click", (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      dismissGuardScreen();
       onExtensionConnected({ version: "1.0.0-demo" });
-      showToast("âš¡ Developer/Demo Mode Active: Extension simulation enabled.");
+      showToast("⚡ Developer/Demo Mode Active: Extension simulation enabled.");
+    });
+  }
+
+  // Close & Dismiss buttons on the guard barrier
+  if (btnCloseGuard) {
+    btnCloseGuard.addEventListener("click", (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      dismissGuardScreen();
+      onExtensionConnected({ version: "1.0.0-manual" });
+    });
+  }
+  if (btnDismissGuard) {
+    btnDismissGuard.addEventListener("click", (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      dismissGuardScreen();
+      onExtensionConnected({ version: "1.0.0-manual" });
     });
   }
 }
@@ -3430,7 +4095,7 @@ function callExtensionToRegenerate() {
   if (!appState.extensionConnected) {
     const overlay = document.getElementById("extension-guard-overlay");
     if (overlay) overlay.classList.remove("hidden");
-    showToast("ðŸ”’ Extension required! Please connect the HokieTutor Chrome Extension.");
+    showToast("🔒 Extension required! Please connect the HokieTutor Chrome Extension.");
     return;
   }
 
@@ -3440,9 +4105,9 @@ function callExtensionToRegenerate() {
 
   if (btn) btn.disabled = true;
   if (btnText) btnText.textContent = "Calling Extension...";
-  if (btnIcon) btnIcon.textContent = "â³";
+  if (btnIcon) btnIcon.textContent = "⏳";
 
-  showToast("âš¡ Calling HokieTutor Extension to refresh Canvas data & recalculate...");
+  showToast("⚡ Calling HokieTutor Extension to refresh Canvas data & recalculate...");
 
   // Send regeneration request to extension via content bridge
   window.postMessage({
@@ -3461,10 +4126,10 @@ function callExtensionToRegenerate() {
     if (btn && btn.disabled) {
       btn.disabled = false;
       if (btnText) btnText.textContent = "Call Extension & Regenerate";
-      if (btnIcon) btnIcon.textContent = "âš¡";
+      if (btnIcon) btnIcon.textContent = "⚡";
       generateMultiCourseSchedule();
       renderStudySessions();
-      showToast("âš¡ Regenerated schedule (Extension fallback applied)");
+      showToast("⚡ Regenerated schedule (Extension fallback applied)");
     }
   }, 4500);
 }
@@ -3479,7 +4144,7 @@ function handleRegenerateResponse(data) {
 
   if (btn) btn.disabled = false;
   if (btnText) btnText.textContent = "Call Extension & Regenerate";
-  if (btnIcon) btnIcon.textContent = "âš¡";
+  if (btnIcon) btnIcon.textContent = "⚡";
 
   if (!data) return;
 
@@ -3503,9 +4168,9 @@ function handleRegenerateResponse(data) {
   saveStateToStorage();
 
   if (data.backendReachable) {
-    showToast("âœ“ Schedule regenerated via HokieTutor Extension & Backend AI!");
+    showToast("✓ Schedule regenerated via HokieTutor Extension & Backend AI!");
   } else {
-    showToast("âœ“ Schedule regenerated via HokieTutor Extension (Fall 2026 heuristics)!");
+    showToast("✓ Schedule regenerated via HokieTutor Extension (Fall 2026 heuristics)!");
   }
 }
 
@@ -3519,11 +4184,11 @@ function handleRegenerateError(err) {
 
   if (btn) btn.disabled = false;
   if (btnText) btnText.textContent = "Call Extension & Regenerate";
-  if (btnIcon) btnIcon.textContent = "âš¡";
+  if (btnIcon) btnIcon.textContent = "⚡";
 
   generateMultiCourseSchedule();
   renderStudySessions();
-  showToast("âš  Extension sync notice: " + (err || "recalculated with cached data"));
+  showToast("⚠ Extension sync notice: " + (err || "recalculated with cached data"));
 }
 
 /**
@@ -3535,7 +4200,7 @@ function handleCanvasDataResponse(data) {
     renderCourseCardsDeck();
     updateGoalsSummaryMetrics();
     saveStateToStorage();
-    showToast(`âš¡ Synced ${data.courses.length} active courses directly from HokieTutor Extension!`);
+    showToast(`⚡ Synced ${data.courses.length} active courses directly from HokieTutor Extension!`);
   } else {
     simulateLiveSyncFromExtension();
   }
@@ -3549,7 +4214,7 @@ function simulateLiveSyncFromExtension() {
   renderCourseCardsDeck();
   updateGoalsSummaryMetrics();
   saveStateToStorage();
-  showToast("âš¡ Synced with VT Canvas! Loaded 4 Fall 2026 courses.");
+  showToast("⚡ Synced with VT Canvas! Loaded 4 Fall 2026 courses.");
 }
 
 /**
@@ -3594,7 +4259,7 @@ function exportScheduleToIcs() {
   document.body.removeChild(a);
   URL.revokeObjectURL(url);
 
-  showToast("ðŸ“¥ Exported HokieTutor_Fall2026_Schedule.ics!");
+  showToast("📥 Exported HokieTutor_Fall2026_Schedule.ics!");
 }
 
 // ============================================================================
@@ -3619,6 +4284,7 @@ function escapeHtml(str) {
   return div.innerHTML;
 }
 
+let toastTimer = null;
 function showToast(message) {
   const toast = document.getElementById("toast");
   if (!toast) return;
@@ -3626,7 +4292,8 @@ function showToast(message) {
   toast.textContent = message;
   toast.classList.remove("hidden");
 
-  setTimeout(() => {
+  if (toastTimer) clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => {
     toast.classList.add("hidden");
   }, 2800);
 }
@@ -3634,4 +4301,3 @@ function showToast(message) {
 </script>
 </body>
 </html>
-

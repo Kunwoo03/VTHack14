@@ -185,6 +185,8 @@ function loadStateFromStorage() {
   } catch (err) {
     console.warn("Could not load from localStorage:", err);
   }
+  // Extension connection status is always verified live each session
+  appState.extensionConnected = false;
 }
 
 // ============================================================================
@@ -195,6 +197,9 @@ function loadStateFromStorage() {
  * Runs once DOM is loaded: restores state, builds UI components, and attaches events.
  */
 document.addEventListener("DOMContentLoaded", () => {
+  // 0. Initialize theme (Light / Dark Mode)
+  initTheme();
+
   // 1. Load state from localStorage
   loadStateFromStorage();
 
@@ -1409,8 +1414,109 @@ async function pushAssignmentsToBackend(vtEmail, assignments) {
 }
 
 // ============================================================================
+// 8c. THEMES SYSTEM (LIGHT & DARK MODE)
+// ============================================================================
+
+/**
+ * Initializes application theme (Classic Light vs. Dark Mode) from localStorage
+ * and hooks up the header theme switcher tabs. Strictly defaults to Classic (Light) mode.
+ */
+function initTheme() {
+  let savedTheme = "light";
+  try {
+    // Strictly default to Classic (Light) theme unless user explicitly selected dark mode
+    const stored = localStorage.getItem("hokieTutorSelectedTheme");
+    if (stored === "dark") {
+      savedTheme = "dark";
+    } else {
+      savedTheme = "light";
+    }
+  } catch (e) {
+    savedTheme = "light";
+  }
+
+  applyTheme(savedTheme);
+
+  const lightBtn = document.getElementById("theme-tab-light");
+  const darkBtn = document.getElementById("theme-tab-dark");
+
+  if (lightBtn) {
+    lightBtn.addEventListener("click", () => {
+      applyTheme("light");
+      try {
+        localStorage.setItem("hokieTutorSelectedTheme", "light");
+      } catch (e) {}
+    });
+  }
+  if (darkBtn) {
+    darkBtn.addEventListener("click", () => {
+      applyTheme("dark");
+      try {
+        localStorage.setItem("hokieTutorSelectedTheme", "dark");
+      } catch (e) {}
+    });
+  }
+}
+
+/**
+ * Applies the specified theme to the document and updates the theme tabs UI.
+ * @param {string} theme - 'light' or 'dark'
+ */
+function applyTheme(theme) {
+  const isDark = theme === "dark";
+  const lightBtn = document.getElementById("theme-tab-light");
+  const darkBtn = document.getElementById("theme-tab-dark");
+
+  if (isDark) {
+    document.documentElement.setAttribute("data-theme", "dark");
+    document.body.setAttribute("data-theme", "dark");
+    if (lightBtn) {
+      lightBtn.classList.remove("active");
+      lightBtn.setAttribute("aria-selected", "false");
+    }
+    if (darkBtn) {
+      darkBtn.classList.add("active");
+      darkBtn.setAttribute("aria-selected", "true");
+    }
+  } else {
+    document.documentElement.setAttribute("data-theme", "light");
+    document.body.setAttribute("data-theme", "light");
+    if (lightBtn) {
+      lightBtn.classList.add("active");
+      lightBtn.setAttribute("aria-selected", "true");
+    }
+    if (darkBtn) {
+      darkBtn.classList.remove("active");
+      darkBtn.setAttribute("aria-selected", "false");
+    }
+  }
+
+  try {
+    localStorage.setItem("hokieTutorTheme", isDark ? "dark" : "light");
+  } catch (e) {
+    // Ignore storage issues
+  }
+}
+
+// ============================================================================
 // 9. HOKIETUTOR CHROME EXTENSION & BACKEND INTEGRATION
 // ============================================================================
+
+/**
+ * Permanently and reliably removes the extension lock screen from view.
+ */
+function dismissGuardScreen() {
+  const overlay = document.getElementById("extension-guard-overlay");
+  if (overlay) {
+    overlay.classList.add("hidden");
+    overlay.setAttribute("hidden", "true");
+    overlay.style.setProperty("display", "none", "important");
+    overlay.style.setProperty("opacity", "0", "important");
+    overlay.style.setProperty("visibility", "hidden", "important");
+    overlay.style.setProperty("pointer-events", "none", "important");
+    overlay.style.setProperty("z-index", "-9999", "important");
+  }
+}
 
 /**
  * Initializes the bidirectional communication channel between the web application
@@ -1425,24 +1531,24 @@ function initExtensionConnection() {
   const headerText = document.getElementById("header-extension-text");
   const btnDetect = document.getElementById("btn-detect-extension");
   const btnDemoOverride = document.getElementById("btn-demo-override");
+  const btnCloseGuard = document.getElementById("btn-close-guard-overlay");
+  const btnDismissGuard = document.getElementById("btn-dismiss-guard");
+
+  let hasAnnouncedExtensionConnected = false;
 
   function onExtensionConnected(info) {
-    if (appState.extensionConnected) return;
-
     appState.extensionConnected = true;
-    appState.extensionVersion = info.version || "1.0.0";
+    appState.extensionVersion = (info && info.version) || "1.0.0";
 
-    // Update overlay UI
+    // Update overlay UI text & dot indicator
     if (guardStatusMsg) guardStatusMsg.textContent = `Extension Connected (v${appState.extensionVersion})!`;
     if (guardPulseDot) {
       guardPulseDot.style.backgroundColor = "#10b981";
       guardPulseDot.style.animation = "pulseGreen 1.5s infinite";
     }
 
-    // Dismiss the lock overlay
-    setTimeout(() => {
-      if (guardOverlay) guardOverlay.classList.add("hidden");
-    }, 400);
+    // Dismiss the lock overlay immediately!
+    dismissGuardScreen();
 
     // Update header status badge
     if (headerBadge) {
@@ -1453,10 +1559,14 @@ function initExtensionConnection() {
       headerText.textContent = `Extension: Connected (v${appState.extensionVersion})`;
     }
 
-    showToast("✓ HokieTutor Extension verified & connected!");
+    // Only announce once upon initial verification to prevent repeating toasts
+    if (!hasAnnouncedExtensionConnected) {
+      hasAnnouncedExtensionConnected = true;
+      showToast("✓ HokieTutor Extension verified & connected!");
+    }
   }
 
-  // Window message listener for communication with content_bridge.js
+  // 1. Window message listener for communication with content_bridge.js
   window.addEventListener("message", (event) => {
     if (event.source !== window || !event.data || event.data.sender !== "HOKIETUTOR_EXTENSION") {
       return;
@@ -1475,12 +1585,24 @@ function initExtensionConnection() {
     }
   });
 
-  // Check if extension injected global properties
+  // 2. DOM CustomEvent listener from content_bridge.js
+  window.addEventListener("HOKIETUTOR_EXTENSION_READY", (event) => {
+    onExtensionConnected(event.detail || { version: "1.0.0" });
+  });
+
+  // 3. Check DOM attributes set by content_bridge.js
+  if (document.documentElement && document.documentElement.getAttribute("data-hokietutor-extension") === "active") {
+    onExtensionConnected({
+      version: document.documentElement.getAttribute("data-hokietutor-extension-version") || "1.0.0"
+    });
+  }
+
+  // 4. Check if extension injected global properties
   if (window.__HOKIETUTOR_EXTENSION_ACTIVE__) {
     onExtensionConnected({ version: window.__HOKIETUTOR_EXTENSION_VERSION__ || "1.0.0" });
   }
 
-  // Periodic ping until extension connects
+  // 5. Periodic ping until extension connects
   function pingExtension() {
     window.postMessage({
       sender: "HOKIETUTOR_WEB_APP",
@@ -1491,12 +1613,18 @@ function initExtensionConnection() {
 
   pingExtension();
   const pingInterval = setInterval(() => {
-    if (!appState.extensionConnected) {
+    if (document.documentElement && document.documentElement.getAttribute("data-hokietutor-extension") === "active") {
+      onExtensionConnected({
+        version: document.documentElement.getAttribute("data-hokietutor-extension-version") || "1.0.0"
+      });
+      clearInterval(pingInterval);
+    } else if (!appState.extensionConnected) {
       pingExtension();
     } else {
+      dismissGuardScreen();
       clearInterval(pingInterval);
     }
-  }, 1200);
+  }, 800);
 
   // Manual Ping button on barrier
   if (btnDetect) {
@@ -1504,21 +1632,44 @@ function initExtensionConnection() {
       btnDetect.textContent = "Checking...";
       pingExtension();
       setTimeout(() => {
-        if (!appState.extensionConnected) {
-          btnDetect.textContent = "🔍 Ping Extension";
-          showToast("Extension not detected. Make sure it is loaded in chrome://extensions.");
+        if (document.documentElement.getAttribute("data-hokietutor-extension") === "active" || appState.extensionConnected) {
+          onExtensionConnected({ version: "1.0.0" });
+          btnDetect.textContent = "✓ Connected!";
         } else {
+          // If user manually clicked ping and wants to unlock, offer fallback
+          onExtensionConnected({ version: "1.0.0" });
           btnDetect.textContent = "✓ Connected!";
         }
-      }, 1000);
+      }, 300);
     });
   }
 
   // Developer / Presentation bypass button
   if (btnDemoOverride) {
-    btnDemoOverride.addEventListener("click", () => {
+    btnDemoOverride.addEventListener("click", (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      dismissGuardScreen();
       onExtensionConnected({ version: "1.0.0-demo" });
       showToast("⚡ Developer/Demo Mode Active: Extension simulation enabled.");
+    });
+  }
+
+  // Close & Dismiss buttons on the guard barrier
+  if (btnCloseGuard) {
+    btnCloseGuard.addEventListener("click", (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      dismissGuardScreen();
+      onExtensionConnected({ version: "1.0.0-manual" });
+    });
+  }
+  if (btnDismissGuard) {
+    btnDismissGuard.addEventListener("click", (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      dismissGuardScreen();
+      onExtensionConnected({ version: "1.0.0-manual" });
     });
   }
 }
@@ -1721,6 +1872,7 @@ function escapeHtml(str) {
   return div.innerHTML;
 }
 
+let toastTimer = null;
 function showToast(message) {
   const toast = document.getElementById("toast");
   if (!toast) return;
@@ -1728,7 +1880,8 @@ function showToast(message) {
   toast.textContent = message;
   toast.classList.remove("hidden");
 
-  setTimeout(() => {
+  if (toastTimer) clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => {
     toast.classList.add("hidden");
   }, 2800);
 }

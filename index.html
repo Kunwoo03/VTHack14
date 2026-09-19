@@ -25,6 +25,16 @@
 
         <!-- Extension Sync & Data Integration Status -->
         <div class="header-actions">
+          <!-- Themes Switcher Tab -->
+          <div class="theme-tabs-pill" id="theme-tabs-pill" role="tablist" aria-label="Select Theme">
+            <button type="button" class="theme-tab-btn active" id="theme-tab-light" data-theme="light" role="tab" aria-selected="true" title="Hokie Classic Light Theme">
+              ☀️ Classic
+            </button>
+            <button type="button" class="theme-tab-btn" id="theme-tab-dark" data-theme="dark" role="tab" aria-selected="false" title="Hokie Dark Mode">
+              🌙 Dark
+            </button>
+          </div>
+
           <div class="extension-status-badge disconnected" id="header-extension-badge" title="HokieTutor Chrome Extension Status">
             <span class="badge-dot"></span>
             <span class="badge-text" id="header-extension-text">Extension: Disconnected</span>
@@ -510,10 +520,11 @@
       <div class="extension-guard-card">
         <div class="extension-guard-header">
           <div class="guard-icon-lock">🔒</div>
-          <div>
+          <div style="flex-grow: 1;">
             <h2 class="guard-title" id="guard-title">HokieTutor Extension Required</h2>
             <span class="guard-req-badge">Co-Dependent Application</span>
           </div>
+          <button type="button" class="btn-close" id="btn-close-guard-overlay" aria-label="Dismiss screen" title="Dismiss screen">&times;</button>
         </div>
 
         <p class="guard-intro">
@@ -544,6 +555,9 @@
         <div class="guard-footer">
           <button type="button" class="btn-demo-link" id="btn-demo-override" title="Developer presentation & test bypass mode">
             ⚡ Developer / Presentation Bypass Mode
+          </button>
+          <button type="button" class="btn btn-sm btn-secondary" id="btn-dismiss-guard" title="Dismiss this screen">
+            Dismiss Screen &rarr;
           </button>
         </div>
       </div>

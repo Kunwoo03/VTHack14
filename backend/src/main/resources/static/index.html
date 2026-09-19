@@ -348,7 +348,9 @@
         const list = document.createElement('ul');
         events.forEach(ev => {
           const li = document.createElement('li');
-          li.textContent = `${ev.summary} — ${ev.start}${ev.end ? ' to ' + ev.end : ''}`;
+          li.textContent = ev.recurrence
+            ? `${ev.summary} — ${ev.recurrence}`
+            : `${ev.summary} — ${ev.start}${ev.end ? ' to ' + ev.end : ''}`;
           list.appendChild(li);
         });
 
@@ -362,9 +364,13 @@
     });
 
     /**
-     * Minimal RFC 5545 (.ics) parser: pulls SUMMARY/DTSTART/DTEND out of each VEVENT block.
-     * Good enough for a Google Calendar export -- not a full spec implementation
-     * (doesn't handle recurrence rules, timezone blocks, or line folding edge cases).
+     * Minimal RFC 5545 (.ics) parser: pulls SUMMARY/DTSTART/DTEND/RRULE out of each VEVENT block.
+     * Google Calendar exports a recurring event (e.g. a weekly class) as ONE VEVENT with an
+     * RRULE line describing the repetition, not one VEVENT per occurrence -- so without reading
+     * RRULE, a class that meets 3x/week looks like a single one-off event. We don't expand it
+     * into every future date (out of scope for this use case); we just describe the pattern
+     * ("Repeats weekly on Mon, Wed, Fri 2:00 PM-3:00 PM"), which is what a weekly study planner
+     * actually needs. Doesn't handle EXDATE exceptions or line folding edge cases.
      */
     function parseIcs(text) {
       const events = [];
@@ -374,17 +380,65 @@
         const summaryMatch = block.match(/SUMMARY:(.*)/);
         const startMatch = block.match(/DTSTART[^:]*:(\S+)/);
         const endMatch = block.match(/DTEND[^:]*:(\S+)/);
+        const rruleMatch = block.match(/RRULE:(.*)/);
 
         if (summaryMatch && startMatch) {
+          const rawStart = startMatch[1].trim();
+          const rawEnd = endMatch ? endMatch[1].trim() : null;
+
           events.push({
             summary: summaryMatch[1].trim(),
-            start: formatIcsDate(startMatch[1].trim()),
-            end: endMatch ? formatIcsDate(endMatch[1].trim()) : null
+            start: formatIcsDate(rawStart),
+            end: rawEnd ? formatIcsDate(rawEnd) : null,
+            recurrence: rruleMatch ? describeRecurrence(rruleMatch[1].trim(), rawStart, rawEnd) : null
           });
         }
       });
 
       return events;
+    }
+
+    const RRULE_DAY_LABELS = { MO: 'Mon', TU: 'Tue', WE: 'Wed', TH: 'Thu', FR: 'Fri', SA: 'Sat', SU: 'Sun' };
+
+    function describeRecurrence(rrule, rawStart, rawEnd) {
+      const parts = {};
+      rrule.split(';').forEach(p => {
+        const [key, value] = p.split('=');
+        parts[key] = value;
+      });
+
+      const timeRange = formatTimeRange(rawStart, rawEnd);
+      const suffix = timeRange ? ` ${timeRange}` : '';
+
+      if (parts.FREQ === 'WEEKLY') {
+        const days = parts.BYDAY
+          ? parts.BYDAY.split(',').map(d => RRULE_DAY_LABELS[d] || d).join(', ')
+          : null;
+        return `Repeats weekly${days ? ' on ' + days : ''}${suffix}`;
+      }
+      if (parts.FREQ === 'DAILY') {
+        return `Repeats daily${suffix}`;
+      }
+      if (parts.FREQ === 'MONTHLY') {
+        return `Repeats monthly${suffix}`;
+      }
+      return `Repeats (${parts.FREQ || 'unknown pattern'})`;
+    }
+
+    function formatTimeRange(rawStart, rawEnd) {
+      const startTime = extractTimeLabel(rawStart);
+      if (!startTime) return '';
+      const endTime = rawEnd ? extractTimeLabel(rawEnd) : null;
+      return endTime ? `${startTime}–${endTime}` : `at ${startTime}`;
+    }
+
+    function extractTimeLabel(raw) {
+      const match = raw.match(/T(\d{2})(\d{2})/);
+      if (!match) return null;
+      let hours = parseInt(match[1], 10);
+      const period = hours >= 12 ? 'PM' : 'AM';
+      hours = hours % 12 || 12;
+      return `${hours}:${match[2]} ${period}`;
     }
 
     function formatIcsDate(raw) {

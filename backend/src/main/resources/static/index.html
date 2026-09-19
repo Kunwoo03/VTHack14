@@ -4,63 +4,74 @@
 <meta charset="UTF-8">
 <title>StudySmart Onboarding</title>
 <style>
-  body { font-family: system-ui, sans-serif; max-width: 480px; margin: 40px auto; padding: 0 16px; color: #222; }
+  body { font-family: system-ui, sans-serif; max-width: 540px; margin: 40px auto; padding: 0 16px; color: #222; }
   h1 { font-size: 22px; }
   label { display: block; margin-top: 16px; font-weight: 600; font-size: 14px; }
   input, select, textarea { width: 100%; padding: 8px; margin-top: 4px; box-sizing: border-box; font-size: 14px; font-family: inherit; }
-  .checkbox-row { display: flex; gap: 12px; margin-top: 6px; }
-  .checkbox-row label { display: flex; align-items: center; gap: 4px; font-weight: 400; margin-top: 0; }
-  .checkbox-row input { width: auto; margin-top: 0; }
-  button { margin-top: 24px; padding: 10px 16px; font-size: 15px; cursor: pointer; }
-  pre { background: #f4f4f4; padding: 12px; border-radius: 6px; white-space: pre-wrap; word-break: break-all; }
-  #result-title { margin-top: 24px; }
+  
+  .btn-row { display: flex; gap: 12px; margin-top: 24px; align-items: center; }
+  button { padding: 10px 18px; font-size: 15px; cursor: pointer; border-radius: 6px; border: 1px solid #ccc; font-weight: 600; }
+  .btn-primary { background: #0070f3; color: white; border: none; flex: 2; }
+  .btn-primary:hover { background: #005bb5; }
+  .btn-secondary { background: #f3f4f6; color: #374151; border: 1px solid #d1d5db; flex: 1; }
+  .btn-secondary:hover { background: #e5e7eb; }
+  button:disabled { background: #aaa; cursor: not-allowed; }
+
+  pre { background: #f4f4f4; padding: 12px; border-radius: 6px; white-space: pre-wrap; word-break: break-all; font-size: 12px; }
   .help { font-size: 13px; color: #666; margin-top: 4px; line-height: 1.5; }
   .badge { display: inline-block; padding: 2px 8px; border-radius: 12px; font-size: 12px; margin-left: 8px; }
   .badge.ok { background: #dcfce7; color: #166534; }
   .badge.no { background: #fee2e2; color: #991b1b; }
+  
   .block-row { display: flex; gap: 8px; align-items: center; margin-top: 6px; }
   .block-row select, .block-row input { width: auto; margin-top: 0; }
-  .block-row button { margin-top: 0; padding: 8px 12px; font-size: 14px; }
+  .block-row button { margin-top: 0; padding: 8px 12px; font-size: 14px; background: #eee; color: #333; }
   #block-list { list-style: none; padding: 0; margin: 10px 0 0; }
   #block-list li { display: flex; justify-content: space-between; align-items: center; background: #f4f4f4; padding: 6px 10px; border-radius: 6px; margin-bottom: 6px; font-size: 14px; }
-  #block-list button { margin-top: 0; padding: 2px 8px; font-size: 12px; background: #fee2e2; border: none; border-radius: 4px; cursor: pointer; }
-  #estimate-list li { background: #f4f4f4; padding: 10px 14px; border-radius: 6px; margin-bottom: 8px; font-size: 14px; }
-  #estimate-list .est-title { font-weight: 600; }
-  #estimate-list .est-meta { font-size: 12px; color: #666; margin-top: 2px; }
-  #estimate-total { font-size: 16px; margin-top: 16px; }
-  #ics-upload-result ul { list-style: none; padding: 0; }
-  #ics-upload-result li { background: #f4f4f4; padding: 8px 12px; border-radius: 6px; margin-bottom: 6px; font-size: 14px; }
+  #block-list button { margin-top: 0; padding: 2px 8px; font-size: 12px; background: #fee2e2; border: none; border-radius: 4px; cursor: pointer; color: #991b1b; }
+  
+  #estimate-list li { background: #f4f4f4; padding: 12px 14px; border-radius: 6px; margin-bottom: 8px; font-size: 14px; border-left: 4px solid #0070f3; }
+  #estimate-list .est-title { font-weight: 600; font-size: 15px; }
+  #estimate-list .est-meta { font-size: 12px; color: #555; margin-top: 4px; }
+  #estimate-total { font-size: 16px; margin: 16px 0; color: #111; padding: 10px; background: #e0f2fe; border-radius: 6px; }
+
+  .section-box { margin-top: 16px; padding: 12px; background: #f9fafb; border: 1px solid #e5e7eb; border-radius: 8px; }
+  .section-box h3 { font-size: 15px; margin: 0 0 8px 0; color: #111; }
+  .section-box ul { list-style: none; padding: 0; margin: 0; }
+  .section-box li { background: #fff; padding: 8px 12px; border-radius: 6px; margin-bottom: 6px; border: 1px solid #e5e7eb; font-size: 13px; }
+  
+  .cal-title { font-weight: 600; color: #111; display: flex; align-items: center; justify-content: space-between; }
+  .cal-time { font-size: 12px; color: #6b7280; margin-top: 2px; }
+  .repeat-badge { background: #ede9fe; color: #6d28d9; padding: 2px 8px; border-radius: 12px; font-size: 11px; font-weight: 600; }
+  .study-badge { background: #e0f2fe; color: #0369a1; padding: 2px 8px; border-radius: 12px; font-size: 11px; font-weight: 600; }
 </style>
 </head>
 <body>
 
+  <!-- STEP 1: Canvas JSON Import -->
   <div id="step-canvas">
     <h1>Canvas Connection <span id="canvas-badge"></span></h1>
-    <p class="help">
-      Paste the assignment list copied from the HokieTutor Chrome extension below.
-      Courses are figured out automatically from whatever <code>course_id</code>s show up --
-      no Canvas login or token needed.
-    </p>
+    <p class="help">Paste the assignment list copied from the extension below.</p>
     <form id="canvas-form">
       <label>Name
         <input type="text" id="name" placeholder="Your name" required>
       </label>
 
-      <label>Assignment JSON (from the extension)
-        <textarea id="assignmentJson" rows="10" placeholder='[{"id": 123, "title": "...", "course_id": 234299, "due_at": "2026-09-21T18:30:00Z", "points_possible": 100, "html_url": "...", "description_raw": "..."}]' required></textarea>
+      <label>Assignment JSON
+        <textarea id="assignmentJson" rows="8" required></textarea>
       </label>
 
-      <button type="submit">Next</button>
+      <div class="btn-row">
+        <button type="submit" id="btn-sync" class="btn-primary">Next &rarr;</button>
+      </div>
     </form>
-
-    <div id="canvas-result-title" style="display:none;"><strong>Server Response</strong></div>
-    <pre id="canvas-result"></pre>
   </div>
 
+  <!-- STEP 2: Onboarding -->
   <div id="step-onboarding" style="display:none;">
     <h1>Onboarding: My Study Profile</h1>
     <form id="onboarding-form">
-      <label>Learning Pace (self-assessed)
+      <label>Learning Pace
         <select id="learningPace">
           <option value="VERY_FAST">Very fast</option>
           <option value="FAST">Fast</option>
@@ -101,69 +112,76 @@
         <input type="number" id="dailyStudyHours" step="0.5" min="0" max="24" value="2.5">
       </label>
 
-      <button type="submit">Next</button>
+      <div class="btn-row">
+        <button type="button" id="btn-back-step2" class="btn-secondary">&larr; Back</button>
+        <button type="submit" id="btn-onboard" class="btn-primary">Next &rarr;</button>
+      </div>
     </form>
-
-    <div id="result-title" style="display:none;"><strong>Server Response</strong></div>
-    <pre id="result"></pre>
   </div>
 
+  <!-- STEP 3: AI Dynamic Estimates -->
   <div id="step-done" style="display:none;">
     <h1>This Week's Assignments</h1>
-    <p class="help">
-      Estimated hours for everything due in the next 7 days, personalized to your
-      learning pace, GPA goals, and (once you have some) your actual-vs-estimated history.
-    </p>
-    <div id="estimate-loading" class="help">Loading estimates...</div>
-    <p id="estimate-total" style="display:none; font-weight:600;"></p>
+    <p class="help">AI-powered workload estimates based on difficulty, points, and your pace.</p>
+    
+    <div id="estimate-loading" style="padding:12px; background:#fef3c7; border-radius:6px; margin: 12px 0;">
+      Analyzing assignments with Gemini AI...
+    </div>
+    
+    <div id="estimate-total" style="display:none; font-weight:700;"></div>
     <ul id="estimate-list" style="list-style:none; padding:0;"></ul>
 
-    <button type="button" id="btn-to-calendar">Next</button>
+    <div class="btn-row">
+      <button type="button" id="btn-back-step3" class="btn-secondary">&larr; Back</button>
+      <button type="button" id="btn-to-calendar" class="btn-primary">Next &rarr;</button>
+    </div>
   </div>
 
+  <!-- STEP 4: Google Calendar -->
   <div id="step-calendar" style="display:none;">
-    <h1>Google Calendar</h1>
-
-    <p class="help">
-      Download this week's assignments as a calendar file you can import into Google Calendar
-      (Google Calendar &rarr; Settings &rarr; Import &amp; export &rarr; Import).
-    </p>
-    <button type="button" id="btn-download-ics">Download This Week (.ics)</button>
-
-    <p class="help" style="margin-top:32px;">
-      Or upload a calendar file exported from Google Calendar (Settings &rarr; Import &amp; export
-      &rarr; Export) so we know when you're already busy.
-    </p>
+    <h1>Google Calendar & Schedule Comparison</h1>
+    <p class="help">Upload your calendar (.ics). StudySmart will parse your classes and generate conflict-free study blocks.</p>
+    
     <label>Calendar file (.ics)
       <input type="file" id="ics-upload-input" accept=".ics,text/calendar">
     </label>
-    <div id="ics-upload-result" style="margin-top:16px;"></div>
+
+    <div id="ics-upload-result"></div>
+
+    <!-- 순수 AI 공부 일정만 다운로드하도록 버튼 수정 -->
+    <button type="button" id="btn-download-ics" class="btn-primary" style="width:100%; margin-top: 24px; display:none;">Download AI Study Schedule (.ics)</button>
+
+    <div class="btn-row" style="margin-top: 20px;">
+      <button type="button" id="btn-back-step4" class="btn-secondary" style="flex:1;">&larr; Back</button>
+    </div>
   </div>
 
   <script>
-    const stepCanvas = document.getElementById('step-canvas');
-    const stepOnboarding = document.getElementById('step-onboarding');
-    const stepDone = document.getElementById('step-done');
-    const stepCalendar = document.getElementById('step-calendar');
-
+    let currentStudentName = '';
     let lastWeeklyEstimate = null;
+    let generatedStudyBlocks = [];
 
-    const form = document.getElementById('onboarding-form');
-    const resultEl = document.getElementById('result');
-    const resultTitle = document.getElementById('result-title');
-
-    const DAY_LABELS = {
-      MONDAY: 'Mon', TUESDAY: 'Tue', WEDNESDAY: 'Wed', THURSDAY: 'Thu',
-      FRIDAY: 'Fri', SATURDAY: 'Sat', SUNDAY: 'Sun'
-    };
-
+    const DAY_LABELS = { MONDAY: 'Mon', TUESDAY: 'Tue', WEDNESDAY: 'Wed', THURSDAY: 'Thu', FRIDAY: 'Fri', SATURDAY: 'Sat', SUNDAY: 'Sun' };
     let studyBlocks = [
       { dayOfWeek: 'MONDAY', startTime: '18:00', endTime: '20:00' },
       { dayOfWeek: 'WEDNESDAY', startTime: '18:00', endTime: '20:00' }
     ];
 
-    const blockListEl = document.getElementById('block-list');
+    const stepCanvas = document.getElementById('step-canvas');
+    const stepOnboarding = document.getElementById('step-onboarding');
+    const stepDone = document.getElementById('step-done');
+    const stepCalendar = document.getElementById('step-calendar');
 
+    function showStep(stepToShow) {
+      [stepCanvas, stepOnboarding, stepDone, stepCalendar].forEach(s => s.style.display = 'none');
+      stepToShow.style.display = 'block';
+    }
+
+    document.getElementById('btn-back-step2').onclick = () => showStep(stepCanvas);
+    document.getElementById('btn-back-step3').onclick = () => showStep(stepOnboarding);
+    document.getElementById('btn-back-step4').onclick = () => showStep(stepDone);
+
+    const blockListEl = document.getElementById('block-list');
     function renderBlocks() {
       blockListEl.innerHTML = '';
       studyBlocks.forEach((block, index) => {
@@ -172,44 +190,67 @@
         const removeBtn = document.createElement('button');
         removeBtn.type = 'button';
         removeBtn.textContent = 'Remove';
-        removeBtn.addEventListener('click', () => {
-          studyBlocks.splice(index, 1);
-          renderBlocks();
-        });
+        removeBtn.onclick = () => { studyBlocks.splice(index, 1); renderBlocks(); };
         li.appendChild(removeBtn);
         blockListEl.appendChild(li);
       });
     }
     renderBlocks();
 
-    document.getElementById('addBlockBtn').addEventListener('click', () => {
+    document.getElementById('addBlockBtn').onclick = () => {
       const dayOfWeek = document.getElementById('blockDay').value;
       const startTime = document.getElementById('blockStart').value;
       const endTime = document.getElementById('blockEnd').value;
-
-      if (!startTime || !endTime) {
-        alert('Please pick both a start and end time.');
+      if (!startTime || !endTime || startTime >= endTime) {
+        alert('Invalid time block selection.');
         return;
       }
-      if (startTime >= endTime) {
-        alert('Start time must be before end time.');
-        return;
-      }
-
       studyBlocks.push({ dayOfWeek, startTime, endTime });
       renderBlocks();
-    });
+    };
 
-    form.addEventListener('submit', async (e) => {
+    document.getElementById('canvas-form').onsubmit = async (e) => {
       e.preventDefault();
+      currentStudentName = document.getElementById('name').value.trim();
+      const rawJson = document.getElementById('assignmentJson').value.trim();
 
-      if (studyBlocks.length === 0) {
-        alert('Add at least one preferred study time block.');
+      let assignments;
+      try {
+        const data = JSON.parse(rawJson);
+        assignments = Array.isArray(data) ? data : (Array.isArray(data.assignments) ? data.assignments : null);
+        if (!assignments) throw new Error('Invalid JSON format');
+      } catch (err) {
+        alert('Could not parse assignment JSON: ' + err.message);
         return;
       }
 
+      const btnSync = document.getElementById('btn-sync');
+      btnSync.disabled = true;
+      btnSync.textContent = 'Syncing...';
+
+      try {
+        const res = await fetch('/api/assignments/import', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ name: currentStudentName, assignments })
+        });
+        if (res.ok) {
+          showStep(stepOnboarding);
+        } else {
+          alert('Sync failed');
+        }
+      } catch (err) {
+        alert('Network request error: ' + err.message);
+      } finally {
+        btnSync.disabled = false;
+        btnSync.textContent = 'Next →';
+      }
+    };
+
+    document.getElementById('onboarding-form').onsubmit = async (e) => {
+      e.preventDefault();
       const payload = {
-        name: document.getElementById('name').value,
+        name: currentStudentName,
         learningPace: document.getElementById('learningPace').value,
         currentGpa: parseFloat(document.getElementById('currentGpa').value),
         targetGpa: parseFloat(document.getElementById('targetGpa').value),
@@ -217,27 +258,22 @@
         dailyStudyHours: parseFloat(document.getElementById('dailyStudyHours').value)
       };
 
-      resultTitle.style.display = 'block';
-      resultEl.textContent = 'Submitting...';
-
       try {
         const res = await fetch('/api/onboarding', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(payload)
         });
-        const body = await res.json();
-        resultEl.textContent = `HTTP ${res.status}\n` + JSON.stringify(body, null, 2);
-
         if (res.ok) {
-          stepOnboarding.style.display = 'none';
-          stepDone.style.display = 'block';
-          loadWeeklyEstimate(payload.name);
+          showStep(stepDone);
+          loadWeeklyEstimate(currentStudentName);
+        } else {
+          alert('Onboarding failed');
         }
       } catch (err) {
-        resultEl.textContent = 'Request failed: ' + err;
+        alert('Error: ' + err.message);
       }
-    });
+    };
 
     async function loadWeeklyEstimate(name) {
       const loadingEl = document.getElementById('estimate-loading');
@@ -245,115 +281,162 @@
       const listEl = document.getElementById('estimate-list');
 
       loadingEl.style.display = 'block';
-      loadingEl.textContent = 'Calculating estimates...';
+      loadingEl.textContent = 'Contacting Gemini 3.6 Flash & evaluating workload...';
       totalEl.style.display = 'none';
       listEl.innerHTML = '';
 
       try {
         const res = await fetch(`/api/schedule/estimate/${encodeURIComponent(name)}`);
-        const body = await res.json();
+        const textData = await res.text();
+        const body = JSON.parse(textData);
 
         if (!res.ok) {
-          loadingEl.textContent = `Couldn't load estimates: ${body.message || res.status}`;
+          loadingEl.textContent = `Error: ${body.message || res.statusText}`;
           return;
         }
 
         loadingEl.style.display = 'none';
         lastWeeklyEstimate = body;
 
-        if (body.assignments.length === 0) {
-          listEl.innerHTML = '<li>Nothing due in the next 7 days. Nice.</li>';
+        if (!body.assignments || body.assignments.length === 0) {
+          listEl.innerHTML = '<li>No upcoming assignments found for ' + name + '.</li>';
           return;
         }
 
         totalEl.style.display = 'block';
-        totalEl.textContent = `Estimated total: ${body.totalHours.toFixed(1)} hours this week`;
+        totalEl.textContent = `Total Workload: ${body.totalHours.toFixed(1)} hours scheduled`;
 
         body.assignments.forEach(a => {
           const li = document.createElement('li');
-          const due = new Date(a.dueAt);
           li.innerHTML = `
             <div class="est-title">${a.title}</div>
-            <div class="est-meta">Due ${due.toLocaleString()} &middot; ~${a.estimatedHours.toFixed(1)}h estimated</div>
+            <div class="est-meta">Due: ${a.dueAt} &middot; <strong style="color:#0070f3;">~${a.estimatedHours.toFixed(1)}h</strong> (AI estimated)</div>
           `;
           listEl.appendChild(li);
         });
       } catch (err) {
-        loadingEl.textContent = 'Request failed: ' + err;
+        loadingEl.textContent = 'Failed to load: ' + err.message;
       }
     }
 
-    document.getElementById('btn-to-calendar').addEventListener('click', () => {
-      stepDone.style.display = 'none';
-      stepCalendar.style.display = 'block';
-    });
+    document.getElementById('btn-to-calendar').onclick = () => showStep(stepCalendar);
 
-    document.getElementById('btn-download-ics').addEventListener('click', () => {
-      const assignments = lastWeeklyEstimate ? lastWeeklyEstimate.assignments : [];
-
-      if (assignments.length === 0) {
-        alert('No assignments to export.');
-        return;
-      }
-
-      const pad = n => String(n).padStart(2, '0');
-      const toIcsDate = iso => {
-        const d = new Date(iso);
-        return `${d.getUTCFullYear()}${pad(d.getUTCMonth() + 1)}${pad(d.getUTCDate())}T${pad(d.getUTCHours())}${pad(d.getUTCMinutes())}${pad(d.getUTCSeconds())}Z`;
-      };
-      const now = toIcsDate(new Date().toISOString());
-
-      const lines = ['BEGIN:VCALENDAR', 'VERSION:2.0', 'PRODID:-//HokieTutor//Study Schedule//EN'];
-      assignments.forEach(a => {
-        lines.push(
-          'BEGIN:VEVENT',
-          `UID:hokietutor-${a.assignmentId}@vt.edu`,
-          `DTSTAMP:${now}`,
-          `DTSTART:${toIcsDate(a.dueAt)}`,
-          `DTEND:${toIcsDate(a.dueAt)}`,
-          `SUMMARY:${a.title}`,
-          `DESCRIPTION:Estimated ${a.estimatedHours.toFixed(1)}h to complete`,
-          'END:VEVENT'
-        );
-      });
-      lines.push('END:VCALENDAR');
-
-      const blob = new Blob([lines.join('\r\n')], { type: 'text/calendar;charset=utf-8' });
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = 'HokieTutor_ThisWeek.ics';
-      document.body.appendChild(a);
-      a.click();
-      document.body.removeChild(a);
-      URL.revokeObjectURL(url);
-    });
-
-    document.getElementById('ics-upload-input').addEventListener('change', (e) => {
+    // [Step 4] ICS 업로드 시 기존 일정 파싱 및 충돌 없는 AI 공부 일정 생성
+    document.getElementById('ics-upload-input').addEventListener('change', async (e) => {
       const file = e.target.files[0];
       const resultEl = document.getElementById('ics-upload-result');
+      const downloadBtn = document.getElementById('btn-download-ics');
       if (!file) return;
 
-      resultEl.textContent = 'Reading file...';
+      resultEl.innerHTML = '<div style="padding:10px; background:#fef3c7; border-radius:6px; margin-top:12px;">Analyzing schedule and generating conflict-free study blocks...</div>';
+      downloadBtn.style.display = 'none';
+
+      if (!lastWeeklyEstimate && currentStudentName) {
+        try {
+          const res = await fetch(`/api/schedule/estimate/${encodeURIComponent(currentStudentName)}`);
+          const body = await res.json();
+          if (res.ok) {
+            lastWeeklyEstimate = body;
+          }
+        } catch (err) {
+          console.error(err);
+        }
+      }
 
       const reader = new FileReader();
-      reader.onload = (evt) => {
-        const events = parseIcs(evt.target.result);
+      reader.onload = async (evt) => {
+        const rawText = evt.target.result;
+        const parsed = parseIcsWithRecurrence(rawText);
+        const displayEvents = parsed.displayEvents;
+        const busyIntervals = parsed.busyIntervals;
 
-        if (events.length === 0) {
-          resultEl.textContent = 'No events found in that file.';
-          return;
-        }
+        generatedStudyBlocks = [];
+        const assignments = lastWeeklyEstimate && lastWeeklyEstimate.assignments ? lastWeeklyEstimate.assignments : [];
 
-        const list = document.createElement('ul');
-        events.forEach(ev => {
-          const li = document.createElement('li');
-          li.textContent = `${ev.summary} — ${ev.start}${ev.end ? ' to ' + ev.end : ''}`;
-          list.appendChild(li);
+        const sorted = [...assignments].sort((a, b) => new Date(a.dueAt) - new Date(b.dueAt));
+        const scheduledUntilByDate = {};
+
+        sorted.forEach(a => {
+          const dueDate = new Date(a.dueAt);
+          if (isNaN(dueDate.getTime())) return;
+
+          const dateKey = dueDate.toISOString().slice(0, 10);
+          const hours = a.estimatedHours && a.estimatedHours > 0 ? a.estimatedHours : 2.0;
+          const durationMs = Math.round(hours * 60 * 60 * 1000);
+
+          let blockEnd = scheduledUntilByDate[dateKey] 
+            ? new Date(Math.min(dueDate.getTime() - (3600000), scheduledUntilByDate[dateKey].getTime()))
+            : new Date(dueDate.getTime() - (60 * 60 * 1000));
+
+          let blockStart = new Date(blockEnd.getTime() - durationMs);
+
+          const dayOfWeek = blockStart.getDay();
+          let startMin = blockStart.getHours() * 60 + blockStart.getMinutes();
+          let endMin = blockEnd.getHours() * 60 + blockEnd.getMinutes();
+
+          let hasConflict = true;
+          let loopCount = 0;
+          while (hasConflict && loopCount < 5) {
+            hasConflict = false;
+            busyIntervals.forEach(b => {
+              if (b.day === dayOfWeek) {
+                if (startMin < b.endMin && endMin > b.startMin) {
+                  hasConflict = true;
+                  blockEnd = new Date(blockStart);
+                  blockStart = new Date(blockEnd.getTime() - durationMs);
+                  startMin = blockStart.getHours() * 60 + blockStart.getMinutes();
+                  endMin = blockEnd.getHours() * 60 + blockEnd.getMinutes();
+                }
+              }
+            });
+            loopCount++;
+          }
+
+          scheduledUntilByDate[dateKey] = blockStart;
+
+          generatedStudyBlocks.push({
+            title: `[Study] ${a.title}`,
+            start: blockStart,
+            end: blockEnd,
+            hours: hours
+          });
         });
 
-        resultEl.innerHTML = `<p><strong>${events.length} event(s) found:</strong></p>`;
-        resultEl.appendChild(list);
+        let htmlContent = '';
+
+        htmlContent += `<div class="section-box"><h3>📅 Your Calendar Events (${displayEvents.length})</h3><ul>`;
+        displayEvents.forEach(ev => {
+          const recurrenceTag = ev.recurrence ? `<span class="repeat-badge">🔁 ${ev.recurrence}</span>` : `<span style="font-size:11px; color:#888;">One-time</span>`;
+          const timeDisplay = ev.recurrence 
+            ? `${formatIcsTimeOnly(ev.rawStart)}${ev.rawEnd ? ' &rarr; ' + formatIcsTimeOnly(ev.rawEnd) : ''}`
+            : `${ev.start}${ev.end ? ' &rarr; ' + ev.end : ''}`;
+
+          htmlContent += `
+            <li>
+              <div class="cal-title"><span>${ev.summary}</span>${recurrenceTag}</div>
+              <div class="cal-time">${timeDisplay}</div>
+            </li>`;
+        });
+        htmlContent += `</ul></div>`;
+
+        htmlContent += `<div class="section-box" style="border-color:#bae6fd; background:#f0f9ff;"><h3>🤖 Conflict-Free AI Study Schedule (${generatedStudyBlocks.length})</h3><ul>`;
+        if (generatedStudyBlocks.length === 0) {
+          htmlContent += `<li style="color:#e11d48; font-weight:600;">No assignments found. Please make sure you completed Step 1 & Step 2 first!</li>`;
+        } else {
+          generatedStudyBlocks.forEach(sb => {
+            htmlContent += `
+              <li>
+                <div class="cal-title"><span>${sb.title}</span><span class="study-badge">~${sb.hours.toFixed(1)}h</span></div>
+                <div class="cal-time">${sb.start.toLocaleString()} &rarr; ${sb.end.toLocaleString()}</div>
+              </li>`;
+          });
+        }
+        htmlContent += `</ul></div>`;
+
+        resultEl.innerHTML = htmlContent;
+        if (generatedStudyBlocks.length > 0) {
+          downloadBtn.style.display = 'block';
+        }
       };
       reader.onerror = () => {
         resultEl.textContent = 'Could not read that file.';
@@ -361,89 +444,144 @@
       reader.readAsText(file);
     });
 
-    /**
-     * Minimal RFC 5545 (.ics) parser: pulls SUMMARY/DTSTART/DTEND out of each VEVENT block.
-     * Good enough for a Google Calendar export -- not a full spec implementation
-     * (doesn't handle recurrence rules, timezone blocks, or line folding edge cases).
-     */
-    function parseIcs(text) {
-      const events = [];
+    // [핵심 수정] 다운로드 버튼 누르면 오직 AI가 생성한 새로운 과제 공부 일정들만 .ics 파일로 묶어서 다운로드
+    document.getElementById('btn-download-ics').onclick = () => {
+      if (generatedStudyBlocks.length === 0) {
+        alert('No study blocks generated yet.');
+        return;
+      }
+
+      const pad = n => String(n).padStart(2, '0');
+      const toIcsDate = d => {
+        return `${d.getUTCFullYear()}${pad(d.getUTCMonth() + 1)}${pad(d.getUTCDate())}T${pad(d.getUTCHours())}${pad(d.getUTCMinutes())}${pad(d.getUTCSeconds())}Z`;
+      };
+      const now = toIcsDate(new Date());
+
+      let studyOnlyLines = ['BEGIN:VCALENDAR', 'VERSION:2.0', 'PRODID:-//StudySmart//AI Study Schedule//EN'];
+
+      generatedStudyBlocks.forEach((sb, idx) => {
+        studyOnlyLines.push(
+          'BEGIN:VEVENT',
+          `UID:studysmart-ai-study-${idx}-${Date.now()}@vt.edu`,
+          `DTSTAMP:${now}`,
+          `DTSTART:${toIcsDate(sb.start)}`,
+          `DTEND:${toIcsDate(sb.end)}`,
+          `SUMMARY:${sb.title}`,
+          `DESCRIPTION:AI Estimated Workload: ${sb.hours.toFixed(1)} hours (Conflict-free study block).`,
+          'END:VEVENT'
+        );
+      });
+
+      studyOnlyLines.push('END:VCALENDAR');
+
+      const blob = new Blob([studyOnlyLines.join('\r\n')], { type: 'text/calendar;charset=utf-8' });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = 'StudySmart_AI_Study_Schedule.ics';
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      URL.revokeObjectURL(url);
+    };
+
+    function parseIcsWithRecurrence(text) {
+      const displayEvents = [];
+      const busyIntervals = [];
       const veventBlocks = text.split('BEGIN:VEVENT').slice(1);
+
+      const dayCodeMap = { SU: 0, MO: 1, TU: 2, WE: 3, TH: 4, FR: 5, SA: 6 };
 
       veventBlocks.forEach(block => {
         const summaryMatch = block.match(/SUMMARY:(.*)/);
         const startMatch = block.match(/DTSTART[^:]*:(\S+)/);
         const endMatch = block.match(/DTEND[^:]*:(\S+)/);
+        const rruleMatch = block.match(/RRULE:(.*)/);
 
         if (summaryMatch && startMatch) {
-          events.push({
-            summary: summaryMatch[1].trim(),
-            start: formatIcsDate(startMatch[1].trim()),
-            end: endMatch ? formatIcsDate(endMatch[1].trim()) : null
+          const summary = summaryMatch[1].trim();
+          let recurrence = null;
+          const rawStart = startMatch[1].trim();
+          const rawEnd = endMatch ? endMatch[1].trim() : null;
+
+          const startDate = parseIcsRawDate(rawStart);
+          const endDate = rawEnd ? parseIcsRawDate(rawEnd) : new Date(startDate.getTime() + 3600000);
+
+          let targetDays = [startDate.getDay()];
+
+          if (rruleMatch) {
+            const rrule = rruleMatch[1].trim();
+            recurrence = formatRRule(rrule);
+
+            const parts = rrule.split(';');
+            parts.forEach(p => {
+              if (p.startsWith('BYDAY=')) {
+                const daysStr = p.split('=')[1];
+                targetDays = daysStr.split(',').map(d => dayCodeMap[d.trim()]).filter(d => d !== undefined);
+              }
+            });
+          }
+
+          const startMin = startDate.getHours() * 60 + startDate.getMinutes();
+          const endMin = endDate.getHours() * 60 + endDate.getMinutes();
+
+          targetDays.forEach(d => {
+            busyIntervals.push({ day: d, startMin, endMin });
+          });
+
+          displayEvents.push({
+            summary: summary,
+            start: startDate.toLocaleString(),
+            end: endDate.toLocaleString(),
+            rawStart: rawStart,
+            rawEnd: rawEnd,
+            recurrence: recurrence
           });
         }
       });
 
-      return events;
+      return { displayEvents, busyIntervals };
     }
 
-    function formatIcsDate(raw) {
+    function formatRRule(rrule) {
+      const parts = rrule.split(';');
+      const map = {};
+      parts.forEach(p => {
+        const [k, v] = p.split('=');
+        if (k && v) map[k] = v;
+      });
+
+      const dayMap = { MO: 'Mon', TU: 'Tue', WE: 'Wed', TH: 'Thu', FR: 'Fri', SA: 'Sat', SU: 'Sun' };
+
+      if (map.FREQ === 'WEEKLY') {
+        if (map.BYDAY) {
+          const days = map.BYDAY.split(',').map(d => dayMap[d] || d).join(', ');
+          return `Every ${days}`;
+        }
+        return 'Every week';
+      } else if (map.FREQ === 'DAILY') {
+        return 'Every day';
+      } else if (map.FREQ === 'MONTHLY') {
+        return 'Every month';
+      }
+
+      return 'Recurring';
+    }
+
+    function parseIcsRawDate(raw) {
+      const match = raw.match(/^(\d{4})(\d{2})(\d{2})T(\d{2})(\d{2})(\d{2})/);
+      if (!match) return new Date();
+      const [, y, mo, d, h, mi, s] = match;
+      return new Date(`${y}-${mo}-${d}T${h}:${mi}:${s}Z`);
+    }
+
+    function formatIcsTimeOnly(raw) {
       const match = raw.match(/^(\d{4})(\d{2})(\d{2})T(\d{2})(\d{2})(\d{2})/);
       if (!match) return raw;
-      const [, y, mo, d, h, mi] = match;
-      return new Date(`${y}-${mo}-${d}T${h}:${mi}:00`).toLocaleString();
+      const [, y, mo, d, h, mi, s] = match;
+      const date = new Date(`${y}-${mo}-${d}T${h}:${mi}:${s}Z`);
+      return date.toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' });
     }
-
-    const canvasForm = document.getElementById('canvas-form');
-    const canvasResultEl = document.getElementById('canvas-result');
-    const canvasResultTitle = document.getElementById('canvas-result-title');
-    const canvasBadge = document.getElementById('canvas-badge');
-
-    canvasForm.addEventListener('submit', async (e) => {
-      e.preventDefault();
-
-      const name = document.getElementById('name').value;
-      const rawJson = document.getElementById('assignmentJson').value;
-
-      let assignments;
-      try {
-        const data = JSON.parse(rawJson);
-        assignments = Array.isArray(data) ? data : (Array.isArray(data.assignments) ? data.assignments : null);
-        if (!assignments) throw new Error('Expected a JSON array of assignments.');
-      } catch (err) {
-        alert('Could not parse that JSON: ' + err.message);
-        return;
-      }
-
-      const payload = { name, assignments };
-
-      canvasResultTitle.style.display = 'block';
-      canvasResultEl.textContent = 'Syncing assignments...';
-
-      try {
-        const res = await fetch('/api/assignments/import', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(payload)
-        });
-        const body = await res.json();
-        canvasResultEl.textContent = `HTTP ${res.status}\n` + JSON.stringify(body, null, 2);
-
-        if (res.ok) {
-          canvasBadge.textContent = `Synced ${body.importedCount} assignment(s), ${body.courseCount} course(s)`;
-          canvasBadge.className = 'badge ok';
-          stepCanvas.style.display = 'none';
-          stepOnboarding.style.display = 'block';
-        } else {
-          canvasBadge.textContent = 'Sync failed';
-          canvasBadge.className = 'badge no';
-        }
-      } catch (err) {
-        canvasResultEl.textContent = 'Request failed: ' + err;
-        canvasBadge.textContent = 'Sync failed';
-        canvasBadge.className = 'badge no';
-      }
-    });
   </script>
 </body>
 </html>

@@ -1,6 +1,6 @@
 #FileLock
-#Sat Sep 19 15:30:10 EDT 2026
-hostName=LAPTOP-SJOQ5AUH
-id=1a0bb25bffe5c80c966050ae3344f5c9f9a066c26d5
+#Sat Sep 19 17:59:58 EDT 2026
+server=172.29.239.57\:49674
+hostName=ANDREW-LOQ15
 method=file
-server=172.29.160.88\:59296
+id=1a0bbaee668aa9975809315797c395ca25e16f6196f

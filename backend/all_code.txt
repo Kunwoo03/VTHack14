@@ -1,0 +1,1483 @@
+﻿========================================
+FILE: C:\Users\Andrew Park\OneDrive\Documents\GitHub\VTHack14\backend\src\main\java\com\vthacks\studyscheduler\ai\AssignmentTimeEstimationService.java
+========================================
+package com.vthacks.studyscheduler.ai;
+
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.vthacks.studyscheduler.domain.Assignment;
+import com.vthacks.studyscheduler.domain.StudentProfile;
+import com.vthacks.studyscheduler.dto.AssignmentEstimate;
+import com.vthacks.studyscheduler.dto.WeeklyEstimateResponse;
+import com.vthacks.studyscheduler.repository.AssignmentRepository;
+import com.vthacks.studyscheduler.repository.StudentProfileRepository;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
+import org.springframework.stereotype.Service;
+import org.springframework.web.client.RestTemplate;
+
+import java.time.Instant;
+import java.time.temporal.ChronoUnit;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+@Service
+public class AssignmentTimeEstimationService {
+
+    private final AssignmentRepository assignmentRepository;
+    private final StudentProfileRepository studentProfileRepository;
+    private final ObjectMapper objectMapper = new ObjectMapper();
+    private final RestTemplate restTemplate = new RestTemplate();
+
+    public AssignmentTimeEstimationService(AssignmentRepository assignmentRepository,
+                                           StudentProfileRepository studentProfileRepository) {
+        this.assignmentRepository = assignmentRepository;
+        this.studentProfileRepository = studentProfileRepository;
+    }
+
+    /**
+     * Gemini 3.6 Flash API瑜?吏곸젒 ?몄텧?섏뿬 ?ㅼ젣 罹섎┛?????釉붾줉 ?쒓컙?쒕? ?앹꽦
+     */
+    public String generateWeeklyTimeBlocks(String name, JsonNode manualPayload) {
+        try {
+            String apiKey = System.getenv("GEMINI_API_KEY");
+            if (apiKey == null || apiKey.isBlank()) {
+                throw new IllegalStateException("GEMINI_API_KEY environment variable is missing.");
+            }
+
+            StudentProfile profile = studentProfileRepository.findByName(name).orElse(null);
+            List<Assignment> upcoming = assignmentRepository.findByNameOrderByDueAtAsc(name);
+
+            // ?꾨줈??JSON 援ъ꽦
+            Map<String, Object> profileMap = new HashMap<>();
+            if (profile != null) {
+                profileMap.put("learnerType", profile.getLearningPace() != null ? profile.getLearningPace().name() : "AVERAGE");
+                profileMap.put("currentGpa", profile.getCurrentGpa() != null ? profile.getCurrentGpa() : 3.2);
+                profileMap.put("targetGpa", profile.getTargetGpa() != null ? profile.getTargetGpa() : 3.8);
+                profileMap.put("availableDailyHours", 4.0);
+                profileMap.put("timeEstimationBias", 1.4);
+            } else if (manualPayload != null && manualPayload.has("profile")) {
+                JsonNode p = manualPayload.get("profile");
+                profileMap.put("learnerType", p.path("learnerType").asText("moderate pace"));
+                profileMap.put("currentGpa", p.path("currentGpa").asDouble(3.2));
+                profileMap.put("targetGpa", p.path("targetGpa").asDouble(3.8));
+                profileMap.put("availableDailyHours", p.path("availableDailyHours").asDouble(4.0));
+                profileMap.put("timeEstimationBias", p.path("timeEstimationBias").asDouble(1.4));
+            } else {
+                profileMap.put("learnerType", "moderate pace");
+                profileMap.put("currentGpa", 3.2);
+                profileMap.put("targetGpa", 3.8);
+                profileMap.put("availableDailyHours", 4.0);
+                profileMap.put("timeEstimationBias", 1.4);
+            }
+
+            // 怨쇱젣 紐⑸줉 JSON 援ъ꽦
+            String assignmentsJsonStr;
+            if (manualPayload != null && manualPayload.has("assignments") && manualPayload.get("assignments").isArray() && !manualPayload.get("assignments").isEmpty()) {
+                assignmentsJsonStr = manualPayload.get("assignments").toString();
+            } else {
+                assignmentsJsonStr = objectMapper.writeValueAsString(upcoming);
+            }
+
+            String systemPrompt = """
+                You are an elite academic time-blocking scheduler for university engineering students.
+                Current Reference Date: Saturday, September 19, 2026.
+                
+                RULES:
+                1. Do NOT schedule any tasks in the past (before Sept 19, 2026).
+                2. Calculate scaledHours = unscaledHours * profile.timeEstimationBias.
+                3. Total daily allocated hours must not exceed profile.availableDailyHours.
+                4. You MUST assign concrete time slots for every task (e.g., startTime: "14:00", endTime: "16:30").
+                   - Default study blocks to afternoon/evening study windows (between 13:00 and 21:00).
+                   - Leave 15-minute buffers between distinct tasks.
+                5. Break major deliverables across multiple days prior to their deadlines.
+                6. Output ONLY pure, valid JSON matching this exact structure without markdown or backticks:
+                
+                {
+                  "profileSummary": {
+                    "learnerType": "moderate pace",
+                    "targetGpa": 3.8,
+                    "timeEstimationBias": 1.4,
+                    "availableDailyHours": 4.0
+                  },
+                  "schedule": [
+                    {
+                      "date": "2026-09-19",
+                      "dayOfWeek": "Saturday",
+                      "totalAllocatedHours": 3.5,
+                      "tasks": [
+                        {
+                          "assignmentId": 2776013,
+                          "title": "Short Descriptive Title",
+                          "taskDescription": "Specific action item for this slot",
+                          "scaledHours": 2.0,
+                          "startTime": "14:00",
+                          "endTime": "16:00"
+                        }
+                      ]
+                    }
+                  ]
+                }
+                """;
+
+            String userContent = String.format("Student Profile: %s\n\nAssignments: %s",
+                    objectMapper.writeValueAsString(profileMap), assignmentsJsonStr);
+
+            String endpoint = "https://generativelanguage.googleapis.com/v1beta/models/gemini-3.6-flash:generateContent?key=" + apiKey;
+
+            Map<String, Object> requestBody = new HashMap<>();
+            requestBody.put("contents", List.of(
+                    Map.of("parts", List.of(Map.of("text", systemPrompt + "\n\n" + userContent)))
+            ));
+
+            HttpHeaders headers = new HttpHeaders();
+            headers.setContentType(MediaType.APPLICATION_JSON);
+
+            HttpEntity<Map<String, Object>> entity = new HttpEntity<>(requestBody, headers);
+            ResponseEntity<String> response = restTemplate.postForEntity(endpoint, entity, String.class);
+
+            JsonNode geminiRes = objectMapper.readTree(response.getBody());
+            String rawText = geminiRes.at("/candidates/0/content/parts/0/text").asText();
+
+            return rawText.replaceAll("(?s)```json\\s*", "").replaceAll("(?s)```\\s*", "").trim();
+
+        } catch (Exception e) {
+            throw new RuntimeException("Gemini Scheduling Error: " + e.getMessage(), e);
+        }
+    }
+
+    /**
+     * ??먯쓽 湲곗〈 ?대━?ㅽ떛 ?붾뱶?ъ씤??蹂댁〈
+     */
+    public WeeklyEstimateResponse estimateNextWeek(String name) {
+        Instant now = Instant.now();
+        Instant weekFromNow = now.plus(7, ChronoUnit.DAYS);
+
+        List<Assignment> upcoming = assignmentRepository.findByNameOrderByDueAtAsc(name).stream()
+                .filter(a -> a.getDueAt() != null && a.getDueAt().isAfter(now) && a.getDueAt().isBefore(weekFromNow))
+                .toList();
+
+        if (upcoming.isEmpty()) {
+            return new WeeklyEstimateResponse(List.of(), 0.0);
+        }
+
+        List<AssignmentEstimate> estimates = upcoming.stream()
+                .map(a -> new AssignmentEstimate(a.getId(), a.getTitle(), a.getCourseId(), a.getDueAt().toString(), 2.0))
+                .toList();
+
+        double total = estimates.stream().mapToDouble(AssignmentEstimate::estimatedHours).sum();
+        return new WeeklyEstimateResponse(estimates, total);
+    }
+}
+
+
+========================================
+FILE: C:\Users\Andrew Park\OneDrive\Documents\GitHub\VTHack14\backend\src\main\java\com\vthacks\studyscheduler\config\WebConfig.java
+========================================
+package com.vthacks.studyscheduler.config;
+
+import org.springframework.context.annotation.Configuration;
+import org.springframework.web.servlet.config.annotation.CorsRegistry;
+import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
+
+/**
+ * The HokieTutor web app is served from its own origin (a static file server,
+ * or opened directly as a file), separate from this API's origin -- so the
+ * browser needs an explicit CORS allowance to let it call these endpoints.
+ */
+@Configuration
+public class WebConfig implements WebMvcConfigurer {
+
+    @Override
+    public void addCorsMappings(CorsRegistry registry) {
+        registry.addMapping("/api/**")
+                .allowedOriginPatterns("*")
+                .allowedMethods("GET", "POST", "PUT", "DELETE", "OPTIONS")
+                .allowedHeaders("*");
+    }
+}
+
+
+
+========================================
+FILE: C:\Users\Andrew Park\OneDrive\Documents\GitHub\VTHack14\backend\src\main\java\com\vthacks\studyscheduler\controller\AssignmentController.java
+========================================
+package com.vthacks.studyscheduler.controller;
+
+import com.vthacks.studyscheduler.domain.Assignment;
+import com.vthacks.studyscheduler.dto.AssignmentDto;
+import com.vthacks.studyscheduler.dto.AssignmentImportRequest;
+import com.vthacks.studyscheduler.dto.AssignmentImportResponse;
+import com.vthacks.studyscheduler.repository.AssignmentRepository;
+import jakarta.validation.Valid;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
+
+import java.time.Instant;
+import java.util.List;
+
+@RestController
+@RequestMapping("/api/assignments")
+@CrossOrigin(origins = "*")
+public class AssignmentController {
+
+    private final AssignmentRepository assignmentRepository;
+
+    public AssignmentController(AssignmentRepository assignmentRepository) {
+        this.assignmentRepository = assignmentRepository;
+    }
+
+    @PostMapping("/import")
+    public ResponseEntity<AssignmentImportResponse> importAssignments(@Valid @RequestBody AssignmentImportRequest request) {
+        String studentName = request.name();
+        List<Assignment> savedList = request.assignments().stream().map(dto -> {
+            Assignment a = new Assignment();
+            a.setId(dto.id());
+            a.setName(studentName);
+            a.setTitle(dto.title());
+            a.setCourseId(dto.courseId());
+            if (dto.dueAt() != null && !dto.dueAt().isBlank()) {
+                try {
+                    a.setDueAt(Instant.parse(dto.dueAt()));
+                } catch (Exception ignored) {
+                    a.setDueAt(null);
+                }
+            }
+            a.setPointsPossible(dto.pointsPossible());
+            a.setHtmlUrl(dto.htmlUrl());
+            a.setDescriptionRaw(dto.descriptionRaw());
+            return assignmentRepository.save(a);
+        }).toList();
+
+        return ResponseEntity.ok(new AssignmentImportResponse(savedList.size(), savedList.size()));
+    }
+
+    @GetMapping("/{name}")
+    public ResponseEntity<List<AssignmentDto>> getAssignments(@PathVariable String name) {
+        List<AssignmentDto> list = assignmentRepository.findByNameOrderByDueAtAsc(name).stream()
+                .map(a -> new AssignmentDto(a))
+                .toList();
+        return ResponseEntity.ok(list);
+    }
+}
+
+
+========================================
+FILE: C:\Users\Andrew Park\OneDrive\Documents\GitHub\VTHack14\backend\src\main\java\com\vthacks\studyscheduler\controller\GlobalExceptionHandler.java
+========================================
+package com.vthacks.studyscheduler.controller;
+
+import jakarta.validation.ConstraintViolationException;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.HttpStatusCode;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.MethodArgumentNotValidException;
+import org.springframework.web.bind.annotation.ExceptionHandler;
+import org.springframework.web.bind.annotation.RestControllerAdvice;
+import org.springframework.web.server.ResponseStatusException;
+
+import java.time.Instant;
+import java.util.LinkedHashMap;
+import java.util.Map;
+import java.util.stream.Collectors;
+
+/**
+ * Boot's default error body doesn't reliably include a message, so we build our own
+ * consistent shape here: { timestamp, status, error, message, path }.
+ */
+@RestControllerAdvice
+public class GlobalExceptionHandler {
+
+    @ExceptionHandler(ResponseStatusException.class)
+    public ResponseEntity<Map<String, Object>> handleResponseStatus(ResponseStatusException ex) {
+        return build(HttpStatus.valueOf(ex.getStatusCode().value()), ex.getReason());
+    }
+
+    @ExceptionHandler(MethodArgumentNotValidException.class)
+    public ResponseEntity<Map<String, Object>> handleValidation(MethodArgumentNotValidException ex) {
+        String message = ex.getBindingResult().getFieldErrors().stream()
+                .map(fe -> fe.getField() + ": " + fe.getDefaultMessage())
+                .collect(Collectors.joining("; "));
+        return build(HttpStatus.BAD_REQUEST, message.isBlank() ? "Invalid request." : message);
+    }
+
+    @ExceptionHandler(ConstraintViolationException.class)
+    public ResponseEntity<Map<String, Object>> handleConstraintViolation(ConstraintViolationException ex) {
+        return build(HttpStatus.BAD_REQUEST, ex.getMessage());
+    }
+
+    private ResponseEntity<Map<String, Object>> build(HttpStatusCode status, String message) {
+        Map<String, Object> body = new LinkedHashMap<>();
+        body.put("timestamp", Instant.now().toString());
+        body.put("status", status.value());
+        body.put("error", HttpStatus.valueOf(status.value()).getReasonPhrase());
+        body.put("message", message);
+        return ResponseEntity.status(status).body(body);
+    }
+}
+
+
+
+========================================
+FILE: C:\Users\Andrew Park\OneDrive\Documents\GitHub\VTHack14\backend\src\main\java\com\vthacks\studyscheduler\controller\OnboardingController.java
+========================================
+package com.vthacks.studyscheduler.controller;
+
+import com.vthacks.studyscheduler.domain.PreferredStudyBlock;
+import com.vthacks.studyscheduler.domain.StudentProfile;
+import com.vthacks.studyscheduler.dto.OnboardingRequest;
+import com.vthacks.studyscheduler.dto.OnboardingResponse;
+import com.vthacks.studyscheduler.dto.StudyBlockRequest;
+import com.vthacks.studyscheduler.repository.StudentProfileRepository;
+import jakarta.validation.Valid;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.server.ResponseStatusException;
+
+import java.time.LocalTime;
+import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
+
+@RestController
+@RequestMapping("/api/onboarding")
+public class OnboardingController {
+
+    private final StudentProfileRepository repository;
+
+    public OnboardingController(StudentProfileRepository repository) {
+        this.repository = repository;
+    }
+
+    @PostMapping
+    public ResponseEntity<OnboardingResponse> submitOnboarding(@Valid @RequestBody OnboardingRequest request) {
+        StudentProfile profile = repository.findByName(request.name())
+                .orElseGet(StudentProfile::new);
+
+        profile.setName(request.name());
+        profile.setLearningPace(request.learningPace());
+        profile.setCurrentGpa(request.currentGpa());
+        profile.setTargetGpa(request.targetGpa());
+        profile.setPreferredStudyBlocks(toStudyBlocks(request.preferredStudyBlocks()));
+        profile.setDailyStudyHours(request.dailyStudyHours());
+
+        StudentProfile saved = repository.save(profile);
+
+        return ResponseEntity.ok(OnboardingResponse.from(saved));
+    }
+
+    @GetMapping("/{name}")
+    public ResponseEntity<OnboardingResponse> getOnboarding(@PathVariable String name) {
+        StudentProfile profile = repository.findByName(name)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "No onboarding profile found for " + name));
+
+        return ResponseEntity.ok(OnboardingResponse.from(profile));
+    }
+
+    private Set<PreferredStudyBlock> toStudyBlocks(List<StudyBlockRequest> requests) {
+        return requests.stream()
+                .map(r -> {
+                    LocalTime start = LocalTime.parse(r.startTime());
+                    LocalTime end = LocalTime.parse(r.endTime());
+                    if (!start.isBefore(end)) {
+                        throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
+                                "Study block start time must be before end time: " + r.dayOfWeek() + " "
+                                        + r.startTime() + "-" + r.endTime());
+                    }
+                    return new PreferredStudyBlock(r.dayOfWeek(), start, end);
+                })
+                .collect(Collectors.toSet());
+    }
+}
+
+
+
+========================================
+FILE: C:\Users\Andrew Park\OneDrive\Documents\GitHub\VTHack14\backend\src\main\java\com\vthacks\studyscheduler\controller\ScheduleController.java
+========================================
+package com.vthacks.studyscheduler.controller;
+
+import com.vthacks.studyscheduler.ai.AssignmentTimeEstimationService;
+import com.vthacks.studyscheduler.dto.WeeklyEstimateResponse;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
+
+@RestController
+@RequestMapping("/api/schedule")
+public class ScheduleController {
+
+    private final AssignmentTimeEstimationService estimationService;
+
+    public ScheduleController(AssignmentTimeEstimationService estimationService) {
+        this.estimationService = estimationService;
+    }
+
+    @GetMapping("/estimate/{name}")
+    public ResponseEntity<WeeklyEstimateResponse> estimateNextWeek(@PathVariable String name) {
+        return ResponseEntity.ok(estimationService.estimateNextWeek(name));
+    }
+}
+
+
+
+========================================
+FILE: C:\Users\Andrew Park\OneDrive\Documents\GitHub\VTHack14\backend\src\main\java\com\vthacks\studyscheduler\domain\Assignment.java
+========================================
+package com.vthacks.studyscheduler.domain;
+
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.Id;
+import jakarta.persistence.Lob;
+import jakarta.persistence.Table;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
+
+import java.time.Instant;
+
+/**
+ * A single Canvas assignment, scraped by the HokieTutor Chrome extension and
+ * synced up from the web app. Uses Canvas's own assignment id as the primary
+ * key so re-importing the same assignment updates it instead of duplicating it.
+ */
+@Entity
+@Table(name = "assignments")
+@Getter
+@Setter
+@NoArgsConstructor
+public class Assignment {
+
+    @Id
+    private Long id;
+
+    @Column(nullable = false)
+    private String name;
+
+    private String title;
+
+    private Long courseId;
+
+    private Instant dueAt;
+
+    private Double pointsPossible;
+
+    @Column(length = 1000)
+    private String htmlUrl;
+
+    @Lob
+    private String descriptionRaw;
+
+    /** The AI's most recent time estimate for this assignment, in hours. */
+    private Double estimatedHours;
+
+    /** How long this actually took, in hours -- logged by the student after finishing. */
+    private Double actualHours;
+}
+
+
+
+========================================
+FILE: C:\Users\Andrew Park\OneDrive\Documents\GitHub\VTHack14\backend\src\main\java\com\vthacks\studyscheduler\domain\LearningPace.java
+========================================
+package com.vthacks.studyscheduler.domain;
+
+public enum LearningPace {
+    VERY_FAST,
+    FAST,
+    AVERAGE,
+    SLOW,
+    VERY_SLOW
+}
+
+
+
+========================================
+FILE: C:\Users\Andrew Park\OneDrive\Documents\GitHub\VTHack14\backend\src\main\java\com\vthacks\studyscheduler\domain\PreferredStudyBlock.java
+========================================
+package com.vthacks.studyscheduler.domain;
+
+import jakarta.persistence.Embeddable;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
+import lombok.AllArgsConstructor;
+import lombok.EqualsAndHashCode;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
+
+import java.time.DayOfWeek;
+import java.time.LocalTime;
+
+/**
+ * A recurring weekly window (e.g. MONDAY 18:00-20:00) when the student prefers to study.
+ */
+@Embeddable
+@Getter
+@Setter
+@NoArgsConstructor
+@AllArgsConstructor
+@EqualsAndHashCode
+public class PreferredStudyBlock {
+
+    @Enumerated(EnumType.STRING)
+    private DayOfWeek dayOfWeek;
+
+    private LocalTime startTime;
+
+    private LocalTime endTime;
+}
+
+
+
+========================================
+FILE: C:\Users\Andrew Park\OneDrive\Documents\GitHub\VTHack14\backend\src\main\java\com\vthacks\studyscheduler\domain\StudentProfile.java
+========================================
+package com.vthacks.studyscheduler.domain;
+
+import jakarta.persistence.CollectionTable;
+import jakarta.persistence.Column;
+import jakarta.persistence.ElementCollection;
+import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
+import jakarta.persistence.FetchType;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.Table;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
+
+import java.util.HashSet;
+import java.util.Set;
+
+@Entity
+@Table(name = "student_profiles")
+@Getter
+@Setter
+@NoArgsConstructor
+public class StudentProfile {
+
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+
+    @Column(nullable = false, unique = true)
+    private String name;
+
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    private LearningPace learningPace;
+
+    private Double currentGpa;
+
+    private Double targetGpa;
+
+    @ElementCollection(fetch = FetchType.EAGER)
+    @CollectionTable(name = "student_preferred_study_blocks", joinColumns = @JoinColumn(name = "student_profile_id"))
+    private Set<PreferredStudyBlock> preferredStudyBlocks = new HashSet<>();
+
+    @Column(nullable = false)
+    private Double dailyStudyHours;
+}
+
+
+
+========================================
+FILE: C:\Users\Andrew Park\OneDrive\Documents\GitHub\VTHack14\backend\src\main\java\com\vthacks\studyscheduler\dto\ActualHoursRequest.java
+========================================
+package com.vthacks.studyscheduler.dto;
+
+import jakarta.validation.constraints.DecimalMin;
+import jakarta.validation.constraints.NotNull;
+
+public record ActualHoursRequest(
+        @NotNull @DecimalMin("0.0") Double actualHours
+) {
+}
+
+
+
+========================================
+FILE: C:\Users\Andrew Park\OneDrive\Documents\GitHub\VTHack14\backend\src\main\java\com\vthacks\studyscheduler\dto\AssignmentDto.java
+========================================
+package com.vthacks.studyscheduler.dto;
+
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.fasterxml.jackson.annotation.JsonProperty;
+import com.vthacks.studyscheduler.domain.Assignment;
+import jakarta.validation.constraints.NotNull;
+
+/**
+ * Mirrors the exact shape the HokieTutor Chrome extension scrapes off Canvas:
+ * id, title, course_id, due_at, points_possible, html_url, description_raw.
+ */
+@JsonIgnoreProperties(ignoreUnknown = true)
+public record AssignmentDto(
+        @NotNull Long id,
+        String title,
+        @JsonProperty("course_id") Long courseId,
+        @JsonProperty("due_at") String dueAt,
+        @JsonProperty("points_possible") Double pointsPossible,
+        @JsonProperty("html_url") String htmlUrl,
+        @JsonProperty("description_raw") String descriptionRaw
+) {
+    public static AssignmentDto from(Assignment a) {
+        return new AssignmentDto(
+                a.getId(),
+                a.getTitle(),
+                a.getCourseId(),
+                a.getDueAt() != null ? a.getDueAt().toString() : null,
+                a.getPointsPossible(),
+                a.getHtmlUrl(),
+                a.getDescriptionRaw());
+    }
+}
+
+
+
+========================================
+FILE: C:\Users\Andrew Park\OneDrive\Documents\GitHub\VTHack14\backend\src\main\java\com\vthacks\studyscheduler\dto\AssignmentEstimate.java
+========================================
+package com.vthacks.studyscheduler.dto;
+
+public record AssignmentEstimate(
+        Long assignmentId,
+        String title,
+        Long courseId,
+        String dueAt,
+        double estimatedHours
+) {
+}
+
+
+
+========================================
+FILE: C:\Users\Andrew Park\OneDrive\Documents\GitHub\VTHack14\backend\src\main\java\com\vthacks\studyscheduler\dto\AssignmentImportRequest.java
+========================================
+package com.vthacks.studyscheduler.dto;
+
+import jakarta.validation.Valid;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotEmpty;
+
+import java.util.List;
+
+public record AssignmentImportRequest(
+        @NotBlank String name,
+        @NotEmpty @Valid List<AssignmentDto> assignments
+) {
+}
+
+
+
+========================================
+FILE: C:\Users\Andrew Park\OneDrive\Documents\GitHub\VTHack14\backend\src\main\java\com\vthacks\studyscheduler\dto\AssignmentImportResponse.java
+========================================
+package com.vthacks.studyscheduler.dto;
+
+public record AssignmentImportResponse(
+        int importedCount,
+        int courseCount
+) {
+}
+
+
+
+========================================
+FILE: C:\Users\Andrew Park\OneDrive\Documents\GitHub\VTHack14\backend\src\main\java\com\vthacks\studyscheduler\dto\OnboardingRequest.java
+========================================
+package com.vthacks.studyscheduler.dto;
+
+import com.vthacks.studyscheduler.domain.LearningPace;
+import jakarta.validation.Valid;
+import jakarta.validation.constraints.DecimalMax;
+import jakarta.validation.constraints.DecimalMin;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotEmpty;
+import jakarta.validation.constraints.NotNull;
+
+import java.util.List;
+
+public record OnboardingRequest(
+        @NotBlank String name,
+        @NotNull LearningPace learningPace,
+        @DecimalMin("0.0") @DecimalMax("4.0") Double currentGpa,
+        @DecimalMin("0.0") @DecimalMax("4.0") Double targetGpa,
+        @NotEmpty @Valid List<StudyBlockRequest> preferredStudyBlocks,
+        @NotNull @DecimalMin("0.0") @DecimalMax("24.0") Double dailyStudyHours
+) {
+}
+
+
+
+========================================
+FILE: C:\Users\Andrew Park\OneDrive\Documents\GitHub\VTHack14\backend\src\main\java\com\vthacks\studyscheduler\dto\OnboardingResponse.java
+========================================
+package com.vthacks.studyscheduler.dto;
+
+import com.vthacks.studyscheduler.domain.LearningPace;
+import com.vthacks.studyscheduler.domain.StudentProfile;
+
+import java.util.Comparator;
+import java.util.List;
+
+public record OnboardingResponse(
+        Long id,
+        String name,
+        LearningPace learningPace,
+        Double currentGpa,
+        Double targetGpa,
+        List<StudyBlockResponse> preferredStudyBlocks,
+        Double dailyStudyHours
+) {
+    public static OnboardingResponse from(StudentProfile profile) {
+        List<StudyBlockResponse> blocks = profile.getPreferredStudyBlocks().stream()
+                .map(StudyBlockResponse::from)
+                .sorted(Comparator.comparing(StudyBlockResponse::dayOfWeek)
+                        .thenComparing(StudyBlockResponse::startTime))
+                .toList();
+
+        return new OnboardingResponse(
+                profile.getId(),
+                profile.getName(),
+                profile.getLearningPace(),
+                profile.getCurrentGpa(),
+                profile.getTargetGpa(),
+                blocks,
+                profile.getDailyStudyHours()
+        );
+    }
+}
+
+
+
+========================================
+FILE: C:\Users\Andrew Park\OneDrive\Documents\GitHub\VTHack14\backend\src\main\java\com\vthacks\studyscheduler\dto\StudyBlockRequest.java
+========================================
+package com.vthacks.studyscheduler.dto;
+
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Pattern;
+
+import java.time.DayOfWeek;
+
+public record StudyBlockRequest(
+        @NotNull DayOfWeek dayOfWeek,
+        @Pattern(regexp = "^([01]\\d|2[0-3]):[0-5]\\d$", message = "must be a time in HH:mm format")
+        String startTime,
+        @Pattern(regexp = "^([01]\\d|2[0-3]):[0-5]\\d$", message = "must be a time in HH:mm format")
+        String endTime
+) {
+}
+
+
+
+========================================
+FILE: C:\Users\Andrew Park\OneDrive\Documents\GitHub\VTHack14\backend\src\main\java\com\vthacks\studyscheduler\dto\StudyBlockResponse.java
+========================================
+package com.vthacks.studyscheduler.dto;
+
+import com.vthacks.studyscheduler.domain.PreferredStudyBlock;
+
+import java.time.DayOfWeek;
+
+public record StudyBlockResponse(
+        DayOfWeek dayOfWeek,
+        String startTime,
+        String endTime
+) {
+    public static StudyBlockResponse from(PreferredStudyBlock block) {
+        return new StudyBlockResponse(
+                block.getDayOfWeek(),
+                block.getStartTime().toString(),
+                block.getEndTime().toString());
+    }
+}
+
+
+
+========================================
+FILE: C:\Users\Andrew Park\OneDrive\Documents\GitHub\VTHack14\backend\src\main\java\com\vthacks\studyscheduler\dto\WeeklyEstimateResponse.java
+========================================
+package com.vthacks.studyscheduler.dto;
+
+import java.util.List;
+
+public record WeeklyEstimateResponse(
+        List<AssignmentEstimate> assignments,
+        double totalHours
+) {
+}
+
+
+
+========================================
+FILE: C:\Users\Andrew Park\OneDrive\Documents\GitHub\VTHack14\backend\src\main\java\com\vthacks\studyscheduler\repository\AssignmentRepository.java
+========================================
+package com.vthacks.studyscheduler.repository;
+
+import com.vthacks.studyscheduler.domain.Assignment;
+import org.springframework.data.jpa.repository.JpaRepository;
+
+import java.util.List;
+
+public interface AssignmentRepository extends JpaRepository<Assignment, Long> {
+
+    List<Assignment> findByNameOrderByDueAtAsc(String name);
+
+    List<Assignment> findByNameAndActualHoursIsNotNullOrderByDueAtDesc(String name);
+}
+
+
+
+========================================
+FILE: C:\Users\Andrew Park\OneDrive\Documents\GitHub\VTHack14\backend\src\main\java\com\vthacks\studyscheduler\repository\StudentProfileRepository.java
+========================================
+package com.vthacks.studyscheduler.repository;
+
+import com.vthacks.studyscheduler.domain.StudentProfile;
+import org.springframework.data.jpa.repository.JpaRepository;
+
+import java.util.Optional;
+
+public interface StudentProfileRepository extends JpaRepository<StudentProfile, Long> {
+
+    Optional<StudentProfile> findByName(String name);
+}
+
+
+
+========================================
+FILE: C:\Users\Andrew Park\OneDrive\Documents\GitHub\VTHack14\backend\src\main\java\com\vthacks\studyscheduler\StudyschedulerApplication.java
+========================================
+package com.vthacks.studyscheduler;
+
+import org.springframework.boot.SpringApplication;
+import org.springframework.boot.autoconfigure.SpringBootApplication;
+
+import java.util.Locale;
+
+@SpringBootApplication
+public class StudyschedulerApplication {
+
+	public static void main(String[] args) {
+		// Force English everywhere (e.g. Bean Validation default messages),
+		// regardless of the host machine's OS locale.
+		Locale.setDefault(Locale.ENGLISH);
+		SpringApplication.run(StudyschedulerApplication.class, args);
+	}
+
+}
+
+
+
+========================================
+FILE: C:\Users\Andrew Park\OneDrive\Documents\GitHub\VTHack14\backend\src\main\resources\static\index.html
+========================================
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>StudySmart Onboarding</title>
+<style>
+  body { font-family: system-ui, sans-serif; max-width: 480px; margin: 40px auto; padding: 0 16px; color: #222; }
+  h1 { font-size: 22px; }
+  label { display: block; margin-top: 16px; font-weight: 600; font-size: 14px; }
+  input, select, textarea { width: 100%; padding: 8px; margin-top: 4px; box-sizing: border-box; font-size: 14px; font-family: inherit; }
+  .checkbox-row { display: flex; gap: 12px; margin-top: 6px; }
+  .checkbox-row label { display: flex; align-items: center; gap: 4px; font-weight: 400; margin-top: 0; }
+  .checkbox-row input { width: auto; margin-top: 0; }
+  button { margin-top: 24px; padding: 10px 16px; font-size: 15px; cursor: pointer; }
+  pre { background: #f4f4f4; padding: 12px; border-radius: 6px; white-space: pre-wrap; word-break: break-all; }
+  #result-title { margin-top: 24px; }
+  .help { font-size: 13px; color: #666; margin-top: 4px; line-height: 1.5; }
+  .badge { display: inline-block; padding: 2px 8px; border-radius: 12px; font-size: 12px; margin-left: 8px; }
+  .badge.ok { background: #dcfce7; color: #166534; }
+  .badge.no { background: #fee2e2; color: #991b1b; }
+  .block-row { display: flex; gap: 8px; align-items: center; margin-top: 6px; }
+  .block-row select, .block-row input { width: auto; margin-top: 0; }
+  .block-row button { margin-top: 0; padding: 8px 12px; font-size: 14px; }
+  #block-list { list-style: none; padding: 0; margin: 10px 0 0; }
+  #block-list li { display: flex; justify-content: space-between; align-items: center; background: #f4f4f4; padding: 6px 10px; border-radius: 6px; margin-bottom: 6px; font-size: 14px; }
+  #block-list button { margin-top: 0; padding: 2px 8px; font-size: 12px; background: #fee2e2; border: none; border-radius: 4px; cursor: pointer; }
+  #estimate-list li { background: #f4f4f4; padding: 10px 14px; border-radius: 6px; margin-bottom: 8px; font-size: 14px; }
+  #estimate-list .est-title { font-weight: 600; }
+  #estimate-list .est-meta { font-size: 12px; color: #666; margin-top: 2px; }
+  #estimate-total { font-size: 16px; margin-top: 16px; }
+  #ics-upload-result ul { list-style: none; padding: 0; }
+  #ics-upload-result li { background: #f4f4f4; padding: 8px 12px; border-radius: 6px; margin-bottom: 6px; font-size: 14px; }
+</style>
+</head>
+<body>
+
+  <div id="step-canvas">
+    <h1>Canvas Connection <span id="canvas-badge"></span></h1>
+    <p class="help">
+      Paste the assignment list copied from the HokieTutor Chrome extension below.
+      Courses are figured out automatically from whatever <code>course_id</code>s show up --
+      no Canvas login or token needed.
+    </p>
+    <form id="canvas-form">
+      <label>Name
+        <input type="text" id="name" placeholder="Your name" required>
+      </label>
+
+      <label>Assignment JSON (from the extension)
+        <textarea id="assignmentJson" rows="10" placeholder='[{"id": 123, "title": "...", "course_id": 234299, "due_at": "2026-09-21T18:30:00Z", "points_possible": 100, "html_url": "...", "description_raw": "..."}]' required></textarea>
+      </label>
+
+      <button type="submit">Next</button>
+    </form>
+
+    <div id="canvas-result-title" style="display:none;"><strong>Server Response</strong></div>
+    <pre id="canvas-result"></pre>
+  </div>
+
+  <div id="step-onboarding" style="display:none;">
+    <h1>Onboarding: My Study Profile</h1>
+    <form id="onboarding-form">
+      <label>Learning Pace (self-assessed)
+        <select id="learningPace">
+          <option value="VERY_FAST">Very fast</option>
+          <option value="FAST">Fast</option>
+          <option value="AVERAGE" selected>Average</option>
+          <option value="SLOW">Slow</option>
+          <option value="VERY_SLOW">Very slow</option>
+        </select>
+      </label>
+
+      <label>Current GPA (0.0 - 4.0)
+        <input type="number" id="currentGpa" step="0.01" min="0" max="4" value="3.2">
+      </label>
+
+      <label>Target GPA (0.0 - 4.0)
+        <input type="number" id="targetGpa" step="0.01" min="0" max="4" value="3.6">
+      </label>
+
+      <label>Preferred Study Time Blocks
+        <div class="block-row">
+          <select id="blockDay">
+            <option value="MONDAY">Mon</option>
+            <option value="TUESDAY">Tue</option>
+            <option value="WEDNESDAY" selected>Wed</option>
+            <option value="THURSDAY">Thu</option>
+            <option value="FRIDAY">Fri</option>
+            <option value="SATURDAY">Sat</option>
+            <option value="SUNDAY">Sun</option>
+          </select>
+          <input type="time" id="blockStart" value="18:00">
+          <span>to</span>
+          <input type="time" id="blockEnd" value="20:00">
+          <button type="button" id="addBlockBtn">+ Add</button>
+        </div>
+      </label>
+      <ul id="block-list"></ul>
+
+      <label>Daily Study Hours Available
+        <input type="number" id="dailyStudyHours" step="0.5" min="0" max="24" value="2.5">
+      </label>
+
+      <button type="submit">Next</button>
+    </form>
+
+    <div id="result-title" style="display:none;"><strong>Server Response</strong></div>
+    <pre id="result"></pre>
+  </div>
+
+  <div id="step-done" style="display:none;">
+    <h1>This Week's Assignments</h1>
+    <p class="help">
+      Estimated hours for everything due in the next 7 days, personalized to your
+      learning pace, GPA goals, and (once you have some) your actual-vs-estimated history.
+    </p>
+    <div id="estimate-loading" class="help">Loading estimates...</div>
+    <p id="estimate-total" style="display:none; font-weight:600;"></p>
+    <ul id="estimate-list" style="list-style:none; padding:0;"></ul>
+
+    <button type="button" id="btn-to-calendar">Next</button>
+  </div>
+
+  <div id="step-calendar" style="display:none;">
+    <h1>Google Calendar</h1>
+
+    <p class="help">
+      Download this week's assignments as a calendar file you can import into Google Calendar
+      (Google Calendar &rarr; Settings &rarr; Import &amp; export &rarr; Import).
+    </p>
+    <button type="button" id="btn-download-ics">Download This Week (.ics)</button>
+
+    <p class="help" style="margin-top:32px;">
+      Or upload a calendar file exported from Google Calendar (Settings &rarr; Import &amp; export
+      &rarr; Export) so we know when you're already busy.
+    </p>
+    <label>Calendar file (.ics)
+      <input type="file" id="ics-upload-input" accept=".ics,text/calendar">
+    </label>
+    <div id="ics-upload-result" style="margin-top:16px;"></div>
+  </div>
+
+  <script>
+    const stepCanvas = document.getElementById('step-canvas');
+    const stepOnboarding = document.getElementById('step-onboarding');
+    const stepDone = document.getElementById('step-done');
+    const stepCalendar = document.getElementById('step-calendar');
+
+    let lastWeeklyEstimate = null;
+
+    const form = document.getElementById('onboarding-form');
+    const resultEl = document.getElementById('result');
+    const resultTitle = document.getElementById('result-title');
+
+    const DAY_LABELS = {
+      MONDAY: 'Mon', TUESDAY: 'Tue', WEDNESDAY: 'Wed', THURSDAY: 'Thu',
+      FRIDAY: 'Fri', SATURDAY: 'Sat', SUNDAY: 'Sun'
+    };
+
+    let studyBlocks = [
+      { dayOfWeek: 'MONDAY', startTime: '18:00', endTime: '20:00' },
+      { dayOfWeek: 'WEDNESDAY', startTime: '18:00', endTime: '20:00' }
+    ];
+
+    const blockListEl = document.getElementById('block-list');
+
+    function renderBlocks() {
+      blockListEl.innerHTML = '';
+      studyBlocks.forEach((block, index) => {
+        const li = document.createElement('li');
+        li.innerHTML = `<span>${DAY_LABELS[block.dayOfWeek]} ${block.startTime}-${block.endTime}</span>`;
+        const removeBtn = document.createElement('button');
+        removeBtn.type = 'button';
+        removeBtn.textContent = 'Remove';
+        removeBtn.addEventListener('click', () => {
+          studyBlocks.splice(index, 1);
+          renderBlocks();
+        });
+        li.appendChild(removeBtn);
+        blockListEl.appendChild(li);
+      });
+    }
+    renderBlocks();
+
+    document.getElementById('addBlockBtn').addEventListener('click', () => {
+      const dayOfWeek = document.getElementById('blockDay').value;
+      const startTime = document.getElementById('blockStart').value;
+      const endTime = document.getElementById('blockEnd').value;
+
+      if (!startTime || !endTime) {
+        alert('Please pick both a start and end time.');
+        return;
+      }
+      if (startTime >= endTime) {
+        alert('Start time must be before end time.');
+        return;
+      }
+
+      studyBlocks.push({ dayOfWeek, startTime, endTime });
+      renderBlocks();
+    });
+
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+
+      if (studyBlocks.length === 0) {
+        alert('Add at least one preferred study time block.');
+        return;
+      }
+
+      const payload = {
+        name: document.getElementById('name').value,
+        learningPace: document.getElementById('learningPace').value,
+        currentGpa: parseFloat(document.getElementById('currentGpa').value),
+        targetGpa: parseFloat(document.getElementById('targetGpa').value),
+        preferredStudyBlocks: studyBlocks,
+        dailyStudyHours: parseFloat(document.getElementById('dailyStudyHours').value)
+      };
+
+      resultTitle.style.display = 'block';
+      resultEl.textContent = 'Submitting...';
+
+      try {
+        const res = await fetch('/api/onboarding', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload)
+        });
+        const body = await res.json();
+        resultEl.textContent = `HTTP ${res.status}\n` + JSON.stringify(body, null, 2);
+
+        if (res.ok) {
+          stepOnboarding.style.display = 'none';
+          stepDone.style.display = 'block';
+          loadWeeklyEstimate(payload.name);
+        }
+      } catch (err) {
+        resultEl.textContent = 'Request failed: ' + err;
+      }
+    });
+
+    async function loadWeeklyEstimate(name) {
+      const loadingEl = document.getElementById('estimate-loading');
+      const totalEl = document.getElementById('estimate-total');
+      const listEl = document.getElementById('estimate-list');
+
+      loadingEl.style.display = 'block';
+      loadingEl.textContent = 'Calculating estimates...';
+      totalEl.style.display = 'none';
+      listEl.innerHTML = '';
+
+      try {
+        const res = await fetch(`/api/schedule/estimate/${encodeURIComponent(name)}`);
+        const body = await res.json();
+
+        if (!res.ok) {
+          loadingEl.textContent = `Couldn't load estimates: ${body.message || res.status}`;
+          return;
+        }
+
+        loadingEl.style.display = 'none';
+        lastWeeklyEstimate = body;
+
+        if (body.assignments.length === 0) {
+          listEl.innerHTML = '<li>Nothing due in the next 7 days. Nice.</li>';
+          return;
+        }
+
+        totalEl.style.display = 'block';
+        totalEl.textContent = `Estimated total: ${body.totalHours.toFixed(1)} hours this week`;
+
+        body.assignments.forEach(a => {
+          const li = document.createElement('li');
+          const due = new Date(a.dueAt);
+          li.innerHTML = `
+            <div class="est-title">${a.title}</div>
+            <div class="est-meta">Due ${due.toLocaleString()} &middot; ~${a.estimatedHours.toFixed(1)}h estimated</div>
+          `;
+          listEl.appendChild(li);
+        });
+      } catch (err) {
+        loadingEl.textContent = 'Request failed: ' + err;
+      }
+    }
+
+    document.getElementById('btn-to-calendar').addEventListener('click', () => {
+      stepDone.style.display = 'none';
+      stepCalendar.style.display = 'block';
+    });
+
+    document.getElementById('btn-download-ics').addEventListener('click', () => {
+      const assignments = lastWeeklyEstimate ? lastWeeklyEstimate.assignments : [];
+
+      if (assignments.length === 0) {
+        alert('No assignments to export.');
+        return;
+      }
+
+      const pad = n => String(n).padStart(2, '0');
+      const toIcsDate = iso => {
+        const d = new Date(iso);
+        return `${d.getUTCFullYear()}${pad(d.getUTCMonth() + 1)}${pad(d.getUTCDate())}T${pad(d.getUTCHours())}${pad(d.getUTCMinutes())}${pad(d.getUTCSeconds())}Z`;
+      };
+      const now = toIcsDate(new Date().toISOString());
+
+      const lines = ['BEGIN:VCALENDAR', 'VERSION:2.0', 'PRODID:-//HokieTutor//Study Schedule//EN'];
+      assignments.forEach(a => {
+        lines.push(
+          'BEGIN:VEVENT',
+          `UID:hokietutor-${a.assignmentId}@vt.edu`,
+          `DTSTAMP:${now}`,
+          `DTSTART:${toIcsDate(a.dueAt)}`,
+          `DTEND:${toIcsDate(a.dueAt)}`,
+          `SUMMARY:${a.title}`,
+          `DESCRIPTION:Estimated ${a.estimatedHours.toFixed(1)}h to complete`,
+          'END:VEVENT'
+        );
+      });
+      lines.push('END:VCALENDAR');
+
+      const blob = new Blob([lines.join('\r\n')], { type: 'text/calendar;charset=utf-8' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = 'HokieTutor_ThisWeek.ics';
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+    });
+
+    document.getElementById('ics-upload-input').addEventListener('change', (e) => {
+      const file = e.target.files[0];
+      const resultEl = document.getElementById('ics-upload-result');
+      if (!file) return;
+
+      resultEl.textContent = 'Reading file...';
+
+      const reader = new FileReader();
+      reader.onload = (evt) => {
+        const events = parseIcs(evt.target.result);
+
+        if (events.length === 0) {
+          resultEl.textContent = 'No events found in that file.';
+          return;
+        }
+
+        const list = document.createElement('ul');
+        events.forEach(ev => {
+          const li = document.createElement('li');
+          li.textContent = `${ev.summary} ??${ev.start}${ev.end ? ' to ' + ev.end : ''}`;
+          list.appendChild(li);
+        });
+
+        resultEl.innerHTML = `<p><strong>${events.length} event(s) found:</strong></p>`;
+        resultEl.appendChild(list);
+      };
+      reader.onerror = () => {
+        resultEl.textContent = 'Could not read that file.';
+      };
+      reader.readAsText(file);
+    });
+
+    /**
+     * Minimal RFC 5545 (.ics) parser: pulls SUMMARY/DTSTART/DTEND out of each VEVENT block.
+     * Good enough for a Google Calendar export -- not a full spec implementation
+     * (doesn't handle recurrence rules, timezone blocks, or line folding edge cases).
+     */
+    function parseIcs(text) {
+      const events = [];
+      const veventBlocks = text.split('BEGIN:VEVENT').slice(1);
+
+      veventBlocks.forEach(block => {
+        const summaryMatch = block.match(/SUMMARY:(.*)/);
+        const startMatch = block.match(/DTSTART[^:]*:(\S+)/);
+        const endMatch = block.match(/DTEND[^:]*:(\S+)/);
+
+        if (summaryMatch && startMatch) {
+          events.push({
+            summary: summaryMatch[1].trim(),
+            start: formatIcsDate(startMatch[1].trim()),
+            end: endMatch ? formatIcsDate(endMatch[1].trim()) : null
+          });
+        }
+      });
+
+      return events;
+    }
+
+    function formatIcsDate(raw) {
+      const match = raw.match(/^(\d{4})(\d{2})(\d{2})T(\d{2})(\d{2})(\d{2})/);
+      if (!match) return raw;
+      const [, y, mo, d, h, mi] = match;
+      return new Date(`${y}-${mo}-${d}T${h}:${mi}:00`).toLocaleString();
+    }
+
+    const canvasForm = document.getElementById('canvas-form');
+    const canvasResultEl = document.getElementById('canvas-result');
+    const canvasResultTitle = document.getElementById('canvas-result-title');
+    const canvasBadge = document.getElementById('canvas-badge');
+
+    canvasForm.addEventListener('submit', async (e) => {
+      e.preventDefault();
+
+      const name = document.getElementById('name').value;
+      const rawJson = document.getElementById('assignmentJson').value;
+
+      let assignments;
+      try {
+        const data = JSON.parse(rawJson);
+        assignments = Array.isArray(data) ? data : (Array.isArray(data.assignments) ? data.assignments : null);
+        if (!assignments) throw new Error('Expected a JSON array of assignments.');
+      } catch (err) {
+        alert('Could not parse that JSON: ' + err.message);
+        return;
+      }
+
+      const payload = { name, assignments };
+
+      canvasResultTitle.style.display = 'block';
+      canvasResultEl.textContent = 'Syncing assignments...';
+
+      try {
+        const res = await fetch('/api/assignments/import', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload)
+        });
+        const body = await res.json();
+        canvasResultEl.textContent = `HTTP ${res.status}\n` + JSON.stringify(body, null, 2);
+
+        if (res.ok) {
+          canvasBadge.textContent = `Synced ${body.importedCount} assignment(s), ${body.courseCount} course(s)`;
+          canvasBadge.className = 'badge ok';
+          stepCanvas.style.display = 'none';
+          stepOnboarding.style.display = 'block';
+        } else {
+          canvasBadge.textContent = 'Sync failed';
+          canvasBadge.className = 'badge no';
+        }
+      } catch (err) {
+        canvasResultEl.textContent = 'Request failed: ' + err;
+        canvasBadge.textContent = 'Sync failed';
+        canvasBadge.className = 'badge no';
+      }
+    });
+  </script>
+</body>
+</html>
+
+
+
+========================================
+FILE: C:\Users\Andrew Park\OneDrive\Documents\GitHub\VTHack14\backend\src\main\resources\application.properties
+========================================
+spring.application.name=studyscheduler
+
+spring.datasource.url=jdbc:h2:file:./data/studyscheduler;AUTO_SERVER=TRUE
+spring.datasource.driver-class-name=org.h2.Driver
+spring.datasource.username=sa
+spring.datasource.password=
+
+spring.jpa.hibernate.ddl-auto=update
+spring.jpa.show-sql=true
+spring.jpa.properties.hibernate.format_sql=true
+
+spring.h2.console.enabled=true
+spring.h2.console.path=/h2-console
+
+server.port=8080
+server.error.include-message=always
+server.error.include-binding-errors=always
+
+
+
+========================================
+FILE: C:\Users\Andrew Park\OneDrive\Documents\GitHub\VTHack14\backend\src\test\java\com\vthacks\studyscheduler\StudyschedulerApplicationTests.java
+========================================
+package com.vthacks.studyscheduler;
+
+import org.junit.jupiter.api.Test;
+import org.springframework.boot.test.context.SpringBootTest;
+
+@SpringBootTest
+class StudyschedulerApplicationTests {
+
+	@Test
+	void contextLoads() {
+	}
+
+}
+
+
+
+========================================
+FILE: C:\Users\Andrew Park\OneDrive\Documents\GitHub\VTHack14\backend\pom.xml
+========================================
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+	<modelVersion>4.0.0</modelVersion>
+	<parent>
+		<groupId>org.springframework.boot</groupId>
+		<artifactId>spring-boot-starter-parent</artifactId>
+		<version>3.2.3</version>
+		<relativePath/>
+	</parent>
+	<groupId>com.vthacks</groupId>
+	<artifactId>studyscheduler</artifactId>
+	<version>0.0.1-SNAPSHOT</version>
+	<name>studyscheduler</name>
+	<description>AI Academic Study Scheduler</description>
+
+	<properties>
+		<java.version>17</java.version>
+	</properties>
+
+	<dependencies>
+		<!-- Web MVC -->
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-web</artifactId>
+		</dependency>
+
+		<!-- JPA & H2 In-Memory DB -->
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-data-jpa</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>com.h2database</groupId>
+			<artifactId>h2</artifactId>
+			<scope>runtime</scope>
+		</dependency>
+
+		<!-- Validation -->
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-validation</artifactId>
+		</dependency>
+
+		<!-- Lombok -->
+		<dependency>
+			<groupId>org.projectlombok</groupId>
+			<artifactId>lombok</artifactId>
+			<optional>true</optional>
+		</dependency>
+
+		<!-- Testing -->
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-test</artifactId>
+			<scope>test</scope>
+		</dependency>
+	</dependencies>
+
+	<build>
+		<plugins>
+			<plugin>
+				<groupId>org.springframework.boot</groupId>
+				<artifactId>spring-boot-maven-plugin</artifactId>
+				<configuration>
+					<excludes>
+						<exclude>
+							<groupId>org.projectlombok</groupId>
+							<artifactId>lombok</artifactId>
+						</exclude>
+					</excludes>
+				</configuration>
+			</plugin>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-compiler-plugin</artifactId>
+				<version>3.11.0</version>
+				<configuration>
+					<source>17</source>
+					<target>17</target>
+					<annotationProcessorPaths>
+						<path>
+							<groupId>org.projectlombok</groupId>
+							<artifactId>lombok</artifactId>
+							<version>${lombok.version}</version>
+						</path>
+					</annotationProcessorPaths>
+				</configuration>
+			</plugin>
+		</plugins>
+	</build>
+</project>
+
+

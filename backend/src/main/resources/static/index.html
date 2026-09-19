@@ -147,6 +147,7 @@
     const stepCalendar = document.getElementById('step-calendar');
 
     let lastWeeklyEstimate = null;
+    let uploadedBusyEvents = []; // { start: Date, end: Date } -- from one-off events in an uploaded .ics
 
     const form = document.getElementById('onboarding-form');
     const resultEl = document.getElementById('result');
@@ -288,6 +289,106 @@
       stepCalendar.style.display = 'block';
     });
 
+    const DAY_TO_INDEX = {
+      SUNDAY: 0, MONDAY: 1, TUESDAY: 2, WEDNESDAY: 3, THURSDAY: 4, FRIDAY: 5, SATURDAY: 6
+    };
+
+    /**
+     * Expands the student's recurring preferred study blocks into concrete
+     * (start, end) Date pairs from now until `untilDate`.
+     */
+    function getBlockOccurrencesUntil(blocks, untilDate) {
+      const occurrences = [];
+      const now = new Date();
+      const cursor = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+
+      while (cursor <= untilDate) {
+        const dayIndex = cursor.getDay();
+        blocks.forEach(b => {
+          if (DAY_TO_INDEX[b.dayOfWeek] !== dayIndex) return;
+          const [sh, sm] = b.startTime.split(':').map(Number);
+          const [eh, em] = b.endTime.split(':').map(Number);
+          const start = new Date(cursor.getFullYear(), cursor.getMonth(), cursor.getDate(), sh, sm, 0);
+          const end = new Date(cursor.getFullYear(), cursor.getMonth(), cursor.getDate(), eh, em, 0);
+          if (start > now && start < untilDate) {
+            occurrences.push({ start, end });
+          }
+        });
+        cursor.setDate(cursor.getDate() + 1);
+      }
+
+      occurrences.sort((a, b) => a.start - b.start);
+      return occurrences;
+    }
+
+    function overlapsBusyEvent(start, end) {
+      return uploadedBusyEvents.some(ev => start < ev.end && end > ev.start);
+    }
+
+    /**
+     * Turns (assignment + estimated hours) pairs into actual calendar sessions,
+     * placed in the student's preferred study blocks before each due date --
+     * most urgent assignment gets first pick of slots. A big assignment that needs
+     * more hours than one block provides gets split across multiple block
+     * occurrences ("session 1/3", "session 2/3", ...). Slots that overlap an
+     * uploaded one-off busy event are skipped; recurring uploaded events aren't
+     * checked (we only describe their pattern, we don't expand every occurrence).
+     */
+    function scheduleStudySessions(assignments, blocks) {
+      const sorted = [...assignments].sort((a, b) => new Date(a.dueAt) - new Date(b.dueAt));
+      if (sorted.length === 0 || !blocks || blocks.length === 0) {
+        return { sessions: [], shortfalls: sorted.map(a => ({ title: a.title, remaining: a.estimatedHours })) };
+      }
+
+      const maxDue = sorted.reduce((m, a) => {
+        const d = new Date(a.dueAt);
+        return d > m ? d : m;
+      }, new Date(0));
+
+      const occurrences = getBlockOccurrencesUntil(blocks, maxDue);
+      const usedKeys = new Set();
+      const sessions = [];
+      const shortfalls = [];
+
+      sorted.forEach(a => {
+        const dueDate = new Date(a.dueAt);
+        let remaining = a.estimatedHours;
+        const mySessions = [];
+
+        for (const occ of occurrences) {
+          if (remaining <= 0.05) break;
+          const key = occ.start.toISOString();
+          if (usedKeys.has(key)) continue;
+          if (occ.start >= dueDate) continue;
+          if (overlapsBusyEvent(occ.start, occ.end)) continue;
+
+          const blockHours = (occ.end - occ.start) / 3600000;
+          const sessionHours = Math.min(remaining, blockHours);
+          const sessionEnd = new Date(occ.start.getTime() + sessionHours * 3600000);
+
+          mySessions.push({ start: occ.start, end: sessionEnd, hours: sessionHours });
+          usedKeys.add(key);
+          remaining -= sessionHours;
+        }
+
+        mySessions.forEach((s, idx) => {
+          sessions.push({
+            assignmentId: a.assignmentId,
+            title: mySessions.length > 1 ? `${a.title} (session ${idx + 1}/${mySessions.length})` : a.title,
+            start: s.start,
+            end: s.end,
+            hours: s.hours
+          });
+        });
+
+        if (remaining > 0.05) {
+          shortfalls.push({ title: a.title, remaining });
+        }
+      });
+
+      return { sessions, shortfalls };
+    }
+
     document.getElementById('btn-download-ics').addEventListener('click', () => {
       const assignments = lastWeeklyEstimate ? lastWeeklyEstimate.assignments : [];
 
@@ -296,23 +397,36 @@
         return;
       }
 
+      const { sessions, shortfalls } = scheduleStudySessions(assignments, studyBlocks);
+
+      if (sessions.length === 0) {
+        alert("Couldn't fit any study sessions into your preferred study blocks before these due dates. Try adding more study blocks in the onboarding step.");
+        return;
+      }
+
       const pad = n => String(n).padStart(2, '0');
-      const toIcsDate = iso => {
-        const d = new Date(iso);
-        return `${d.getUTCFullYear()}${pad(d.getUTCMonth() + 1)}${pad(d.getUTCDate())}T${pad(d.getUTCHours())}${pad(d.getUTCMinutes())}${pad(d.getUTCSeconds())}Z`;
-      };
-      const now = toIcsDate(new Date().toISOString());
+
+      // Session times are the student's own wall-clock preferred hours, so we emit them as
+      // "floating" local time (no Z / no TZID) -- Google Calendar then just shows them at that
+      // same clock time, which is exactly what we want, with no timezone conversion to get wrong.
+      const toIcsLocal = date =>
+        `${date.getFullYear()}${pad(date.getMonth() + 1)}${pad(date.getDate())}T${pad(date.getHours())}${pad(date.getMinutes())}00`;
+
+      const toIcsUtcStamp = date =>
+        `${date.getUTCFullYear()}${pad(date.getUTCMonth() + 1)}${pad(date.getUTCDate())}T${pad(date.getUTCHours())}${pad(date.getUTCMinutes())}${pad(date.getUTCSeconds())}Z`;
+
+      const dtstamp = toIcsUtcStamp(new Date());
 
       const lines = ['BEGIN:VCALENDAR', 'VERSION:2.0', 'PRODID:-//HokieTutor//Study Schedule//EN'];
-      assignments.forEach(a => {
+      sessions.forEach((s, idx) => {
         lines.push(
           'BEGIN:VEVENT',
-          `UID:hokietutor-${a.assignmentId}@vt.edu`,
-          `DTSTAMP:${now}`,
-          `DTSTART:${toIcsDate(a.dueAt)}`,
-          `DTEND:${toIcsDate(a.dueAt)}`,
-          `SUMMARY:${a.title}`,
-          `DESCRIPTION:Estimated ${a.estimatedHours.toFixed(1)}h to complete`,
+          `UID:hokietutor-${s.assignmentId}-${idx}@vt.edu`,
+          `DTSTAMP:${dtstamp}`,
+          `DTSTART:${toIcsLocal(s.start)}`,
+          `DTEND:${toIcsLocal(s.end)}`,
+          `SUMMARY:${s.title}`,
+          `DESCRIPTION:Study session (${s.hours.toFixed(1)}h)`,
           'END:VEVENT'
         );
       });
@@ -327,6 +441,15 @@
       a.click();
       document.body.removeChild(a);
       URL.revokeObjectURL(url);
+
+      if (shortfalls.length > 0) {
+        const msg = shortfalls
+          .map(s => `- ${s.title}: ${s.remaining.toFixed(1)}h couldn't fit before the due date`)
+          .join('\n');
+        alert(`Downloaded ${sessions.length} study session(s). Some assignments needed more time than your ` +
+              `preferred study blocks could fit before their due date:\n\n${msg}\n\n` +
+              `Consider adding more study blocks or starting earlier.`);
+      }
     });
 
     document.getElementById('ics-upload-input').addEventListener('change', (e) => {
@@ -345,6 +468,13 @@
           return;
         }
 
+        // Only one-off events have a single concrete (start, end) we can block out --
+        // a recurring event's exact future occurrences aren't expanded (see parseIcs note),
+        // so they aren't checked when scheduling study sessions around your busy time.
+        uploadedBusyEvents = events
+          .filter(ev => !ev.recurrence && ev.startDate && ev.endDate)
+          .map(ev => ({ start: ev.startDate, end: ev.endDate }));
+
         const list = document.createElement('ul');
         events.forEach(ev => {
           const li = document.createElement('li');
@@ -354,7 +484,8 @@
           list.appendChild(li);
         });
 
-        resultEl.innerHTML = `<p><strong>${events.length} event(s) found:</strong></p>`;
+        resultEl.innerHTML = `<p><strong>${events.length} event(s) found</strong> ` +
+          `(${uploadedBusyEvents.length} will be avoided when scheduling study sessions):</p>`;
         resultEl.appendChild(list);
       };
       reader.onerror = () => {
@@ -385,11 +516,15 @@
         if (summaryMatch && startMatch) {
           const rawStart = startMatch[1].trim();
           const rawEnd = endMatch ? endMatch[1].trim() : null;
+          const startDate = parseIcsDateToDate(rawStart);
+          const endDate = rawEnd ? parseIcsDateToDate(rawEnd) : null;
 
           events.push({
             summary: summaryMatch[1].trim(),
-            start: formatIcsDate(rawStart),
-            end: rawEnd ? formatIcsDate(rawEnd) : null,
+            start: startDate ? startDate.toLocaleString() : rawStart,
+            end: endDate ? endDate.toLocaleString() : null,
+            startDate,
+            endDate,
             recurrence: rruleMatch ? describeRecurrence(rruleMatch[1].trim(), rawStart, rawEnd) : null
           });
         }
@@ -441,11 +576,20 @@
       return `${hours}:${match[2]} ${period}`;
     }
 
-    function formatIcsDate(raw) {
-      const match = raw.match(/^(\d{4})(\d{2})(\d{2})T(\d{2})(\d{2})(\d{2})/);
-      if (!match) return raw;
-      const [, y, mo, d, h, mi] = match;
-      return new Date(`${y}-${mo}-${d}T${h}:${mi}:00`).toLocaleString();
+    /**
+     * Parses an ICS date-time value (e.g. "20260921T140000Z" or "20260921T140000")
+     * into a real Date object. A trailing Z means UTC; otherwise (including
+     * TZID-qualified values, whose zone we don't resolve) it's treated as local time --
+     * good enough since we only use this for our own local scheduling math and display.
+     */
+    function parseIcsDateToDate(raw) {
+      const match = raw.match(/^(\d{4})(\d{2})(\d{2})T(\d{2})(\d{2})(\d{2})(Z)?/);
+      if (!match) return null;
+      const [, y, mo, d, h, mi, s, z] = match;
+      const [year, month, day, hour, minute, second] = [y, mo, d, h, mi, s].map(Number);
+      return z
+        ? new Date(Date.UTC(year, month - 1, day, hour, minute, second))
+        : new Date(year, month - 1, day, hour, minute, second);
     }
 
     const canvasForm = document.getElementById('canvas-form');

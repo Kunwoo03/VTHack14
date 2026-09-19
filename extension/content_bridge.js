@@ -12,10 +12,14 @@
 const EXTENSION_VERSION = "1.0.0";
 const EXTENSION_NAME = "HokieTutor Canvas Companion";
 
-// Mark extension presence in DOM
+// Mark extension presence in DOM across worlds
 try {
   window.__HOKIETUTOR_EXTENSION_ACTIVE__ = true;
   window.__HOKIETUTOR_EXTENSION_VERSION__ = EXTENSION_VERSION;
+  if (document.documentElement) {
+    document.documentElement.setAttribute("data-hokietutor-extension", "active");
+    document.documentElement.setAttribute("data-hokietutor-extension-version", EXTENSION_VERSION);
+  }
 } catch (e) {
   // Ignore in isolated worlds if window is restricted
 }
@@ -25,6 +29,17 @@ try {
  * immediately recognizes the extension is installed and unlocks the UI.
  */
 function sendPresenceBeacon() {
+  if (document.documentElement) {
+    document.documentElement.setAttribute("data-hokietutor-extension", "active");
+    document.documentElement.setAttribute("data-hokietutor-extension-version", EXTENSION_VERSION);
+  }
+
+  // 1. DOM CustomEvent
+  window.dispatchEvent(new CustomEvent("HOKIETUTOR_EXTENSION_READY", {
+    detail: { version: EXTENSION_VERSION, status: "active", name: EXTENSION_NAME }
+  }));
+
+  // 2. Window postMessage
   window.postMessage({
     sender: "HOKIETUTOR_EXTENSION",
     type: "EXTENSION_PRESENCE_BEACON",
@@ -34,9 +49,9 @@ function sendPresenceBeacon() {
   }, "*");
 }
 
-// Send beacon immediately upon script start and repeatedly every 1.5 seconds
+// Send beacon immediately upon script start and repeatedly every 800ms
 sendPresenceBeacon();
-const beaconInterval = setInterval(sendPresenceBeacon, 1500);
+const beaconInterval = setInterval(sendPresenceBeacon, 800);
 
 /**
  * Listens for messages dispatched by the HokieTutor web application (`app.js`).

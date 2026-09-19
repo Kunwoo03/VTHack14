@@ -1439,6 +1439,11 @@ body {
   color: var(--text-main);
 }
 
+/* Form Controls & Dropdowns */
+[data-theme="dark"] .form-label {
+  color: #cbd5e1;
+}
+
 [data-theme="dark"] .form-control,
 [data-theme="dark"] input[type="text"],
 [data-theme="dark"] input[type="email"],
@@ -1451,6 +1456,11 @@ body {
   color: #f1f5f9;
 }
 
+[data-theme="dark"] select option {
+  background-color: #0d1424;
+  color: #f1f5f9;
+}
+
 [data-theme="dark"] .form-control:focus,
 [data-theme="dark"] input:focus,
 [data-theme="dark"] select:focus,
@@ -1460,18 +1470,150 @@ body {
   box-shadow: 0 0 0 3px rgba(249, 115, 22, 0.2);
 }
 
+/* Card Decks & Containers */
+[data-theme="dark"] .card,
 [data-theme="dark"] .card-deck,
-[data-theme="dark"] .course-card,
-[data-theme="dark"] .summary-banner,
+[data-theme="dark"] .form-section,
 [data-theme="dark"] .habits-card,
 [data-theme="dark"] .availability-card,
 [data-theme="dark"] .schedule-summary-bar,
-[data-theme="dark"] .session-card,
 [data-theme="dark"] .modal-card,
 [data-theme="dark"] .extension-guard-card {
   background-color: var(--bg-card);
   border-color: var(--border-color);
   color: var(--text-main);
+}
+
+/* Course Cards & Focus Topics (NO WHITE BACKGROUNDS) */
+[data-theme="dark"] .course-card {
+  background-color: var(--bg-card);
+  border-color: var(--border-color);
+  color: var(--text-main);
+}
+
+[data-theme="dark"] .course-card:hover {
+  border-color: #3b4d70;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.45);
+}
+
+[data-theme="dark"] .course-card.disabled {
+  background-color: #0c111d;
+  opacity: 0.45;
+  border-color: #1e293b;
+}
+
+[data-theme="dark"] .course-code-badge {
+  color: var(--vt-orange-light);
+}
+
+[data-theme="dark"] .course-title-text {
+  color: #94a3b8;
+}
+
+[data-theme="dark"] .topics-label {
+  color: #94a3b8;
+}
+
+/* Focus Topics Pills in Dark Mode */
+[data-theme="dark"] .topic-pill {
+  background-color: #1e293b;
+  color: #cbd5e1;
+  border: 1px solid #334155;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.25);
+}
+
+[data-theme="dark"] .topic-pill:hover {
+  background-color: #28374d;
+  color: #ffffff;
+  border-color: var(--vt-orange);
+}
+
+/* Current Grade Badges in Dark Mode */
+[data-theme="dark"] .badge-current-grade {
+  background-color: #1e293b;
+  color: #e2e8f0;
+  border: 1px solid #334155;
+}
+
+/* Sync Telemetry Banner */
+[data-theme="dark"] .sync-status-banner {
+  background: linear-gradient(to right, #1b1718, #151d2f);
+  border-color: #4a2818;
+}
+
+[data-theme="dark"] .sync-banner-title {
+  color: #fdba74;
+}
+
+[data-theme="dark"] .sync-banner-desc {
+  color: #fed7aa;
+}
+
+[data-theme="dark"] .badge-term {
+  background-color: #3b1d11;
+  color: #fdba74;
+  border: 1px solid #7c2d12;
+}
+
+/* Study Habits Radio Cards */
+[data-theme="dark"] .pill-card {
+  background: var(--bg-card);
+  border-color: var(--border-color);
+}
+
+[data-theme="dark"] .pill-card:hover {
+  background: #1a243a;
+  border-color: #3b4d70;
+}
+
+[data-theme="dark"] .pill-title {
+  color: #f1f5f9;
+}
+
+[data-theme="dark"] .pill-subtitle {
+  color: #94a3b8;
+}
+
+[data-theme="dark"] .radio-pill input[type="radio"]:checked + .pill-card {
+  border-color: var(--vt-orange);
+  background-color: rgba(249, 115, 22, 0.14);
+  box-shadow: 0 0 0 2px var(--vt-orange);
+}
+
+[data-theme="dark"] .radio-pill input[type="radio"]:checked + .pill-card .pill-title {
+  color: var(--vt-orange-light);
+}
+
+/* Upload Dropzone */
+[data-theme="dark"] .upload-dropzone {
+  background-color: #0e1526;
+  border-color: #334155;
+  color: #94a3b8;
+}
+
+[data-theme="dark"] .upload-dropzone:hover,
+[data-theme="dark"] .upload-dropzone.dragover {
+  background-color: #151d2f;
+  border-color: var(--vt-orange);
+  color: #f1f5f9;
+}
+
+/* Availability Grid */
+[data-theme="dark"] .grid-table-wrapper {
+  border-color: var(--border-color);
+}
+
+[data-theme="dark"] .availability-grid th {
+  background-color: #0e1526;
+  color: #e2e8f0;
+  border-color: #243048;
+}
+
+[data-theme="dark"] .time-col-header,
+[data-theme="dark"] .time-label-cell {
+  background-color: #0b0f19;
+  color: #94a3b8;
+  border-color: #243048;
 }
 
 [data-theme="dark"] .time-slot-cell {
@@ -1483,23 +1625,67 @@ body {
   background-color: #1f2b45;
 }
 
-[data-theme="dark"] .time-header-cell,
-[data-theme="dark"] .time-label-cell {
-  background-color: #0e1526;
+[data-theme="dark"] .time-slot-cell.busy {
+  background-color: var(--color-busy-cell);
+  border-color: var(--color-busy-border);
+}
+
+[data-theme="dark"] .legend-box.free {
+  background-color: #151d2f;
   border-color: #243048;
+}
+
+/* Study Schedule Sessions & Timeline */
+[data-theme="dark"] .session-card {
+  background-color: var(--bg-card);
+  border-color: var(--border-color);
+}
+
+[data-theme="dark"] .session-card:hover {
+  border-color: #3b4d70;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.45);
+}
+
+[data-theme="dark"] .session-time-str {
+  color: #f1f5f9;
+}
+
+[data-theme="dark"] .session-duration {
   color: #94a3b8;
 }
 
 [data-theme="dark"] .session-course-tag {
-  background-color: #243048;
-  color: #e2e8f0;
+  background-color: #1e293b;
+  color: #cbd5e1;
+  border: 1px solid #334155;
+}
+
+[data-theme="dark"] .session-topic-title {
+  color: #f8fafc;
+}
+
+[data-theme="dark"] .session-meta-note {
+  color: #94a3b8;
 }
 
 [data-theme="dark"] .session-card.completed {
-  background-color: #0e1526;
+  background-color: #0c111d;
+  border-color: #1a2337;
   opacity: 0.45;
 }
 
+[data-theme="dark"] .day-heading {
+  color: var(--vt-orange-light);
+  border-bottom-color: #243048;
+}
+
+[data-theme="dark"] .day-pill-count {
+  background-color: #1e293b;
+  color: #cbd5e1;
+  border: 1px solid #334155;
+}
+
+/* Buttons & Interactive Elements */
 [data-theme="dark"] .btn-secondary {
   background-color: #243048;
   color: #f1f5f9;
@@ -1517,11 +1703,100 @@ body {
 
 [data-theme="dark"] .btn-outline:hover {
   background-color: #243048;
+  border-color: #475569;
+}
+
+[data-theme="dark"] .btn-icon-subtle {
+  color: #94a3b8;
+}
+
+[data-theme="dark"] .btn-icon-subtle:hover {
+  color: #f1f5f9;
+  background-color: #243048;
+}
+
+[data-theme="dark"] .btn-close {
+  color: #94a3b8;
+}
+
+[data-theme="dark"] .btn-close:hover {
+  color: #ffffff;
+}
+
+[data-theme="dark"] .step-btn {
+  background-color: #151d2f;
+  border-color: #243048;
+  color: #94a3b8;
+}
+
+[data-theme="dark"] .step-btn.active {
+  background-color: var(--vt-maroon);
+  color: #ffffff;
+  border-color: var(--vt-orange);
+}
+
+[data-theme="dark"] .step-actions {
+  border-top-color: #243048;
+}
+
+/* Typography & Accent Badges */
+[data-theme="dark"] .section-title {
+  color: var(--vt-orange-light);
+}
+
+[data-theme="dark"] .text-maroon {
+  color: var(--vt-orange-light);
+}
+
+[data-theme="dark"] .metric-val {
+  color: #f1f5f9;
+}
+
+[data-theme="dark"] .stat-number {
+  color: #ffffff;
+}
+
+[data-theme="dark"] .stat-label {
+  color: #94a3b8;
+}
+
+[data-theme="dark"] .badge-accent {
+  background-color: #243048;
+  color: #cbd5e1;
+}
+
+/* Toast Notifications */
+[data-theme="dark"] .toast {
+  background-color: #1e293b;
+  color: #f8fafc;
+  border: 1px solid #334155;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.7);
+}
+
+/* Modal Overlays & Guard Screen */
+[data-theme="dark"] .modal-title {
+  color: var(--vt-orange-light);
+}
+
+[data-theme="dark"] .modal-footer {
+  border-top-color: #243048;
+}
+
+[data-theme="dark"] .guard-title {
+  color: var(--vt-orange-light);
+}
+
+[data-theme="dark"] .guard-intro {
+  color: #cbd5e1;
 }
 
 [data-theme="dark"] .guard-status-box {
   background-color: #0b0f19;
   border-color: #243048;
+}
+
+[data-theme="dark"] .status-pulse-group {
+  color: #cbd5e1;
 }
 
 [data-theme="dark"] .guard-steps-container {
@@ -1542,44 +1817,22 @@ body {
   color: #fdba74;
 }
 
-[data-theme="dark"] .guard-intro {
-  color: #cbd5e1;
+[data-theme="dark"] .guard-footer {
+  border-top-color: #243048;
 }
 
-[data-theme="dark"] .stat-number {
-  color: #ffffff;
-}
-
-[data-theme="dark"] .badge-accent {
-  background-color: #243048;
-  color: #cbd5e1;
-}
-
-[data-theme="dark"] .step-btn {
-  background-color: #151d2f;
-  border-color: #243048;
+[data-theme="dark"] .btn-demo-link {
   color: #94a3b8;
 }
 
-[data-theme="dark"] .step-btn.active {
-  background-color: var(--vt-maroon);
-  color: #ffffff;
-  border-color: var(--vt-orange);
+[data-theme="dark"] .btn-demo-link:hover {
+  color: var(--vt-orange-light);
+  background-color: #1e293b;
 }
 
-[data-theme="dark"] .day-heading {
-  color: #f43f5e;
-  border-bottom-color: #243048;
-}
-
-[data-theme="dark"] .day-pill-count {
-  background-color: #243048;
-  color: #94a3b8;
-}
-
-[data-theme="dark"] .drop-zone {
-  border-color: #334155;
-  background-color: #0e1526;
+[data-theme="dark"] code {
+  background-color: #1e293d;
+  color: #fdba74;
 }
 
 

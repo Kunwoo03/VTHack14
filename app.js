@@ -1419,12 +1419,18 @@ async function pushAssignmentsToBackend(vtEmail, assignments) {
 
 /**
  * Initializes application theme (Classic Light vs. Dark Mode) from localStorage
- * or system preference and hooks up the header theme switcher tabs.
+ * and hooks up the header theme switcher tabs. Strictly defaults to Classic (Light) mode.
  */
 function initTheme() {
   let savedTheme = "light";
   try {
-    savedTheme = localStorage.getItem("hokieTutorTheme") || (window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light");
+    // Strictly default to Classic (Light) theme unless user explicitly selected dark mode
+    const stored = localStorage.getItem("hokieTutorSelectedTheme");
+    if (stored === "dark") {
+      savedTheme = "dark";
+    } else {
+      savedTheme = "light";
+    }
   } catch (e) {
     savedTheme = "light";
   }
@@ -1435,10 +1441,20 @@ function initTheme() {
   const darkBtn = document.getElementById("theme-tab-dark");
 
   if (lightBtn) {
-    lightBtn.addEventListener("click", () => applyTheme("light"));
+    lightBtn.addEventListener("click", () => {
+      applyTheme("light");
+      try {
+        localStorage.setItem("hokieTutorSelectedTheme", "light");
+      } catch (e) {}
+    });
   }
   if (darkBtn) {
-    darkBtn.addEventListener("click", () => applyTheme("dark"));
+    darkBtn.addEventListener("click", () => {
+      applyTheme("dark");
+      try {
+        localStorage.setItem("hokieTutorSelectedTheme", "dark");
+      } catch (e) {}
+    });
   }
 }
 
@@ -1518,6 +1534,8 @@ function initExtensionConnection() {
   const btnCloseGuard = document.getElementById("btn-close-guard-overlay");
   const btnDismissGuard = document.getElementById("btn-dismiss-guard");
 
+  let hasAnnouncedExtensionConnected = false;
+
   function onExtensionConnected(info) {
     appState.extensionConnected = true;
     appState.extensionVersion = (info && info.version) || "1.0.0";
@@ -1541,7 +1559,11 @@ function initExtensionConnection() {
       headerText.textContent = `Extension: Connected (v${appState.extensionVersion})`;
     }
 
-    showToast("✓ HokieTutor Extension verified & connected!");
+    // Only announce once upon initial verification to prevent repeating toasts
+    if (!hasAnnouncedExtensionConnected) {
+      hasAnnouncedExtensionConnected = true;
+      showToast("✓ HokieTutor Extension verified & connected!");
+    }
   }
 
   // 1. Window message listener for communication with content_bridge.js
@@ -1850,6 +1872,7 @@ function escapeHtml(str) {
   return div.innerHTML;
 }
 
+let toastTimer = null;
 function showToast(message) {
   const toast = document.getElementById("toast");
   if (!toast) return;
@@ -1857,7 +1880,8 @@ function showToast(message) {
   toast.textContent = message;
   toast.classList.remove("hidden");
 
-  setTimeout(() => {
+  if (toastTimer) clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => {
     toast.classList.add("hidden");
   }, 2800);
 }

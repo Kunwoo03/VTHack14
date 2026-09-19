@@ -49,9 +49,18 @@ function sendPresenceBeacon() {
   }, "*");
 }
 
-// Send beacon immediately upon script start and repeatedly every 800ms
+// Send beacon immediately upon script start, then back off once connected
 sendPresenceBeacon();
-const beaconInterval = setInterval(sendPresenceBeacon, 800);
+let beaconBurstCount = 0;
+const beaconInterval = setInterval(() => {
+  sendPresenceBeacon();
+  beaconBurstCount++;
+  if (beaconBurstCount >= 5) {
+    clearInterval(beaconInterval);
+    // Maintain periodic heartbeat at a gentle cadence
+    setInterval(sendPresenceBeacon, 6000);
+  }
+}, 800);
 
 /**
  * Listens for messages dispatched by the HokieTutor web application (`app.js`).

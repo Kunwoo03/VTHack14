@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>HokieTutor Extension</title>
+  <style>
+    :root {
+      --vt-maroon: #861F41;
+      --vt-orange: #E87722;
+      --bg-dark: #111827;
+      --text-main: #1f2937;
+      --text-muted: #6b7280;
+    }
+    body {
+      width: 320px;
+      margin: 0;
+      padding: 16px;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      color: var(--text-main);
+      background-color: #f9fafb;
+    }
+    .header {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      border-bottom: 2px solid #e5e7eb;
+      padding-bottom: 12px;
+      margin-bottom: 14px;
+    }
+    .logo-badge {
+      width: 32px;
+      height: 32px;
+      background: var(--vt-maroon);
+      color: #ffffff;
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 800;
+      font-size: 16px;
+    }
+    .title-group h1 {
+      margin: 0;
+      font-size: 16px;
+      font-weight: 700;
+      color: var(--vt-maroon);
+    }
+    .title-group p {
+      margin: 2px 0 0;
+      font-size: 11px;
+      color: var(--text-muted);
+    }
+    .status-card {
+      background: #ffffff;
+      border: 1px solid #e5e7eb;
+      border-radius: 8px;
+      padding: 12px;
+      margin-bottom: 12px;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+    }
+    .status-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 8px;
+      font-size: 12px;
+    }
+    .status-row:last-child {
+      margin-bottom: 0;
+    }
+    .status-label {
+      color: var(--text-muted);
+      font-weight: 500;
+    }
+    .pill {
+      font-size: 11px;
+      font-weight: 600;
+      padding: 2px 8px;
+      border-radius: 12px;
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+    }
+    .pill-green {
+      background: #dcfce7;
+      color: #166534;
+    }
+    .pill-orange {
+      background: #ffedd5;
+      color: #9a3412;
+    }
+    .pill-red {
+      background: #fee2e2;
+      color: #991b1b;
+    }
+    .btn {
+      width: 100%;
+      padding: 8px 12px;
+      border-radius: 6px;
+      font-size: 12px;
+      font-weight: 600;
+      border: none;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      margin-top: 8px;
+      transition: background-color 0.15s;
+    }
+    .btn-maroon {
+      background: var(--vt-maroon);
+      color: #ffffff;
+    }
+    .btn-maroon:hover {
+      background: #6d1834;
+    }
+    .btn-orange {
+      background: var(--vt-orange);
+      color: #ffffff;
+    }
+    .btn-orange:hover {
+      background: #cf6214;
+    }
+    .footer {
+      text-align: center;
+      font-size: 10px;
+      color: var(--text-muted);
+      margin-top: 14px;
+    }
+  </style>
+</head>
+<body>
+  <div class="header">
+    <div class="logo-badge">VT</div>
+    <div class="title-group">
+      <h1>HokieTutor Companion</h1>
+      <p>VT Canvas AI Study Scheduler</p>
+    </div>
+  </div>
+
+  <div class="status-card">
+    <div class="status-row">
+      <span class="status-label">Extension Status</span>
+      <span class="pill pill-green">● Connected</span>
+    </div>
+    <div class="status-row">
+      <span class="status-label">Backend (:8080)</span>
+      <span class="pill" id="backend-status-pill">Checking...</span>
+    </div>
+    <div class="status-row">
+      <span class="status-label">Active Term</span>
+      <span style="font-weight:600; font-size:12px;">Fall 2026</span>
+    </div>
+  </div>
+
+  <button type="button" class="btn btn-orange" id="btn-sync-canvas">
+    <span>⚡</span> Sync Canvas Assignments
+  </button>
+
+  <button type="button" class="btn btn-maroon" id="btn-open-app">
+    <span>🌐</span> Open Study Scheduler Web App
+  </button>
+
+  <div class="footer">
+    VT Hacks &bull; Co-dependent Canvas Integration
+  </div>
+
+  <script src="popup.js"></script>
+</body>
+</html>

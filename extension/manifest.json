@@ -1,0 +1,41 @@
+{
+  "manifest_version": 3,
+  "name": "HokieTutor - VT Canvas Companion",
+  "version": "1.0.0",
+  "description": "Scrapes active VT Canvas courses, authenticates enrollment, and synchronizes with the HokieTutor Study Scheduler and Spring Boot backend.",
+  "permissions": [
+    "storage"
+  ],
+  "host_permissions": [
+    "https://canvas.vt.edu/*",
+    "http://localhost:*/*",
+    "http://127.0.0.1:*/*"
+  ],
+  "background": {
+    "service_worker": "background.js"
+  },
+  "content_scripts": [
+    {
+      "matches": [
+        "https://canvas.vt.edu/*"
+      ],
+      "js": ["content_canvas.js"],
+      "run_at": "document_idle"
+    },
+    {
+      "matches": [
+        "http://localhost/*",
+        "http://localhost:*/*",
+        "http://127.0.0.1/*",
+        "http://127.0.0.1:*/*",
+        "file:///*"
+      ],
+      "js": ["content_bridge.js"],
+      "run_at": "document_start"
+    }
+  ],
+  "action": {
+    "default_popup": "popup.html",
+    "default_title": "HokieTutor Canvas Sync"
+  }
+}

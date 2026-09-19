@@ -25,11 +25,15 @@
 
         <!-- Extension Sync & Data Integration Status -->
         <div class="header-actions">
+          <div class="extension-status-badge disconnected" id="header-extension-badge" title="HokieTutor Chrome Extension Status">
+            <span class="badge-dot"></span>
+            <span class="badge-text" id="header-extension-text">Extension: Disconnected</span>
+          </div>
           <button type="button" class="btn btn-sm btn-outline-light" id="btn-import-canvas-json" title="Import Canvas data JSON exported by the Chrome extension">
-            📂 Import Extension Data
+            📂 Import Data
           </button>
-          <button type="button" class="btn btn-sm btn-orange" id="btn-sync-extension" title="Simulate live sync from Canvas extension">
-            ⚡ Sync with Canvas
+          <button type="button" class="btn btn-sm btn-orange" id="btn-sync-extension" title="Trigger sync from HokieTutor Canvas extension">
+            ⚡ Extension Sync
           </button>
         </div>
       </div>
@@ -300,7 +304,9 @@
           <button type="button" class="btn btn-outline btn-sm" id="btn-open-add-session-modal">+ Add Session</button>
           <button type="button" class="btn btn-outline btn-sm" id="btn-export-ics">📥 Export iCal (.ics)</button>
           <button type="button" class="btn btn-outline btn-sm" id="btn-print-schedule">🖨️ Print</button>
-          <button type="button" class="btn btn-secondary btn-sm" id="btn-regenerate-schedule">⚡ Regenerate</button>
+          <button type="button" class="btn btn-secondary btn-sm" id="btn-regenerate-schedule" title="Calls upon the HokieTutor Chrome Extension to refresh Canvas data and recalculate schedule">
+            <span id="btn-regenerate-icon">⚡</span> <span id="btn-regenerate-text">Call Extension & Regenerate</span>
+          </button>
         </div>
       </section>
 
@@ -493,6 +499,52 @@
         <div class="modal-footer">
           <button type="button" class="btn btn-secondary" id="btn-cancel-json-modal">Cancel</button>
           <button type="button" class="btn btn-primary" id="btn-confirm-import-json">Import & Sync</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- =============================================================== -->
+    <!-- CO-DEPENDENCE BARRIER: EXTENSION REQUIRED TO OPERATE           -->
+    <!-- =============================================================== -->
+    <div class="extension-guard-backdrop" id="extension-guard-overlay" role="dialog" aria-modal="true" aria-labelledby="guard-title">
+      <div class="extension-guard-card">
+        <div class="extension-guard-header">
+          <div class="guard-icon-lock">🔒</div>
+          <div>
+            <h2 class="guard-title" id="guard-title">HokieTutor Extension Required</h2>
+            <span class="guard-req-badge">Co-Dependent Application</span>
+          </div>
+        </div>
+
+        <p class="guard-intro">
+          This application is <strong>co-dependent</strong> and strictly requires the companion <strong>HokieTutor Chrome Extension</strong> to operate.
+          The extension securely scrapes your active Fall 2026 courses from Canvas, synchronizes assignments, and coordinates with the Spring Boot backend AI scheduler.
+        </p>
+
+        <div class="guard-status-box">
+          <div class="status-pulse-group">
+            <span class="status-pulse-dot" id="guard-pulse-dot"></span>
+            <span id="guard-status-message">Listening for HokieTutor Extension...</span>
+          </div>
+          <button type="button" class="btn btn-sm btn-orange" id="btn-detect-extension">
+            🔍 Ping Extension
+          </button>
+        </div>
+
+        <div class="guard-steps-container">
+          <h4 class="guard-steps-title">How to Connect the Extension:</h4>
+          <ol class="guard-steps-list">
+            <li>Open <code>chrome://extensions</code> (or <code>edge://extensions</code>) in your browser.</li>
+            <li>Enable <strong>Developer mode</strong> using the toggle switch in the upper-right corner.</li>
+            <li>Click <strong>Load unpacked</strong> and select the <code>extension</code> folder inside this repository.</li>
+            <li>Once loaded, click <strong>Ping Extension</strong> above (or refresh) to unlock the application!</li>
+          </ol>
+        </div>
+
+        <div class="guard-footer">
+          <button type="button" class="btn-demo-link" id="btn-demo-override" title="Developer presentation & test bypass mode">
+            ⚡ Developer / Presentation Bypass Mode
+          </button>
         </div>
       </div>
     </div>

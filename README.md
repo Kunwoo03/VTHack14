@@ -56,23 +56,36 @@ Then visit `http://localhost:8080` in your browser.
 
 ---
 
-## 🎯 What Was Fixed & Added Based on Feedback
+## 🧩 Installing & Using the HokieTutor Chrome Extension
 
-1. **Accurate Course Codes & CRNs:**
-   - Properly reads and displays **`MATH 1226 (Juste CRN 87487)`** (*Calculus II / Fall 2026*).
-2. **Missing & Outdated Courses Handled:**
-   - Added **Psychology (`PSYC 1004`)** and **Green Engineering (`ENGE 1215`)**.
-   - Concluded courses from last year (**`PHYS 2306`**) are automatically excluded from the active Fall 2026 schedule.
-   - Includes **`+ Add Course`** and **`🗑️ Delete Course`** buttons to customize enrolled classes.
-3. **Multi-Course Goal Matrix (The Deck):**
-   - Each course has its own card on Page 1 with independent **Target Grade** (`A`, `A-`, `B+`), **Confidence Level** (`Low`, `Medium`, `High`), **Weekly Study Hours**, and **Weak Syllabus Topics**.
-   - Includes a checkbox to include or exclude any class from the schedule.
-4. **Extension Data Integration:**
-   - **⚡ Sync with Canvas** button: Simulates receiving live data from the extension.
-   - **📂 Import Extension Data** button: Paste or load any JSON exported by the extension.
-5. **Interactive Schedule CRUD (Page 3):**
+The application is **co-dependent** and requires the companion HokieTutor Chrome Extension to run and generate schedules.
+
+1. Open **Google Chrome** (or Edge/Brave) and navigate to `chrome://extensions`.
+2. Enable **Developer mode** toggle in the top-right corner.
+3. Click **Load unpacked** and select the [`extension/`](file:///c:/Users/lilsm/OneDrive/Documents/GitHub/VTHack14/extension) directory from this project.
+4. Open or refresh `index.html` (or `standalone-app.html`).
+5. The application detects the extension, the "Extension Required" barrier unlocks, and the header displays `🟢 Extension: Connected (v1.0)`.
+
+---
+
+## 🎯 What Was Built & Integrated
+
+1. **Co-Dependent Architecture:**
+   - The web app requires the extension to be active. If disconnected, a barrier overlay directs the student to load the extension.
+   - A presentation / developer demo mode bypass is included for quick evaluations.
+2. **"⚡ Call Extension & Regenerate" Flow:**
+   - Clicking **⚡ Call Extension & Regenerate** on Page 3 contacts the extension's background worker.
+   - The extension refreshes Canvas data, forwards assignments to the Spring Boot backend (`http://localhost:8080/api/assignments/import`), and requests weekly study estimates (`/api/schedule/estimate/{name}`).
+   - The scheduler dynamically allocates study blocks into the student's free calendar slots based on real assignment estimates.
+3. **Canvas Content Scraper & Floating Action:**
+   - Content script on `https://canvas.vt.edu/*` extracts enrolled Fall 2026 courses, assignment due dates, and point weights.
+   - Adds a floating Virginia Tech branded sync widget directly onto Canvas pages.
+4. **Accurate Course Codes & CRNs:**
+   - Displays **`MATH 1226 (Juste CRN 87487)`** (*Calculus II / Fall 2026*), **`PSYC 1004`**, **`ENGE 1215`**, and **`CS 2114`**.
+   - Concluded courses (**`PHYS 2306`**) are automatically filtered out.
+5. **Interactive Schedule CRUD & Calendar Export (Page 3):**
    - Move / Reschedule session (edit day/time via modal).
-   - Delete sessions.
-   - Add custom sessions.
+   - Delete sessions and add custom sessions.
    - Check off completed sessions.
    - Export to iCal (`.ics`) file.
+

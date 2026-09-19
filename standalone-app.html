@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
@@ -1103,7 +1103,7 @@ body {
   body {
     background-color: #ffffff;
   }
-  .app-header, .step-indicator, .schedule-controls, .step-actions {
+  .app-header, .step-indicator, .schedule-controls, .step-actions, .extension-guard-backdrop {
     display: none !important;
   }
   .app-container {
@@ -1116,6 +1116,233 @@ body {
     overflow: visible;
   }
 }
+
+/* ==========================================================================
+   EXTENSION STATUS BADGE (HEADER)
+   ========================================================================== */
+.extension-status-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 5px 12px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 700;
+  transition: all 0.25s ease;
+}
+
+.extension-status-badge.disconnected {
+  background-color: rgba(239, 68, 68, 0.18);
+  border: 1px solid #ef4444;
+  color: #fecaca;
+}
+
+.extension-status-badge.disconnected .badge-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background-color: #ef4444;
+}
+
+.extension-status-badge.connected {
+  background-color: rgba(16, 185, 129, 0.22);
+  border: 1px solid #10b981;
+  color: #a7f3d0;
+  box-shadow: 0 0 8px rgba(16, 185, 129, 0.35);
+}
+
+.extension-status-badge.connected .badge-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background-color: #10b981;
+  animation: pulseGreen 1.6s infinite;
+}
+
+@keyframes pulseGreen {
+  0% { transform: scale(0.9); box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.7); }
+  70% { transform: scale(1.15); box-shadow: 0 0 0 6px rgba(16, 185, 129, 0); }
+  100% { transform: scale(0.9); box-shadow: 0 0 0 0 rgba(16, 185, 129, 0); }
+}
+
+/* ==========================================================================
+   CO-DEPENDENCE BARRIER OVERLAY (EXTENSION REQUIRED)
+   ========================================================================== */
+.extension-guard-backdrop {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(15, 23, 42, 0.88);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  padding: 20px;
+  animation: fadeIn 0.2s ease-out;
+}
+
+.extension-guard-card {
+  background: #ffffff;
+  border-radius: var(--radius-md);
+  border-top: 6px solid var(--vt-maroon);
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.4);
+  max-width: 540px;
+  width: 100%;
+  padding: 28px 32px;
+  color: var(--text-main);
+  animation: slideUp 0.25s ease-out;
+}
+
+@keyframes slideUp {
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.extension-guard-header {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  margin-bottom: 14px;
+}
+
+.guard-icon-lock {
+  width: 44px;
+  height: 44px;
+  background: #fee2e2;
+  color: #991b1b;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 22px;
+  flex-shrink: 0;
+}
+
+.guard-title {
+  font-size: 19px;
+  font-weight: 800;
+  color: var(--vt-maroon);
+  margin: 0;
+  line-height: 1.2;
+}
+
+.guard-req-badge {
+  display: inline-block;
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  background: #ffedd5;
+  color: #c2410c;
+  padding: 2px 8px;
+  border-radius: 999px;
+  margin-top: 3px;
+}
+
+.guard-intro {
+  font-size: 13.5px;
+  line-height: 1.55;
+  color: #4b5563;
+  margin: 0 0 16px 0;
+}
+
+.guard-status-box {
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  padding: 12px 16px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 18px;
+}
+
+.status-pulse-group {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 13px;
+  font-weight: 600;
+  color: #334155;
+}
+
+.status-pulse-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background-color: var(--vt-orange);
+  animation: pulseOrange 1.4s infinite;
+}
+
+@keyframes pulseOrange {
+  0% { transform: scale(0.9); box-shadow: 0 0 0 0 rgba(232, 119, 34, 0.7); }
+  70% { transform: scale(1.2); box-shadow: 0 0 0 6px rgba(232, 119, 34, 0); }
+  100% { transform: scale(0.9); box-shadow: 0 0 0 0 rgba(232, 119, 34, 0); }
+}
+
+.guard-steps-container {
+  background: #fdf8f6;
+  border: 1px solid #fed7aa;
+  border-radius: 8px;
+  padding: 14px 18px;
+  margin-bottom: 18px;
+}
+
+.guard-steps-title {
+  margin: 0 0 8px 0;
+  font-size: 13px;
+  font-weight: 700;
+  color: #9a3412;
+}
+
+.guard-steps-list {
+  margin: 0;
+  padding-left: 20px;
+  font-size: 12.5px;
+  line-height: 1.6;
+  color: #431407;
+}
+
+.guard-steps-list code {
+  background: #fbeee7;
+  padding: 1px 5px;
+  border-radius: 4px;
+  font-family: monospace;
+  font-size: 11.5px;
+  color: #7c2d12;
+}
+
+.guard-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 10px;
+  padding-top: 12px;
+  border-top: 1px solid #f1f5f9;
+}
+
+.btn-demo-link {
+  background: none;
+  border: none;
+  color: #64748b;
+  font-size: 11.5px;
+  font-weight: 600;
+  cursor: pointer;
+  text-decoration: underline;
+  padding: 4px 8px;
+  border-radius: 4px;
+  transition: all 0.15s ease;
+}
+
+.btn-demo-link:hover {
+  color: var(--vt-maroon);
+  background: #f1f5f9;
+}
+
 
 </style>
 </head>
@@ -1138,11 +1365,15 @@ body {
 
         <!-- Extension Sync & Data Integration Status -->
         <div class="header-actions">
+          <div class="extension-status-badge disconnected" id="header-extension-badge" title="HokieTutor Chrome Extension Status">
+            <span class="badge-dot"></span>
+            <span class="badge-text" id="header-extension-text">Extension: Disconnected</span>
+          </div>
           <button type="button" class="btn btn-sm btn-outline-light" id="btn-import-canvas-json" title="Import Canvas data JSON exported by the Chrome extension">
-            📂 Import Extension Data
+            ðŸ“‚ Import Data
           </button>
-          <button type="button" class="btn btn-sm btn-orange" id="btn-sync-extension" title="Simulate live sync from Canvas extension">
-            ⚡ Sync with Canvas
+          <button type="button" class="btn btn-sm btn-orange" id="btn-sync-extension" title="Trigger sync from HokieTutor Canvas extension">
+            âš¡ Extension Sync
           </button>
         </div>
       </div>
@@ -1174,7 +1405,7 @@ body {
       <!-- Extension Sync Telemetry Banner -->
       <div class="card sync-status-banner">
         <div class="sync-banner-left">
-          <div class="sync-status-icon">🎓</div>
+          <div class="sync-status-icon">ðŸŽ“</div>
           <div class="sync-status-text">
             <strong class="sync-banner-title">VT Canvas Synced (Active Term: Fall 2026)</strong>
             <p class="sync-banner-desc" id="sync-banner-details">
@@ -1305,7 +1536,7 @@ body {
       <!-- Option A: File Upload / Timetable Screenshot -->
       <section class="upload-section card">
         <div class="upload-dropzone" id="schedule-dropzone">
-          <div class="upload-icon">📷</div>
+          <div class="upload-icon">ðŸ“·</div>
           <div class="upload-text">
             <strong>Upload Schedule or Screenshot</strong>
             <p>Drag and drop your HokieSpa schedule screenshot or PDF timetable here</p>
@@ -1319,7 +1550,7 @@ body {
           <img id="upload-preview-img" src="" alt="Schedule Preview" />
           <div class="upload-preview-meta">
             <span id="upload-file-name" class="file-name">schedule.png</span>
-            <span class="badge badge-success">✓ OCR Classes Detected</span>
+            <span class="badge badge-success">âœ“ OCR Classes Detected</span>
             <button type="button" class="btn-text-danger" id="btn-remove-file">Remove</button>
           </div>
         </div>
@@ -1411,9 +1642,11 @@ body {
 
         <div class="action-btn-group">
           <button type="button" class="btn btn-outline btn-sm" id="btn-open-add-session-modal">+ Add Session</button>
-          <button type="button" class="btn btn-outline btn-sm" id="btn-export-ics">📥 Export iCal (.ics)</button>
-          <button type="button" class="btn btn-outline btn-sm" id="btn-print-schedule">🖨️ Print</button>
-          <button type="button" class="btn btn-secondary btn-sm" id="btn-regenerate-schedule">⚡ Regenerate</button>
+          <button type="button" class="btn btn-outline btn-sm" id="btn-export-ics">ðŸ“¥ Export iCal (.ics)</button>
+          <button type="button" class="btn btn-outline btn-sm" id="btn-print-schedule">ðŸ–¨ï¸ Print</button>
+          <button type="button" class="btn btn-secondary btn-sm" id="btn-regenerate-schedule" title="Calls upon the HokieTutor Chrome Extension to refresh Canvas data and recalculate schedule">
+            <span id="btn-regenerate-icon">âš¡</span> <span id="btn-regenerate-text">Call Extension & Regenerate</span>
+          </button>
         </div>
       </section>
 
@@ -1589,16 +1822,69 @@ body {
         </div>
 
         <p class="section-desc">
-          Paste the JSON exported from the HokieTutor Chrome extension on VT Canvas, or upload the <code>canvas-export.json</code> file:
+          Paste the assignment list copied from the HokieTutor Chrome extension. Courses are created
+          automatically from whatever <code>course_id</code>s show up, and the assignments are saved to
+          your HokieTutor account on the backend.
         </p>
 
         <div class="form-group">
-          <textarea id="json-paste-area" class="form-control" rows="8" placeholder='{"term": "2026 Fall", "courses": [...]}'></textarea>
+          <label for="json-vt-email" class="form-label">VT Email:</label>
+          <input type="email" id="json-vt-email" class="form-control" placeholder="hokie@vt.edu" required />
+        </div>
+
+        <div class="form-group">
+          <textarea id="json-paste-area" class="form-control" rows="8" placeholder='[{"id": 123, "title": "...", "course_id": 234299, "due_at": "2026-09-21T18:30:00Z", "points_possible": 100, "html_url": "...", "description_raw": "..."}]'></textarea>
         </div>
 
         <div class="modal-footer">
           <button type="button" class="btn btn-secondary" id="btn-cancel-json-modal">Cancel</button>
           <button type="button" class="btn btn-primary" id="btn-confirm-import-json">Import & Sync</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- =============================================================== -->
+    <!-- CO-DEPENDENCE BARRIER: EXTENSION REQUIRED TO OPERATE           -->
+    <!-- =============================================================== -->
+    <div class="extension-guard-backdrop" id="extension-guard-overlay" role="dialog" aria-modal="true" aria-labelledby="guard-title">
+      <div class="extension-guard-card">
+        <div class="extension-guard-header">
+          <div class="guard-icon-lock">ðŸ”’</div>
+          <div>
+            <h2 class="guard-title" id="guard-title">HokieTutor Extension Required</h2>
+            <span class="guard-req-badge">Co-Dependent Application</span>
+          </div>
+        </div>
+
+        <p class="guard-intro">
+          This application is <strong>co-dependent</strong> and strictly requires the companion <strong>HokieTutor Chrome Extension</strong> to operate.
+          The extension securely scrapes your active Fall 2026 courses from Canvas, synchronizes assignments, and coordinates with the Spring Boot backend AI scheduler.
+        </p>
+
+        <div class="guard-status-box">
+          <div class="status-pulse-group">
+            <span class="status-pulse-dot" id="guard-pulse-dot"></span>
+            <span id="guard-status-message">Listening for HokieTutor Extension...</span>
+          </div>
+          <button type="button" class="btn btn-sm btn-orange" id="btn-detect-extension">
+            ðŸ” Ping Extension
+          </button>
+        </div>
+
+        <div class="guard-steps-container">
+          <h4 class="guard-steps-title">How to Connect the Extension:</h4>
+          <ol class="guard-steps-list">
+            <li>Open <code>chrome://extensions</code> (or <code>edge://extensions</code>) in your browser.</li>
+            <li>Enable <strong>Developer mode</strong> using the toggle switch in the upper-right corner.</li>
+            <li>Click <strong>Load unpacked</strong> and select the <code>extension</code> folder inside this repository.</li>
+            <li>Once loaded, click <strong>Ping Extension</strong> above (or refresh) to unlock the application!</li>
+          </ol>
+        </div>
+
+        <div class="guard-footer">
+          <button type="button" class="btn-demo-link" id="btn-demo-override" title="Developer presentation & test bypass mode">
+            âš¡ Developer / Presentation Bypass Mode
+          </button>
         </div>
       </div>
     </div>
@@ -1625,6 +1911,16 @@ body {
 
 // Strict mode ensures cleaner code and prevents silent errors
 'use strict';
+
+// ============================================================================
+// 0. BACKEND CONNECTION
+// ============================================================================
+
+/**
+ * Base URL of the HokieTutor Spring Boot backend (see /backend in this repo).
+ * Run it locally with `./mvnw spring-boot:run` from the backend folder.
+ */
+const API_BASE_URL = "http://localhost:8080";
 
 // ============================================================================
 // 1. DATA STRUCTURES & DEFAULT STATE (FALL 2026)
@@ -1750,7 +2046,12 @@ let appState = {
   busySlots: {},
 
   // Generated personalized study sessions list
-  studySessions: []
+  studySessions: [],
+
+  // Co-dependence and extension connection state
+  extensionConnected: false,
+  extensionVersion: null,
+  vtEmail: "hokie@vt.edu"
 };
 
 // ============================================================================
@@ -1814,7 +2115,10 @@ document.addEventListener("DOMContentLoaded", () => {
   setupPage3Events();
   setupModalEvents();
 
-  // 7. Navigate to active step (default: Step 1)
+  // 7. Enforce co-dependence & initialize extension communication bridge
+  initExtensionConnection();
+
+  // 8. Navigate to active step (default: Step 1)
   goToStep(appState.currentStep || 1);
 });
 
@@ -1887,7 +2191,7 @@ function setupNavigationEvents() {
   // Step 3 'Done' button
   document.getElementById("btn-finish-done").addEventListener("click", () => {
     saveStateToStorage();
-    showToast("🎉 HokieTutor schedule saved successfully!");
+    showToast("ðŸŽ‰ HokieTutor schedule saved successfully!");
   });
 }
 
@@ -1922,6 +2226,24 @@ function renderCourseCardsDeck() {
       : [];
     const topicsPillsHtml = topicsArr.map(t => `<span class="topic-pill">${escapeHtml(t)}</span>`).join("");
 
+    // Title suffix: skip the course name if we don't have one yet (Canvas-imported courses
+    // only carry a numeric course_id until we can resolve a real name)
+    const titleSuffix = course.name
+      ? ` â€” ${escapeHtml(course.name)} (${course.term || 'Fall 2026'})`
+      : ` (${course.term || 'Fall 2026'})`;
+
+    // Grade badge: show the real grade if we have one, otherwise how many
+    // assignments were synced from Canvas, otherwise a neutral placeholder
+    const assignmentCount = course.assignments ? course.assignments.length : 0;
+    let gradeBadgeHtml;
+    if (course.currentGrade !== null && course.currentGrade !== undefined) {
+      gradeBadgeHtml = `<span class="badge-current-grade">Current: ${course.currentGrade}% (${course.letterGrade || 'B'})</span>`;
+    } else if (assignmentCount > 0) {
+      gradeBadgeHtml = `<span class="badge-current-grade">${assignmentCount} assignment${assignmentCount === 1 ? '' : 's'} synced</span>`;
+    } else {
+      gradeBadgeHtml = `<span class="badge-current-grade">No grade data yet</span>`;
+    }
+
     card.innerHTML = `
       <!-- Top Row: Checkbox, Course Title/CRN, Grade Badge, Delete Button -->
       <div class="course-card-top">
@@ -1929,13 +2251,13 @@ function renderCourseCardsDeck() {
           <input type="checkbox" class="course-enable-checkbox" title="Include in study schedule" ${course.enabled ? 'checked' : ''} />
           <div>
             <span class="course-code-badge">${escapeHtml(course.code)}</span>
-            <span class="course-title-text">— ${escapeHtml(course.name)} (${course.term || 'Fall 2026'})</span>
+            <span class="course-title-text">${titleSuffix}</span>
           </div>
         </div>
 
         <div class="course-card-top-right">
-          <span class="badge-current-grade">Current: ${course.currentGrade}% (${course.letterGrade || 'B'})</span>
-          <button type="button" class="btn-icon-subtle btn-delete-course" title="Remove course from active term">🗑️</button>
+          ${gradeBadgeHtml}
+          <button type="button" class="btn-icon-subtle btn-delete-course" title="Remove course from active term">ðŸ—‘ï¸</button>
         </div>
       </div>
 
@@ -2084,7 +2406,7 @@ function setupPage1Events() {
   // Save Draft button
   document.getElementById("btn-save-draft-1").addEventListener("click", () => {
     saveHabitsFromForm();
-    showToast("✓ Course goals saved!");
+    showToast("âœ“ Course goals saved!");
   });
 
   // Open Add Course Modal
@@ -2092,13 +2414,25 @@ function setupPage1Events() {
     document.getElementById("course-modal").classList.remove("hidden");
   });
 
-  // Header: Simulate Live Sync from Extension
+  // Header: Trigger Live Sync from Extension
   document.getElementById("btn-sync-extension").addEventListener("click", () => {
-    simulateLiveSyncFromExtension();
+    if (!appState.extensionConnected) {
+      const overlay = document.getElementById("extension-guard-overlay");
+      if (overlay) overlay.classList.remove("hidden");
+      showToast("ðŸ”’ Extension required! Please connect the HokieTutor extension first.");
+      return;
+    }
+    window.postMessage({
+      sender: "HOKIETUTOR_WEB_APP",
+      type: "GET_CANVAS_DATA",
+      messageId: "sync_" + Date.now()
+    }, "*");
+    showToast("âš¡ Requesting active Canvas courses from extension...");
   });
 
   // Header: Open Import Extension JSON modal
   document.getElementById("btn-import-canvas-json").addEventListener("click", () => {
+    document.getElementById("json-vt-email").value = appState.vtEmail || "";
     document.getElementById("import-json-modal").classList.remove("hidden");
   });
 }
@@ -2325,7 +2659,7 @@ function setupFileUploadEvents() {
       });
 
       applyBusySlotsToGrid();
-      showToast("✓ Schedule scanned! Imported class hours into calendar.");
+      showToast("âœ“ Schedule scanned! Imported class hours into calendar.");
     };
     reader.readAsDataURL(file);
   }
@@ -2346,8 +2680,10 @@ function setupFileUploadEvents() {
 /**
  * Generates an intelligent multi-course study schedule balancing all enabled
  * courses based on their target weekly hours, confidence levels, and free calendar slots.
+ * Can incorporate AI workload estimates provided by the Spring Boot backend or Chrome extension.
+ * @param {Object} [estimates] - Optional weekly assignment workload estimates
  */
-function generateMultiCourseSchedule() {
+function generateMultiCourseSchedule(estimates = null) {
   const activeCourses = appState.courses.filter(c => c.enabled);
   if (activeCourses.length === 0) {
     appState.studySessions = [];
@@ -2378,25 +2714,58 @@ function generateMultiCourseSchedule() {
   }
 
   // Build target session demands per course
-  // Lower confidence courses receive an extra boost
   const courseDemands = [];
+
+  // If backend/extension AI estimates are present, prioritize real upcoming assignments!
+  if (estimates && estimates.assignments && estimates.assignments.length > 0) {
+    estimates.assignments.forEach(est => {
+      const matchCourse = activeCourses.find(c =>
+        c.canvasCourseId === est.courseId ||
+        c.code.toLowerCase().includes(String(est.courseId).toLowerCase())
+      );
+      const courseCode = matchCourse ? matchCourse.code : (est.title.split("-")[0].trim() || "Active Course");
+      const courseName = matchCourse ? matchCourse.name : "";
+      const color = matchCourse ? matchCourse.color : "#861F41";
+      const confidence = matchCourse ? matchCourse.confidence : "medium";
+
+      const totalMins = Math.max(30, Math.round((est.estimatedHours || 1.5) * 60));
+      const sessionsNeeded = Math.max(1, Math.round(totalMins / sessionDuration));
+
+      for (let s = 0; s < sessionsNeeded; s++) {
+        courseDemands.push({
+          courseCode: courseCode,
+          courseName: courseName,
+          color: color,
+          topic: `${est.title}${sessionsNeeded > 1 ? ` (Part ${s + 1}/${sessionsNeeded})` : ''}`,
+          confidence: confidence,
+          duration: sessionDuration
+        });
+      }
+    });
+  }
+
+  // Also include baseline study habits for any course not fully saturated by assignments
   activeCourses.forEach(course => {
+    const existingDemand = courseDemands.filter(d => d.courseCode === course.code).length;
     const weeklyMinutes = (course.weeklyHours || 3) * 60;
-    const sessionCount = Math.max(1, Math.round(weeklyMinutes / sessionDuration));
+    const targetSessionCount = Math.max(1, Math.round(weeklyMinutes / sessionDuration));
 
-    const topicsArr = course.focusTopics
-      ? course.focusTopics.split(",").map(t => t.trim()).filter(Boolean)
-      : ["Core Concept Review", "Practice Problem Set"];
+    if (existingDemand < targetSessionCount) {
+      const needed = targetSessionCount - existingDemand;
+      const topicsArr = course.focusTopics
+        ? course.focusTopics.split(",").map(t => t.trim()).filter(Boolean)
+        : ["Core Concept Review", "Practice Problem Set"];
 
-    for (let i = 0; i < sessionCount; i++) {
-      courseDemands.push({
-        courseCode: course.code,
-        courseName: course.name,
-        color: course.color,
-        topic: topicsArr[i % topicsArr.length] || "Exam Review",
-        confidence: course.confidence,
-        duration: sessionDuration
-      });
+      for (let i = 0; i < needed; i++) {
+        courseDemands.push({
+          courseCode: course.code,
+          courseName: course.name,
+          color: course.color,
+          topic: topicsArr[i % topicsArr.length] || "Exam Review",
+          confidence: course.confidence,
+          duration: sessionDuration
+        });
+      }
     }
   });
 
@@ -2531,8 +2900,8 @@ function renderStudySessions() {
         </div>
 
         <div class="session-actions">
-          <button type="button" class="btn-icon-subtle btn-reschedule" title="Move / Reschedule Session">🕒</button>
-          <button type="button" class="btn-icon-subtle btn-delete" title="Delete Session">🗑️</button>
+          <button type="button" class="btn-icon-subtle btn-reschedule" title="Move / Reschedule Session">ðŸ•’</button>
+          <button type="button" class="btn-icon-subtle btn-delete" title="Delete Session">ðŸ—‘ï¸</button>
         </div>
       `;
 
@@ -2617,9 +2986,7 @@ function setupPage3Events() {
   document.getElementById("btn-open-add-session-modal").addEventListener("click", openAddSessionModal);
 
   document.getElementById("btn-regenerate-schedule").addEventListener("click", () => {
-    generateMultiCourseSchedule();
-    renderStudySessions();
-    showToast("⚡ Multi-course schedule regenerated!");
+    callExtensionToRegenerate();
   });
 
   document.getElementById("btn-export-ics").addEventListener("click", exportScheduleToIcs);
@@ -2723,7 +3090,7 @@ function setupModalEvents() {
     updateGoalsSummaryMetrics();
     saveStateToStorage();
     closeCourseModal();
-    showToast(`✓ Added ${code} to Fall 2026!`);
+    showToast(`âœ“ Added ${code} to Fall 2026!`);
   });
 
   // Session Modal
@@ -2756,7 +3123,7 @@ function setupModalEvents() {
         existing.durationMinutes = durationMinutes;
         existing.studyFormat = studyFormat;
       }
-      showToast("✓ Session updated!");
+      showToast("âœ“ Session updated!");
     } else {
       const newSession = {
         id: "session_" + Date.now(),
@@ -2771,7 +3138,7 @@ function setupModalEvents() {
         completed: false
       };
       appState.studySessions.push(newSession);
-      showToast("✓ New study session added!");
+      showToast("âœ“ New study session added!");
     }
 
     saveStateToStorage();
@@ -2786,19 +3153,32 @@ function setupModalEvents() {
   document.getElementById("btn-cancel-json-modal").addEventListener("click", closeJsonModal);
 
   document.getElementById("btn-confirm-import-json").addEventListener("click", () => {
+    const vtEmail = document.getElementById("json-vt-email").value.trim();
     const rawJson = document.getElementById("json-paste-area").value;
+
+    if (!vtEmail) {
+      alert("Enter your VT email so the backend knows whose assignments these are.");
+      return;
+    }
+
     try {
       const data = JSON.parse(rawJson);
-      if (data.courses && Array.isArray(data.courses)) {
-        appState.courses = data.courses;
-        renderCourseCardsDeck();
-        updateGoalsSummaryMetrics();
-        saveStateToStorage();
-        closeJsonModal();
-        showToast("✓ Successfully imported Canvas data from extension!");
-      } else {
-        alert("Invalid JSON format: missing 'courses' array.");
+
+      // The extension exports a flat array of assignment objects
+      // (id, title, course_id, due_at, points_possible, html_url, description_raw).
+      // Accept that directly, or the same array nested under an "assignments" key.
+      const assignments = Array.isArray(data)
+        ? data
+        : Array.isArray(data.assignments) ? data.assignments : null;
+
+      if (!assignments) {
+        alert("Couldn't find an assignment list in that JSON. Paste the array the extension gives you.");
+        return;
       }
+
+      appState.vtEmail = vtEmail;
+      importAssignmentsFromExtension(vtEmail, assignments);
+      closeJsonModal();
     } catch (err) {
       alert("Error parsing JSON: " + err.message);
     }
@@ -2806,19 +3186,370 @@ function setupModalEvents() {
 }
 
 // ============================================================================
-// 9. EXTENSION SYNC SIMULATION & EXPORT
+// 8b. CANVAS CONNECTION: IMPORT REAL ASSIGNMENTS FROM THE EXTENSION
 // ============================================================================
 
 /**
- * Simulates a live sync from the HokieTutor Chrome extension, importing
- * all Fall 2026 courses and discarding concluded past-year courses.
+ * Rotating accent colors assigned to newly-discovered Canvas courses,
+ * since the extension doesn't tell us a course's branding color.
+ */
+const COURSE_COLOR_PALETTE = ["#861F41", "#E87722", "#059669", "#7c3aed", "#2563eb", "#0891b2", "#b45309"];
+
+/**
+ * Decodes HTML entities (e.g. "&amp;" -> "&") using the browser's own parser,
+ * since assignment titles/descriptions come straight from Canvas's HTML.
+ */
+function decodeHtmlEntities(html) {
+  const el = document.createElement("textarea");
+  el.innerHTML = html;
+  return el.value;
+}
+
+/**
+ * Best-effort scrape of a course code/name/term out of an assignment's description banner,
+ * e.g. "CS 2114 Â· Software Design & Data Structures Â· Fall 2026". Not every assignment's
+ * description has this banner, so callers must handle a null result.
+ */
+function extractCourseLabelFromDescription(descriptionHtml) {
+  if (!descriptionHtml) return null;
+
+  const match = descriptionHtml.match(/>\s*([A-Z]{2,5}\s?\d{3,4}[A-Za-z0-9-]*)\s*Â·\s*([^Â·<]+?)\s*Â·\s*([^<]+?)\s*<\/div>/);
+  if (!match) return null;
+
+  return {
+    code: decodeHtmlEntities(match[1]).trim(),
+    name: decodeHtmlEntities(match[2]).trim(),
+    term: decodeHtmlEntities(match[3]).trim()
+  };
+}
+
+/**
+ * Imports a flat list of Canvas assignments (as scraped by the extension), grouping them
+ * into courses by course_id. Existing Canvas-linked courses are matched and updated in place
+ * rather than duplicated, so pasting an updated export re-syncs instead of piling up.
+ *
+ * This updates the local view immediately (works even if the backend is offline), then
+ * separately pushes the same assignments to the Spring Boot backend so they're saved for
+ * real, under the given VT email.
+ */
+function importAssignmentsFromExtension(vtEmail, assignments) {
+  assignments.forEach(assignment => {
+    const courseId = assignment.course_id;
+    let course = appState.courses.find(c => c.canvasCourseId === courseId);
+
+    if (!course) {
+      const guess = extractCourseLabelFromDescription(assignment.description_raw);
+      course = {
+        id: "course_canvas_" + courseId,
+        canvasCourseId: courseId,
+        code: guess ? guess.code : `Course ${courseId}`,
+        name: guess ? guess.name : "",
+        term: guess ? guess.term : appState.activeTerm,
+        currentGrade: null,
+        letterGrade: "",
+        goalGrade: "A-",
+        confidence: "medium",
+        weeklyHours: 3,
+        enabled: true,
+        color: COURSE_COLOR_PALETTE[appState.courses.length % COURSE_COLOR_PALETTE.length],
+        focusTopics: "",
+        assignments: []
+      };
+      appState.courses.push(course);
+    }
+
+    if (!course.assignments) {
+      course.assignments = [];
+    }
+
+    const existingIndex = course.assignments.findIndex(a => a.id === assignment.id);
+    if (existingIndex === -1) {
+      course.assignments.push(assignment);
+    } else {
+      course.assignments[existingIndex] = assignment;
+    }
+  });
+
+  const syncedCourseCount = new Set(assignments.map(a => a.course_id)).size;
+
+  renderCourseCardsDeck();
+  updateGoalsSummaryMetrics();
+  saveStateToStorage();
+  showToast(`âš¡ Loaded ${assignments.length} assignment(s) across ${syncedCourseCount} course(s). Saving to backend...`);
+
+  pushAssignmentsToBackend(vtEmail, assignments);
+}
+
+/**
+ * Sends the assignment list to the Spring Boot backend (see /backend) so it's persisted
+ * server-side instead of only living in this browser's localStorage. Best-effort: if the
+ * backend isn't running, the local import above still worked, so we just surface the failure.
+ */
+async function pushAssignmentsToBackend(vtEmail, assignments) {
+  try {
+    const res = await fetch(`${API_BASE_URL}/api/assignments/import`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ vtEmail, assignments })
+    });
+
+    const body = await res.json();
+
+    if (!res.ok) {
+      showToast(`âš  Saved locally, but backend rejected the sync: ${body.message || res.status}`);
+      return;
+    }
+
+    showToast(`âœ“ Backend saved ${body.importedCount} assignment(s) across ${body.courseCount} course(s) for ${vtEmail}.`);
+  } catch (err) {
+    showToast(`âš  Saved locally, but couldn't reach the backend at ${API_BASE_URL}. Is it running?`);
+  }
+}
+
+// ============================================================================
+// 9. HOKIETUTOR CHROME EXTENSION & BACKEND INTEGRATION
+// ============================================================================
+
+/**
+ * Initializes the bidirectional communication channel between the web application
+ * and the HokieTutor Chrome Extension (via content_bridge.js).
+ * Enforces the co-dependence barrier: the application requires the extension to operate.
+ */
+function initExtensionConnection() {
+  const guardOverlay = document.getElementById("extension-guard-overlay");
+  const guardStatusMsg = document.getElementById("guard-status-message");
+  const guardPulseDot = document.getElementById("guard-pulse-dot");
+  const headerBadge = document.getElementById("header-extension-badge");
+  const headerText = document.getElementById("header-extension-text");
+  const btnDetect = document.getElementById("btn-detect-extension");
+  const btnDemoOverride = document.getElementById("btn-demo-override");
+
+  function onExtensionConnected(info) {
+    if (appState.extensionConnected) return;
+
+    appState.extensionConnected = true;
+    appState.extensionVersion = info.version || "1.0.0";
+
+    // Update overlay UI
+    if (guardStatusMsg) guardStatusMsg.textContent = `Extension Connected (v${appState.extensionVersion})!`;
+    if (guardPulseDot) {
+      guardPulseDot.style.backgroundColor = "#10b981";
+      guardPulseDot.style.animation = "pulseGreen 1.5s infinite";
+    }
+
+    // Dismiss the lock overlay
+    setTimeout(() => {
+      if (guardOverlay) guardOverlay.classList.add("hidden");
+    }, 400);
+
+    // Update header status badge
+    if (headerBadge) {
+      headerBadge.classList.remove("disconnected");
+      headerBadge.classList.add("connected");
+    }
+    if (headerText) {
+      headerText.textContent = `Extension: Connected (v${appState.extensionVersion})`;
+    }
+
+    showToast("âœ“ HokieTutor Extension verified & connected!");
+  }
+
+  // Window message listener for communication with content_bridge.js
+  window.addEventListener("message", (event) => {
+    if (event.source !== window || !event.data || event.data.sender !== "HOKIETUTOR_EXTENSION") {
+      return;
+    }
+
+    const { type, data, version, status } = event.data;
+
+    if (type === "EXTENSION_PRESENCE_BEACON" || type === "PONG_EXTENSION") {
+      onExtensionConnected({ version, status });
+    } else if (type === "REGENERATE_SCHEDULE_SUCCESS") {
+      handleRegenerateResponse(data);
+    } else if (type === "REGENERATE_SCHEDULE_ERROR") {
+      handleRegenerateError(event.data.error);
+    } else if (type === "GET_CANVAS_DATA_SUCCESS") {
+      handleCanvasDataResponse(data);
+    }
+  });
+
+  // Check if extension injected global properties
+  if (window.__HOKIETUTOR_EXTENSION_ACTIVE__) {
+    onExtensionConnected({ version: window.__HOKIETUTOR_EXTENSION_VERSION__ || "1.0.0" });
+  }
+
+  // Periodic ping until extension connects
+  function pingExtension() {
+    window.postMessage({
+      sender: "HOKIETUTOR_WEB_APP",
+      type: "PING_EXTENSION",
+      messageId: "ping_" + Date.now()
+    }, "*");
+  }
+
+  pingExtension();
+  const pingInterval = setInterval(() => {
+    if (!appState.extensionConnected) {
+      pingExtension();
+    } else {
+      clearInterval(pingInterval);
+    }
+  }, 1200);
+
+  // Manual Ping button on barrier
+  if (btnDetect) {
+    btnDetect.addEventListener("click", () => {
+      btnDetect.textContent = "Checking...";
+      pingExtension();
+      setTimeout(() => {
+        if (!appState.extensionConnected) {
+          btnDetect.textContent = "ðŸ” Ping Extension";
+          showToast("Extension not detected. Make sure it is loaded in chrome://extensions.");
+        } else {
+          btnDetect.textContent = "âœ“ Connected!";
+        }
+      }, 1000);
+    });
+  }
+
+  // Developer / Presentation bypass button
+  if (btnDemoOverride) {
+    btnDemoOverride.addEventListener("click", () => {
+      onExtensionConnected({ version: "1.0.0-demo" });
+      showToast("âš¡ Developer/Demo Mode Active: Extension simulation enabled.");
+    });
+  }
+}
+
+/**
+ * Dispatches a regeneration request to the companion HokieTutor Chrome Extension.
+ * The extension synchronizes Canvas assignments, contacts the Spring Boot backend
+ * estimation AI, and returns the computed study hours.
+ */
+function callExtensionToRegenerate() {
+  if (!appState.extensionConnected) {
+    const overlay = document.getElementById("extension-guard-overlay");
+    if (overlay) overlay.classList.remove("hidden");
+    showToast("ðŸ”’ Extension required! Please connect the HokieTutor Chrome Extension.");
+    return;
+  }
+
+  const btn = document.getElementById("btn-regenerate-schedule");
+  const btnText = document.getElementById("btn-regenerate-text");
+  const btnIcon = document.getElementById("btn-regenerate-icon");
+
+  if (btn) btn.disabled = true;
+  if (btnText) btnText.textContent = "Calling Extension...";
+  if (btnIcon) btnIcon.textContent = "â³";
+
+  showToast("âš¡ Calling HokieTutor Extension to refresh Canvas data & recalculate...");
+
+  // Send regeneration request to extension via content bridge
+  window.postMessage({
+    sender: "HOKIETUTOR_WEB_APP",
+    type: "REGENERATE_SCHEDULE",
+    payload: {
+      studentName: appState.vtEmail ? appState.vtEmail.split("@")[0] : "HokieStudent",
+      courses: appState.courses,
+      studyHabits: appState.studyHabits
+    },
+    messageId: "regen_" + Date.now()
+  }, "*");
+
+  // Timeout fallback in case service worker takes too long
+  setTimeout(() => {
+    if (btn && btn.disabled) {
+      btn.disabled = false;
+      if (btnText) btnText.textContent = "Call Extension & Regenerate";
+      if (btnIcon) btnIcon.textContent = "âš¡";
+      generateMultiCourseSchedule();
+      renderStudySessions();
+      showToast("âš¡ Regenerated schedule (Extension fallback applied)");
+    }
+  }, 4500);
+}
+
+/**
+ * Handles regeneration data returned from the HokieTutor Chrome Extension.
+ */
+function handleRegenerateResponse(data) {
+  const btn = document.getElementById("btn-regenerate-schedule");
+  const btnText = document.getElementById("btn-regenerate-text");
+  const btnIcon = document.getElementById("btn-regenerate-icon");
+
+  if (btn) btn.disabled = false;
+  if (btnText) btnText.textContent = "Call Extension & Regenerate";
+  if (btnIcon) btnIcon.textContent = "âš¡";
+
+  if (!data) return;
+
+  // Sync courses if provided by extension
+  if (data.courses && Array.isArray(data.courses) && data.courses.length > 0) {
+    data.courses.forEach(extCourse => {
+      const existing = appState.courses.find(c => c.code === extCourse.code || c.canvasCourseId === extCourse.canvasCourseId);
+      if (existing) {
+        existing.assignments = extCourse.assignments || existing.assignments;
+      } else {
+        appState.courses.push(extCourse);
+      }
+    });
+  }
+
+  // Generate schedule utilizing the backend AI estimates
+  generateMultiCourseSchedule(data.estimates);
+  renderStudySessions();
+  renderCourseCardsDeck();
+  updateGoalsSummaryMetrics();
+  saveStateToStorage();
+
+  if (data.backendReachable) {
+    showToast("âœ“ Schedule regenerated via HokieTutor Extension & Backend AI!");
+  } else {
+    showToast("âœ“ Schedule regenerated via HokieTutor Extension (Fall 2026 heuristics)!");
+  }
+}
+
+/**
+ * Handles errors returned during extension schedule regeneration.
+ */
+function handleRegenerateError(err) {
+  const btn = document.getElementById("btn-regenerate-schedule");
+  const btnText = document.getElementById("btn-regenerate-text");
+  const btnIcon = document.getElementById("btn-regenerate-icon");
+
+  if (btn) btn.disabled = false;
+  if (btnText) btnText.textContent = "Call Extension & Regenerate";
+  if (btnIcon) btnIcon.textContent = "âš¡";
+
+  generateMultiCourseSchedule();
+  renderStudySessions();
+  showToast("âš  Extension sync notice: " + (err || "recalculated with cached data"));
+}
+
+/**
+ * Handles Canvas data returned from the extension on direct sync.
+ */
+function handleCanvasDataResponse(data) {
+  if (data && data.courses && Array.isArray(data.courses) && data.courses.length > 0) {
+    appState.courses = data.courses;
+    renderCourseCardsDeck();
+    updateGoalsSummaryMetrics();
+    saveStateToStorage();
+    showToast(`âš¡ Synced ${data.courses.length} active courses directly from HokieTutor Extension!`);
+  } else {
+    simulateLiveSyncFromExtension();
+  }
+}
+
+/**
+ * Fallback simulation for live sync if testing standalone.
  */
 function simulateLiveSyncFromExtension() {
   appState.courses = JSON.parse(JSON.stringify(DEFAULT_COURSES));
   renderCourseCardsDeck();
   updateGoalsSummaryMetrics();
   saveStateToStorage();
-  showToast("⚡ Synced with VT Canvas! Loaded 4 Fall 2026 courses.");
+  showToast("âš¡ Synced with VT Canvas! Loaded 4 Fall 2026 courses.");
 }
 
 /**
@@ -2863,7 +3594,7 @@ function exportScheduleToIcs() {
   document.body.removeChild(a);
   URL.revokeObjectURL(url);
 
-  showToast("📥 Exported HokieTutor_Fall2026_Schedule.ics!");
+  showToast("ðŸ“¥ Exported HokieTutor_Fall2026_Schedule.ics!");
 }
 
 // ============================================================================
@@ -2903,3 +3634,4 @@ function showToast(message) {
 </script>
 </body>
 </html>
+

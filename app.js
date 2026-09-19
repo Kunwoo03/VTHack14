@@ -148,7 +148,12 @@ let appState = {
   busySlots: {},
 
   // Generated personalized study sessions list
-  studySessions: []
+  studySessions: [],
+
+  // Co-dependence and extension connection state
+  extensionConnected: false,
+  extensionVersion: null,
+  vtEmail: "hokie@vt.edu"
 };
 
 // ============================================================================
@@ -212,7 +217,10 @@ document.addEventListener("DOMContentLoaded", () => {
   setupPage3Events();
   setupModalEvents();
 
-  // 7. Navigate to active step (default: Step 1)
+  // 7. Enforce co-dependence & initialize extension communication bridge
+  initExtensionConnection();
+
+  // 8. Navigate to active step (default: Step 1)
   goToStep(appState.currentStep || 1);
 });
 
@@ -508,9 +516,20 @@ function setupPage1Events() {
     document.getElementById("course-modal").classList.remove("hidden");
   });
 
-  // Header: Simulate Live Sync from Extension
+  // Header: Trigger Live Sync from Extension
   document.getElementById("btn-sync-extension").addEventListener("click", () => {
-    simulateLiveSyncFromExtension();
+    if (!appState.extensionConnected) {
+      const overlay = document.getElementById("extension-guard-overlay");
+      if (overlay) overlay.classList.remove("hidden");
+      showToast("🔒 Extension required! Please connect the HokieTutor extension first.");
+      return;
+    }
+    window.postMessage({
+      sender: "HOKIETUTOR_WEB_APP",
+      type: "GET_CANVAS_DATA",
+      messageId: "sync_" + Date.now()
+    }, "*");
+    showToast("⚡ Requesting active Canvas courses from extension...");
   });
 
   // Header: Open Import Extension JSON modal
@@ -763,8 +782,10 @@ function setupFileUploadEvents() {
 /**
  * Generates an intelligent multi-course study schedule balancing all enabled
  * courses based on their target weekly hours, confidence levels, and free calendar slots.
+ * Can incorporate AI workload estimates provided by the Spring Boot backend or Chrome extension.
+ * @param {Object} [estimates] - Optional weekly assignment workload estimates
  */
-function generateMultiCourseSchedule() {
+function generateMultiCourseSchedule(estimates = null) {
   const activeCourses = appState.courses.filter(c => c.enabled);
   if (activeCourses.length === 0) {
     appState.studySessions = [];
@@ -795,25 +816,58 @@ function generateMultiCourseSchedule() {
   }
 
   // Build target session demands per course
-  // Lower confidence courses receive an extra boost
   const courseDemands = [];
+
+  // If backend/extension AI estimates are present, prioritize real upcoming assignments!
+  if (estimates && estimates.assignments && estimates.assignments.length > 0) {
+    estimates.assignments.forEach(est => {
+      const matchCourse = activeCourses.find(c =>
+        c.canvasCourseId === est.courseId ||
+        c.code.toLowerCase().includes(String(est.courseId).toLowerCase())
+      );
+      const courseCode = matchCourse ? matchCourse.code : (est.title.split("-")[0].trim() || "Active Course");
+      const courseName = matchCourse ? matchCourse.name : "";
+      const color = matchCourse ? matchCourse.color : "#861F41";
+      const confidence = matchCourse ? matchCourse.confidence : "medium";
+
+      const totalMins = Math.max(30, Math.round((est.estimatedHours || 1.5) * 60));
+      const sessionsNeeded = Math.max(1, Math.round(totalMins / sessionDuration));
+
+      for (let s = 0; s < sessionsNeeded; s++) {
+        courseDemands.push({
+          courseCode: courseCode,
+          courseName: courseName,
+          color: color,
+          topic: `${est.title}${sessionsNeeded > 1 ? ` (Part ${s + 1}/${sessionsNeeded})` : ''}`,
+          confidence: confidence,
+          duration: sessionDuration
+        });
+      }
+    });
+  }
+
+  // Also include baseline study habits for any course not fully saturated by assignments
   activeCourses.forEach(course => {
+    const existingDemand = courseDemands.filter(d => d.courseCode === course.code).length;
     const weeklyMinutes = (course.weeklyHours || 3) * 60;
-    const sessionCount = Math.max(1, Math.round(weeklyMinutes / sessionDuration));
+    const targetSessionCount = Math.max(1, Math.round(weeklyMinutes / sessionDuration));
 
-    const topicsArr = course.focusTopics
-      ? course.focusTopics.split(",").map(t => t.trim()).filter(Boolean)
-      : ["Core Concept Review", "Practice Problem Set"];
+    if (existingDemand < targetSessionCount) {
+      const needed = targetSessionCount - existingDemand;
+      const topicsArr = course.focusTopics
+        ? course.focusTopics.split(",").map(t => t.trim()).filter(Boolean)
+        : ["Core Concept Review", "Practice Problem Set"];
 
-    for (let i = 0; i < sessionCount; i++) {
-      courseDemands.push({
-        courseCode: course.code,
-        courseName: course.name,
-        color: course.color,
-        topic: topicsArr[i % topicsArr.length] || "Exam Review",
-        confidence: course.confidence,
-        duration: sessionDuration
-      });
+      for (let i = 0; i < needed; i++) {
+        courseDemands.push({
+          courseCode: course.code,
+          courseName: course.name,
+          color: course.color,
+          topic: topicsArr[i % topicsArr.length] || "Exam Review",
+          confidence: course.confidence,
+          duration: sessionDuration
+        });
+      }
     }
   });
 
@@ -1034,9 +1088,7 @@ function setupPage3Events() {
   document.getElementById("btn-open-add-session-modal").addEventListener("click", openAddSessionModal);
 
   document.getElementById("btn-regenerate-schedule").addEventListener("click", () => {
-    generateMultiCourseSchedule();
-    renderStudySessions();
-    showToast("⚡ Multi-course schedule regenerated!");
+    callExtensionToRegenerate();
   });
 
   document.getElementById("btn-export-ics").addEventListener("click", exportScheduleToIcs);
@@ -1357,12 +1409,242 @@ async function pushAssignmentsToBackend(vtEmail, assignments) {
 }
 
 // ============================================================================
-// 9. EXTENSION SYNC SIMULATION & EXPORT
+// 9. HOKIETUTOR CHROME EXTENSION & BACKEND INTEGRATION
 // ============================================================================
 
 /**
- * Simulates a live sync from the HokieTutor Chrome extension, importing
- * all Fall 2026 courses and discarding concluded past-year courses.
+ * Initializes the bidirectional communication channel between the web application
+ * and the HokieTutor Chrome Extension (via content_bridge.js).
+ * Enforces the co-dependence barrier: the application requires the extension to operate.
+ */
+function initExtensionConnection() {
+  const guardOverlay = document.getElementById("extension-guard-overlay");
+  const guardStatusMsg = document.getElementById("guard-status-message");
+  const guardPulseDot = document.getElementById("guard-pulse-dot");
+  const headerBadge = document.getElementById("header-extension-badge");
+  const headerText = document.getElementById("header-extension-text");
+  const btnDetect = document.getElementById("btn-detect-extension");
+  const btnDemoOverride = document.getElementById("btn-demo-override");
+
+  function onExtensionConnected(info) {
+    if (appState.extensionConnected) return;
+
+    appState.extensionConnected = true;
+    appState.extensionVersion = info.version || "1.0.0";
+
+    // Update overlay UI
+    if (guardStatusMsg) guardStatusMsg.textContent = `Extension Connected (v${appState.extensionVersion})!`;
+    if (guardPulseDot) {
+      guardPulseDot.style.backgroundColor = "#10b981";
+      guardPulseDot.style.animation = "pulseGreen 1.5s infinite";
+    }
+
+    // Dismiss the lock overlay
+    setTimeout(() => {
+      if (guardOverlay) guardOverlay.classList.add("hidden");
+    }, 400);
+
+    // Update header status badge
+    if (headerBadge) {
+      headerBadge.classList.remove("disconnected");
+      headerBadge.classList.add("connected");
+    }
+    if (headerText) {
+      headerText.textContent = `Extension: Connected (v${appState.extensionVersion})`;
+    }
+
+    showToast("✓ HokieTutor Extension verified & connected!");
+  }
+
+  // Window message listener for communication with content_bridge.js
+  window.addEventListener("message", (event) => {
+    if (event.source !== window || !event.data || event.data.sender !== "HOKIETUTOR_EXTENSION") {
+      return;
+    }
+
+    const { type, data, version, status } = event.data;
+
+    if (type === "EXTENSION_PRESENCE_BEACON" || type === "PONG_EXTENSION") {
+      onExtensionConnected({ version, status });
+    } else if (type === "REGENERATE_SCHEDULE_SUCCESS") {
+      handleRegenerateResponse(data);
+    } else if (type === "REGENERATE_SCHEDULE_ERROR") {
+      handleRegenerateError(event.data.error);
+    } else if (type === "GET_CANVAS_DATA_SUCCESS") {
+      handleCanvasDataResponse(data);
+    }
+  });
+
+  // Check if extension injected global properties
+  if (window.__HOKIETUTOR_EXTENSION_ACTIVE__) {
+    onExtensionConnected({ version: window.__HOKIETUTOR_EXTENSION_VERSION__ || "1.0.0" });
+  }
+
+  // Periodic ping until extension connects
+  function pingExtension() {
+    window.postMessage({
+      sender: "HOKIETUTOR_WEB_APP",
+      type: "PING_EXTENSION",
+      messageId: "ping_" + Date.now()
+    }, "*");
+  }
+
+  pingExtension();
+  const pingInterval = setInterval(() => {
+    if (!appState.extensionConnected) {
+      pingExtension();
+    } else {
+      clearInterval(pingInterval);
+    }
+  }, 1200);
+
+  // Manual Ping button on barrier
+  if (btnDetect) {
+    btnDetect.addEventListener("click", () => {
+      btnDetect.textContent = "Checking...";
+      pingExtension();
+      setTimeout(() => {
+        if (!appState.extensionConnected) {
+          btnDetect.textContent = "🔍 Ping Extension";
+          showToast("Extension not detected. Make sure it is loaded in chrome://extensions.");
+        } else {
+          btnDetect.textContent = "✓ Connected!";
+        }
+      }, 1000);
+    });
+  }
+
+  // Developer / Presentation bypass button
+  if (btnDemoOverride) {
+    btnDemoOverride.addEventListener("click", () => {
+      onExtensionConnected({ version: "1.0.0-demo" });
+      showToast("⚡ Developer/Demo Mode Active: Extension simulation enabled.");
+    });
+  }
+}
+
+/**
+ * Dispatches a regeneration request to the companion HokieTutor Chrome Extension.
+ * The extension synchronizes Canvas assignments, contacts the Spring Boot backend
+ * estimation AI, and returns the computed study hours.
+ */
+function callExtensionToRegenerate() {
+  if (!appState.extensionConnected) {
+    const overlay = document.getElementById("extension-guard-overlay");
+    if (overlay) overlay.classList.remove("hidden");
+    showToast("🔒 Extension required! Please connect the HokieTutor Chrome Extension.");
+    return;
+  }
+
+  const btn = document.getElementById("btn-regenerate-schedule");
+  const btnText = document.getElementById("btn-regenerate-text");
+  const btnIcon = document.getElementById("btn-regenerate-icon");
+
+  if (btn) btn.disabled = true;
+  if (btnText) btnText.textContent = "Calling Extension...";
+  if (btnIcon) btnIcon.textContent = "⏳";
+
+  showToast("⚡ Calling HokieTutor Extension to refresh Canvas data & recalculate...");
+
+  // Send regeneration request to extension via content bridge
+  window.postMessage({
+    sender: "HOKIETUTOR_WEB_APP",
+    type: "REGENERATE_SCHEDULE",
+    payload: {
+      studentName: appState.vtEmail ? appState.vtEmail.split("@")[0] : "HokieStudent",
+      courses: appState.courses,
+      studyHabits: appState.studyHabits
+    },
+    messageId: "regen_" + Date.now()
+  }, "*");
+
+  // Timeout fallback in case service worker takes too long
+  setTimeout(() => {
+    if (btn && btn.disabled) {
+      btn.disabled = false;
+      if (btnText) btnText.textContent = "Call Extension & Regenerate";
+      if (btnIcon) btnIcon.textContent = "⚡";
+      generateMultiCourseSchedule();
+      renderStudySessions();
+      showToast("⚡ Regenerated schedule (Extension fallback applied)");
+    }
+  }, 4500);
+}
+
+/**
+ * Handles regeneration data returned from the HokieTutor Chrome Extension.
+ */
+function handleRegenerateResponse(data) {
+  const btn = document.getElementById("btn-regenerate-schedule");
+  const btnText = document.getElementById("btn-regenerate-text");
+  const btnIcon = document.getElementById("btn-regenerate-icon");
+
+  if (btn) btn.disabled = false;
+  if (btnText) btnText.textContent = "Call Extension & Regenerate";
+  if (btnIcon) btnIcon.textContent = "⚡";
+
+  if (!data) return;
+
+  // Sync courses if provided by extension
+  if (data.courses && Array.isArray(data.courses) && data.courses.length > 0) {
+    data.courses.forEach(extCourse => {
+      const existing = appState.courses.find(c => c.code === extCourse.code || c.canvasCourseId === extCourse.canvasCourseId);
+      if (existing) {
+        existing.assignments = extCourse.assignments || existing.assignments;
+      } else {
+        appState.courses.push(extCourse);
+      }
+    });
+  }
+
+  // Generate schedule utilizing the backend AI estimates
+  generateMultiCourseSchedule(data.estimates);
+  renderStudySessions();
+  renderCourseCardsDeck();
+  updateGoalsSummaryMetrics();
+  saveStateToStorage();
+
+  if (data.backendReachable) {
+    showToast("✓ Schedule regenerated via HokieTutor Extension & Backend AI!");
+  } else {
+    showToast("✓ Schedule regenerated via HokieTutor Extension (Fall 2026 heuristics)!");
+  }
+}
+
+/**
+ * Handles errors returned during extension schedule regeneration.
+ */
+function handleRegenerateError(err) {
+  const btn = document.getElementById("btn-regenerate-schedule");
+  const btnText = document.getElementById("btn-regenerate-text");
+  const btnIcon = document.getElementById("btn-regenerate-icon");
+
+  if (btn) btn.disabled = false;
+  if (btnText) btnText.textContent = "Call Extension & Regenerate";
+  if (btnIcon) btnIcon.textContent = "⚡";
+
+  generateMultiCourseSchedule();
+  renderStudySessions();
+  showToast("⚠ Extension sync notice: " + (err || "recalculated with cached data"));
+}
+
+/**
+ * Handles Canvas data returned from the extension on direct sync.
+ */
+function handleCanvasDataResponse(data) {
+  if (data && data.courses && Array.isArray(data.courses) && data.courses.length > 0) {
+    appState.courses = data.courses;
+    renderCourseCardsDeck();
+    updateGoalsSummaryMetrics();
+    saveStateToStorage();
+    showToast(`⚡ Synced ${data.courses.length} active courses directly from HokieTutor Extension!`);
+  } else {
+    simulateLiveSyncFromExtension();
+  }
+}
+
+/**
+ * Fallback simulation for live sync if testing standalone.
  */
 function simulateLiveSyncFromExtension() {
   appState.courses = JSON.parse(JSON.stringify(DEFAULT_COURSES));

@@ -1,0 +1,2905 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>HokieTutor - VT Canvas AI Study Scheduler Application</title>
+  <style>
+/* ==========================================================================
+   HokieTutor Web Application Stylesheet
+   Virginia Tech Branding: Chicago Maroon (#861F41) & Burnt Orange (#E87722)
+   Multi-Course Architecture & Responsive Design
+   ========================================================================== */
+
+:root {
+  /* VT Brand Identity */
+  --vt-maroon: #861F41;
+  --vt-maroon-dark: #5e142c;
+  --vt-maroon-light: #a32c54;
+  --vt-orange: #E87722;
+  --vt-orange-light: #f59146;
+  --vt-orange-subtle: #fff3ea;
+  --vt-hokie-stone: #75787b;
+
+  /* Course Specific Accent Palette */
+  --course-math: #861F41;     /* VT Maroon */
+  --course-cs: #E87722;       /* VT Orange */
+  --course-enge: #059669;     /* Green Engineering Emerald */
+  --course-psyc: #7c3aed;     /* Psychology Royal Purple */
+  --course-default: #2563eb;  /* Academic Blue */
+
+  /* Modern Neutrals */
+  --bg-app: #f4f6f9;
+  --bg-card: #ffffff;
+  --border-color: #e5e7eb;
+  --border-subtle: #f3f4f6;
+  --text-main: #111827;
+  --text-muted: #6b7280;
+  --text-light: #ffffff;
+
+  /* State Tones */
+  --color-success: #16a34a;
+  --color-success-bg: #dcfce7;
+  --color-danger: #dc2626;
+  --color-danger-bg: #fee2e2;
+  --color-busy-cell: #fde8ed;
+  --color-busy-border: #f43f5e;
+  --color-busy-text: #9f1239;
+
+  /* Geometry & Elevation */
+  --radius-sm: 6px;
+  --radius-md: 10px;
+  --radius-lg: 16px;
+  --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.06), 0 1px 2px rgba(0, 0, 0, 0.04);
+  --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.07);
+  --shadow-lg: 0 10px 25px rgba(0, 0, 0, 0.1);
+  --font-sans: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+}
+
+/* Reset & Box Sizing */
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  font-family: var(--font-sans);
+  background-color: var(--bg-app);
+  color: var(--text-main);
+  line-height: 1.5;
+  font-size: 14px;
+}
+
+/* Main Responsive Application Wrapper */
+.app-container {
+  max-width: 1080px;
+  margin: 24px auto;
+  padding: 0 20px 60px 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+/* ==========================================================================
+   HEADER & APPLICATION BRANDING
+   ========================================================================== */
+.app-header {
+  background: linear-gradient(135deg, var(--vt-maroon) 0%, var(--vt-maroon-dark) 100%);
+  border-radius: var(--radius-lg);
+  padding: 20px 26px;
+  color: var(--text-light);
+  box-shadow: var(--shadow-md);
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.header-content {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 14px;
+}
+
+.brand-row {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.logo-mark {
+  background-color: var(--vt-orange);
+  color: #ffffff;
+  font-weight: 900;
+  font-size: 24px;
+  letter-spacing: -1px;
+  width: 50px;
+  height: 50px;
+  border-radius: var(--radius-md);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.25);
+}
+
+.app-title {
+  font-size: 22px;
+  font-weight: 800;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.badge-accent {
+  font-size: 11px;
+  font-weight: 700;
+  padding: 3px 9px;
+  border-radius: 999px;
+  background-color: var(--vt-orange);
+  color: #ffffff;
+}
+
+.app-subtitle {
+  font-size: 13px;
+  opacity: 0.88;
+}
+
+.header-actions {
+  display: flex;
+  gap: 8px;
+}
+
+/* Wizard Navigation Bar */
+.step-indicator {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: rgba(0, 0, 0, 0.22);
+  border-radius: var(--radius-md);
+  padding: 6px 14px;
+}
+
+.step-btn {
+  background: transparent;
+  border: none;
+  color: rgba(255, 255, 255, 0.7);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  padding: 8px 14px;
+  border-radius: var(--radius-sm);
+  transition: all 0.2s ease;
+}
+
+.step-btn:hover {
+  color: #ffffff;
+  background: rgba(255, 255, 255, 0.12);
+}
+
+.step-btn.active {
+  color: #ffffff;
+  background: var(--vt-orange);
+}
+
+.step-num {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.25);
+  font-size: 11px;
+}
+
+.step-btn.active .step-num {
+  background: #ffffff;
+  color: var(--vt-maroon);
+  font-weight: 800;
+}
+
+.step-divider {
+  flex-grow: 1;
+  height: 2px;
+  background: rgba(255, 255, 255, 0.2);
+  margin: 0 12px;
+}
+
+/* ==========================================================================
+   PAGE VIEWS & TRANSITIONS
+   ========================================================================== */
+.page-view {
+  display: none;
+  flex-direction: column;
+  gap: 18px;
+  animation: fadeIn 0.25s ease-out forwards;
+}
+
+.page-view.active {
+  display: flex;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(6px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* Base Card Style */
+.card {
+  background: var(--bg-card);
+  border-radius: var(--radius-md);
+  border: 1px solid var(--border-color);
+  padding: 18px 22px;
+  box-shadow: var(--shadow-sm);
+}
+
+/* Extension Sync Telemetry Banner */
+.sync-status-banner {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: linear-gradient(to right, #fffaf4, #ffffff);
+  border: 1px solid #fed7aa;
+  padding: 14px 20px;
+}
+
+.sync-banner-left {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.sync-status-icon {
+  font-size: 28px;
+}
+
+.sync-banner-title {
+  color: #9a3412;
+  font-size: 14px;
+}
+
+.sync-banner-desc {
+  font-size: 12px;
+  color: #c2410c;
+}
+
+.badge-term {
+  background-color: #ffedd5;
+  color: #9a3412;
+  font-weight: 700;
+  padding: 4px 10px;
+  border-radius: 999px;
+  font-size: 12px;
+}
+
+/* Aggregated Metrics Bar */
+.goals-summary-bar {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 14px;
+  text-align: center;
+  padding: 16px 20px;
+}
+
+.goal-metric {
+  display: flex;
+  flex-direction: column;
+}
+
+.metric-val {
+  font-size: 22px;
+  font-weight: 800;
+  color: var(--text-main);
+}
+
+.metric-label {
+  font-size: 11px;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  font-weight: 600;
+}
+
+.text-maroon {
+  color: var(--vt-maroon);
+}
+
+.text-orange {
+  color: var(--vt-orange);
+}
+
+/* ==========================================================================
+   PAGE 1: MULTI-COURSE GOALS DECK
+   ========================================================================== */
+.form-section {
+  background: var(--bg-card);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-md);
+  padding: 20px 24px;
+  box-shadow: var(--shadow-sm);
+}
+
+.section-header-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 16px;
+  gap: 14px;
+}
+
+.section-title {
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--vt-maroon);
+  margin-bottom: 4px;
+}
+
+.section-desc {
+  font-size: 13px;
+  color: var(--text-muted);
+}
+
+/* The Course Cards Deck */
+.course-cards-deck {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.course-card {
+  background: #ffffff;
+  border: 1px solid var(--border-color);
+  border-left: 6px solid var(--course-default);
+  border-radius: var(--radius-md);
+  padding: 16px 20px;
+  box-shadow: var(--shadow-sm);
+  transition: all 0.2s ease;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.course-card:hover {
+  box-shadow: var(--shadow-md);
+}
+
+/* Individual Course Accent Colors */
+.course-card[data-course-id*="1226"] {
+  border-left-color: var(--course-math);
+}
+.course-card[data-course-id*="psyc"] {
+  border-left-color: var(--course-psyc);
+}
+.course-card[data-course-id*="enge"] {
+  border-left-color: var(--course-enge);
+}
+.course-card[data-course-id*="2114"] {
+  border-left-color: var(--course-cs);
+}
+
+/* Top row inside each course card */
+.course-card-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+}
+
+.course-card-title-group {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.course-enable-checkbox {
+  width: 18px;
+  height: 18px;
+  accent-color: var(--vt-maroon);
+  cursor: pointer;
+}
+
+.course-code-badge {
+  font-weight: 800;
+  font-size: 14px;
+  color: var(--text-main);
+}
+
+.course-title-text {
+  font-size: 13px;
+  color: var(--text-muted);
+}
+
+.course-card-top-right {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.badge-current-grade {
+  font-size: 11px;
+  font-weight: 700;
+  padding: 2px 8px;
+  border-radius: 4px;
+  background-color: #f1f5f9;
+  color: var(--text-main);
+}
+
+/* Settings Grid for Each Course */
+.course-settings-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr 1.2fr;
+  gap: 12px;
+}
+
+.form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.form-label {
+  font-weight: 600;
+  font-size: 12px;
+  color: var(--text-main);
+}
+
+.form-control {
+  width: 100%;
+  padding: 8px 12px;
+  font-size: 13px;
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-sm);
+  background-color: #ffffff;
+  outline: none;
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+.form-control:focus {
+  border-color: var(--vt-maroon);
+  box-shadow: 0 0 0 3px rgba(134, 31, 65, 0.15);
+}
+
+.form-control-sm {
+  padding: 6px 10px;
+  font-size: 12px;
+}
+
+/* Topics Pills */
+.course-topics-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 12px;
+}
+
+.topics-label {
+  font-weight: 600;
+  color: var(--text-muted);
+}
+
+.topic-pills-container {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.topic-pill {
+  background-color: #f1f5f9;
+  color: var(--text-main);
+  padding: 2px 8px;
+  border-radius: 4px;
+  font-size: 11px;
+  font-weight: 500;
+}
+
+/* Disabled Course Card State */
+.course-card.disabled {
+  opacity: 0.55;
+  background-color: #f8fafc;
+}
+
+.course-card.disabled .course-settings-grid {
+  pointer-events: none;
+}
+
+/* General Study Habits / Radio Pills */
+.radio-pill-group {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 12px;
+}
+
+.radio-pill input[type="radio"] {
+  display: none;
+}
+
+.pill-card {
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-md);
+  padding: 12px 14px;
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  transition: all 0.2s ease;
+  background: var(--bg-card);
+}
+
+.pill-title {
+  font-weight: 700;
+  font-size: 13px;
+  color: var(--text-main);
+  margin-bottom: 4px;
+}
+
+.pill-subtitle {
+  font-size: 11px;
+  color: var(--text-muted);
+  line-height: 1.35;
+}
+
+.radio-pill input[type="radio"]:checked + .pill-card {
+  border-color: var(--vt-maroon);
+  background-color: rgba(134, 31, 65, 0.04);
+  box-shadow: 0 0 0 2px var(--vt-maroon);
+}
+
+.radio-pill input[type="radio"]:checked + .pill-card .pill-title {
+  color: var(--vt-maroon);
+}
+
+.grid-2-col {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+}
+
+.grid-3-col {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 12px;
+}
+
+/* ==========================================================================
+   PAGE 2: SCHEDULE & AVAILABILITY GRID
+   ========================================================================== */
+.upload-dropzone {
+  border: 2px dashed #cbd5e1;
+  border-radius: var(--radius-md);
+  padding: 26px;
+  text-align: center;
+  background-color: #fafbfc;
+  cursor: pointer;
+  transition: all 0.2s;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+}
+
+.upload-dropzone:hover, .upload-dropzone.dragover {
+  border-color: var(--vt-maroon);
+  background-color: #fff9fa;
+}
+
+.upload-icon {
+  font-size: 36px;
+}
+
+.file-input-hidden {
+  display: none;
+}
+
+.upload-preview {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding-top: 14px;
+  margin-top: 14px;
+  border-top: 1px solid var(--border-color);
+}
+
+.upload-preview img {
+  width: 70px;
+  height: 70px;
+  object-fit: cover;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border-color);
+}
+
+.badge-success {
+  background-color: var(--color-success-bg);
+  color: var(--color-success);
+  font-weight: 700;
+  font-size: 11px;
+  padding: 2px 8px;
+  border-radius: 999px;
+  display: inline-block;
+}
+
+/* Calendar Toolbar & Grid */
+.calendar-toolbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 12px;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.calendar-legend {
+  display: flex;
+  gap: 16px;
+  font-size: 12px;
+}
+
+.legend-item {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.legend-box {
+  width: 14px;
+  height: 14px;
+  border-radius: 3px;
+  display: inline-block;
+}
+
+.legend-box.busy {
+  background-color: var(--color-busy-cell);
+  border: 1px solid var(--color-busy-border);
+}
+
+.legend-box.free {
+  background-color: #ffffff;
+  border: 1px solid var(--border-color);
+}
+
+.preset-buttons {
+  display: flex;
+  gap: 8px;
+}
+
+/* Availability Table */
+.grid-table-wrapper {
+  max-height: 360px;
+  overflow-y: auto;
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-sm);
+}
+
+.availability-grid {
+  width: 100%;
+  border-collapse: collapse;
+  text-align: center;
+  user-select: none;
+}
+
+.availability-grid th {
+  background-color: #f1f3f7;
+  color: var(--text-main);
+  padding: 8px 6px;
+  font-size: 12px;
+  font-weight: 700;
+  border: 1px solid var(--border-color);
+  position: sticky;
+  top: 0;
+  z-index: 2;
+}
+
+.time-col-header, .time-label-cell {
+  width: 80px;
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--text-muted);
+  background-color: #f8fafc;
+  border: 1px solid var(--border-color);
+}
+
+.time-slot-cell {
+  height: 30px;
+  border: 1px solid var(--border-color);
+  background-color: #ffffff;
+  cursor: pointer;
+  transition: background-color 0.1s;
+}
+
+.time-slot-cell:hover {
+  filter: brightness(0.96);
+}
+
+.time-slot-cell.busy {
+  background-color: var(--color-busy-cell);
+  border-color: #fecdd3;
+  position: relative;
+}
+
+.time-slot-cell.busy::after {
+  content: "BUSY";
+  font-size: 9px;
+  font-weight: 700;
+  color: var(--color-busy-text);
+  letter-spacing: 0.5px;
+}
+
+.availability-summary {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 10px;
+  font-size: 12px;
+}
+
+/* ==========================================================================
+   PAGE 3: PERSONALIZED STUDY SCHEDULE
+   ========================================================================== */
+.schedule-summary-bar {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 14px;
+  text-align: center;
+  padding: 16px 20px;
+}
+
+.stat-cell {
+  display: flex;
+  flex-direction: column;
+}
+
+.stat-number {
+  font-size: 22px;
+  font-weight: 800;
+  color: var(--text-main);
+}
+
+.stat-label {
+  font-size: 11px;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  font-weight: 600;
+}
+
+.schedule-controls {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.action-btn-group {
+  display: flex;
+  gap: 8px;
+}
+
+/* Daily Session Cards */
+.sessions-container {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+  max-height: 480px;
+  overflow-y: auto;
+  padding-right: 4px;
+}
+
+.day-group {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.day-heading {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--vt-maroon);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  border-bottom: 2px solid var(--border-color);
+  padding-bottom: 4px;
+}
+
+.day-pill-count {
+  font-size: 11px;
+  background-color: var(--border-color);
+  color: var(--text-muted);
+  padding: 1px 8px;
+  border-radius: 999px;
+}
+
+.session-card {
+  display: flex;
+  align-items: center;
+  background: var(--bg-card);
+  border: 1px solid var(--border-color);
+  border-left: 6px solid var(--course-default);
+  border-radius: var(--radius-sm);
+  padding: 14px 18px;
+  gap: 16px;
+  box-shadow: var(--shadow-sm);
+  transition: transform 0.15s, box-shadow 0.15s;
+}
+
+.session-card:hover {
+  box-shadow: var(--shadow-md);
+  transform: translateY(-1px);
+}
+
+/* Course Border Colors on Sessions */
+.session-card[data-course*="1226"] { border-left-color: var(--course-math); }
+.session-card[data-course*="PSYC"] { border-left-color: var(--course-psyc); }
+.session-card[data-course*="ENGE"] { border-left-color: var(--course-enge); }
+.session-card[data-course*="2114"] { border-left-color: var(--course-cs); }
+
+.session-checkbox {
+  width: 18px;
+  height: 18px;
+  accent-color: var(--vt-maroon);
+  cursor: pointer;
+}
+
+.session-time-col {
+  min-width: 95px;
+  display: flex;
+  flex-direction: column;
+}
+
+.session-time-str {
+  font-weight: 700;
+  font-size: 13px;
+  color: var(--text-main);
+}
+
+.session-duration {
+  font-size: 11px;
+  color: var(--text-muted);
+}
+
+.session-details {
+  flex-grow: 1;
+}
+
+.session-course-tag {
+  font-size: 11px;
+  font-weight: 700;
+  padding: 2px 7px;
+  border-radius: 4px;
+  background-color: #f1f3f7;
+  color: var(--text-main);
+  display: inline-block;
+  margin-bottom: 2px;
+}
+
+.session-topic-title {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text-main);
+}
+
+.session-meta-note {
+  font-size: 12px;
+  color: var(--text-muted);
+}
+
+.session-actions {
+  display: flex;
+  gap: 6px;
+}
+
+.session-card.completed {
+  opacity: 0.55;
+  background: #f8fafc;
+}
+
+.session-card.completed .session-topic-title {
+  text-decoration: line-through;
+}
+
+/* ==========================================================================
+   BUTTONS & CONTROLS
+   ========================================================================== */
+.step-actions {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 10px;
+  padding-top: 16px;
+  border-top: 1px solid var(--border-color);
+}
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 9px 18px;
+  font-size: 13px;
+  font-weight: 600;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  border: 1px solid transparent;
+  transition: all 0.2s ease;
+  text-decoration: none;
+}
+
+.btn-primary {
+  background-color: var(--vt-maroon);
+  color: #ffffff;
+}
+
+.btn-primary:hover {
+  background-color: var(--vt-maroon-dark);
+}
+
+.btn-orange {
+  background-color: var(--vt-orange);
+  color: #ffffff;
+}
+
+.btn-orange:hover {
+  background-color: var(--vt-orange-light);
+}
+
+.btn-secondary {
+  background-color: #e5e7eb;
+  color: var(--text-main);
+}
+
+.btn-secondary:hover {
+  background-color: #d1d5db;
+}
+
+.btn-outline {
+  background-color: transparent;
+  border-color: var(--border-color);
+  color: var(--text-main);
+}
+
+.btn-outline:hover {
+  background-color: #f3f4f6;
+  border-color: #cbd5e1;
+}
+
+.btn-outline-light {
+  background-color: transparent;
+  border-color: rgba(255, 255, 255, 0.45);
+  color: #ffffff;
+}
+
+.btn-outline-light:hover {
+  background-color: rgba(255, 255, 255, 0.15);
+}
+
+.btn-sm {
+  padding: 6px 12px;
+  font-size: 12px;
+}
+
+.btn-xs {
+  padding: 4px 8px;
+  font-size: 11px;
+}
+
+.btn-icon-subtle {
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  font-size: 14px;
+  padding: 5px;
+  border-radius: 4px;
+  color: var(--text-muted);
+  transition: all 0.2s;
+}
+
+.btn-icon-subtle:hover {
+  color: var(--text-main);
+  background: #f1f3f7;
+}
+
+.btn-text-danger {
+  background: none;
+  border: none;
+  color: var(--color-danger);
+  font-size: 12px;
+  cursor: pointer;
+  text-decoration: underline;
+  padding: 0;
+}
+
+/* ==========================================================================
+   MODAL OVERLAYS
+   ========================================================================== */
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 100;
+  animation: fadeIn 0.15s ease-out;
+}
+
+.modal-card {
+  background: #ffffff;
+  border-radius: var(--radius-md);
+  width: 90%;
+  max-width: 520px;
+  padding: 24px;
+  box-shadow: var(--shadow-lg);
+}
+
+.modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+}
+
+.modal-title {
+  font-size: 17px;
+  font-weight: 700;
+  color: var(--vt-maroon);
+}
+
+.btn-close {
+  background: transparent;
+  border: none;
+  font-size: 22px;
+  cursor: pointer;
+  color: var(--text-muted);
+}
+
+.modal-footer {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  margin-top: 20px;
+}
+
+/* Utilities */
+.hidden {
+  display: none !important;
+}
+
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  border: 0;
+}
+
+/* Toast Notifications */
+.toast {
+  position: fixed;
+  bottom: 24px;
+  right: 24px;
+  background: #1f2937;
+  color: #ffffff;
+  padding: 12px 18px;
+  border-radius: var(--radius-sm);
+  font-size: 13px;
+  font-weight: 600;
+  box-shadow: var(--shadow-lg);
+  z-index: 200;
+  transition: opacity 0.2s, transform 0.2s;
+}
+
+/* Print Friendly Styles */
+@media print {
+  body {
+    background-color: #ffffff;
+  }
+  .app-header, .step-indicator, .schedule-controls, .step-actions {
+    display: none !important;
+  }
+  .app-container {
+    max-width: 100%;
+    margin: 0;
+    padding: 0;
+  }
+  .sessions-container {
+    max-height: none;
+    overflow: visible;
+  }
+}
+
+</style>
+</head>
+<body>
+  <!-- ================================================================= -->
+  <!-- MAIN WEB APPLICATION CONTAINER                                    -->
+  <!-- ================================================================= -->
+  <div class="app-container">
+
+    <!-- HEADER: Virginia Tech Maroon & Burnt Orange Branding -->
+    <header class="app-header">
+      <div class="header-content">
+        <div class="brand-row">
+          <div class="logo-mark">VT</div>
+          <div class="brand-text">
+            <h1 class="app-title">HokieTutor <span class="badge badge-accent">Web Application</span></h1>
+            <p class="app-subtitle">Intelligent Tutoring & Study Plan Scheduler for Virginia Tech</p>
+          </div>
+        </div>
+
+        <!-- Extension Sync & Data Integration Status -->
+        <div class="header-actions">
+          <button type="button" class="btn btn-sm btn-outline-light" id="btn-import-canvas-json" title="Import Canvas data JSON exported by the Chrome extension">
+            📂 Import Extension Data
+          </button>
+          <button type="button" class="btn btn-sm btn-orange" id="btn-sync-extension" title="Simulate live sync from Canvas extension">
+            ⚡ Sync with Canvas
+          </button>
+        </div>
+      </div>
+
+      <!-- STEP PROGRESS WIZARD NAVIGATION -->
+      <nav class="step-indicator" aria-label="Setup Navigation Steps">
+        <button class="step-btn active" id="step-nav-1" data-step="1">
+          <span class="step-num">1</span>
+          <span class="step-label">Course Goals & Habits</span>
+        </button>
+        <div class="step-divider"></div>
+        <button class="step-btn" id="step-nav-2" data-step="2">
+          <span class="step-num">2</span>
+          <span class="step-label">Weekly Availability</span>
+        </button>
+        <div class="step-divider"></div>
+        <button class="step-btn" id="step-nav-3" data-step="3">
+          <span class="step-num">3</span>
+          <span class="step-label">AI Study Schedule</span>
+        </button>
+      </nav>
+    </header>
+
+    <!-- =============================================================== -->
+    <!-- PAGE 1: MULTI-COURSE GOALS & STUDY HABITS                       -->
+    <!-- =============================================================== -->
+    <main class="page-view active" id="page-1" aria-labelledby="page-1-heading">
+
+      <!-- Extension Sync Telemetry Banner -->
+      <div class="card sync-status-banner">
+        <div class="sync-banner-left">
+          <div class="sync-status-icon">🎓</div>
+          <div class="sync-status-text">
+            <strong class="sync-banner-title">VT Canvas Synced (Active Term: Fall 2026)</strong>
+            <p class="sync-banner-desc" id="sync-banner-details">
+              4 Active Courses detected. Past course (PHYS 2306) automatically filtered out.
+            </p>
+          </div>
+        </div>
+        <div class="sync-banner-right">
+          <span class="badge badge-term">2026 Fall Term</span>
+        </div>
+      </div>
+
+      <!-- Aggregated Goals Metrics Bar -->
+      <section class="goals-summary-bar card">
+        <div class="goal-metric">
+          <span class="metric-val" id="metric-active-courses">4</span>
+          <span class="metric-label">Active Courses</span>
+        </div>
+        <div class="goal-metric">
+          <span class="metric-val text-maroon" id="metric-total-hours">13 hrs</span>
+          <span class="metric-label">Total Study Time / Wk</span>
+        </div>
+        <div class="goal-metric">
+          <span class="metric-val text-orange" id="metric-avg-goal">A / A-</span>
+          <span class="metric-label">Target Grades</span>
+        </div>
+        <div class="goal-metric">
+          <span class="metric-val" id="metric-upcoming-exams">2 Exams</span>
+          <span class="metric-label">Next 14 Days</span>
+        </div>
+      </section>
+
+      <!-- Section: Course-by-Course Goal Cards -->
+      <section class="form-section">
+        <div class="section-header-row">
+          <div>
+            <h2 class="section-title" id="page-1-heading">1. Individual Course Goals & Target Grades</h2>
+            <p class="section-desc">
+              Customize your target final grade, current confidence, and weekly study time commitment for each class independently:
+            </p>
+          </div>
+          <button type="button" class="btn btn-outline btn-sm" id="btn-open-add-course-modal">
+            + Add Course
+          </button>
+        </div>
+
+        <!-- The Course Cards Deck (Dynamically populated from appState.courses) -->
+        <div class="course-cards-deck" id="course-cards-deck">
+          <!-- Populated by JavaScript -->
+        </div>
+      </section>
+
+      <!-- Section: General Study Habits & Intensity -->
+      <section class="form-section">
+        <h2 class="section-title">2. Study Habits & Learning Speed</h2>
+        <p class="section-desc">Set your overall learning pace and tutoring methodology:</p>
+
+        <div class="form-group">
+          <label class="form-label">Studying Pace / Speed:</label>
+          <div class="radio-pill-group" role="radiogroup" aria-label="Studying Pace">
+            <label class="radio-pill">
+              <input type="radio" name="study_speed" value="thorough" />
+              <div class="pill-card">
+                <span class="pill-title">Deep & Thorough</span>
+                <span class="pill-subtitle">1.5x time per topic. Extensive notes, concept maps, and video reviews.</span>
+              </div>
+            </label>
+
+            <label class="radio-pill">
+              <input type="radio" name="study_speed" value="balanced" checked />
+              <div class="pill-card">
+                <span class="pill-title">Balanced & Steady</span>
+                <span class="pill-subtitle">1.0x standard pace. Equal mix of theory comprehension and problem solving.</span>
+              </div>
+            </label>
+
+            <label class="radio-pill">
+              <input type="radio" name="study_speed" value="fast" />
+              <div class="pill-card">
+                <span class="pill-title">Fast-Track / Sprint</span>
+                <span class="pill-subtitle">High-intensity cram mode. High-yield exam topics and past midterms only.</span>
+              </div>
+            </label>
+          </div>
+        </div>
+
+        <div class="grid-2-col">
+          <div class="form-group">
+            <label for="global-session-length" class="form-label">Preferred Session Duration:</label>
+            <select id="global-session-length" class="form-control">
+              <option value="30">30 minutes (Micro-bursts / Quick drills)</option>
+              <option value="45" selected>45 minutes (Pomodoro Friendly)</option>
+              <option value="60">60 minutes (Standard block)</option>
+              <option value="90">90 minutes (Deep Focus Deep-Dive)</option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label for="global-tutoring-style" class="form-label">Primary Tutoring Style:</label>
+            <select id="global-tutoring-style" class="form-control">
+              <option value="practice" selected>Active Recall & Problem Sets (Recommended for STEM)</option>
+              <option value="theory">Concept Breakdown & Lecture Slide Review</option>
+              <option value="flashcards">Flashcard Drills & Definition Retention</option>
+              <option value="past-exams">Mock Exam Questions & Time-Trial Testing</option>
+            </select>
+          </div>
+        </div>
+      </section>
+
+      <!-- Navigation Actions for Page 1 -->
+      <div class="step-actions">
+        <button type="button" class="btn btn-secondary" id="btn-save-draft-1">Save Draft</button>
+        <button type="button" class="btn btn-primary" id="btn-next-to-2">Proceed to Availability &rarr;</button>
+      </div>
+    </main>
+
+    <!-- =============================================================== -->
+    <!-- PAGE 2: SCHEDULE & AVAILABILITY INPUT                           -->
+    <!-- =============================================================== -->
+    <main class="page-view" id="page-2" aria-labelledby="page-2-heading">
+      <div class="section-header-box">
+        <h2 class="section-title" id="page-2-heading">Weekly Schedule & Free Study Time</h2>
+        <p class="section-desc">
+          Upload your timetable screenshot or click the calendar cells below to mark your busy class/work commitments. Unmarked slots become your available study time.
+        </p>
+      </div>
+
+      <!-- Option A: File Upload / Timetable Screenshot -->
+      <section class="upload-section card">
+        <div class="upload-dropzone" id="schedule-dropzone">
+          <div class="upload-icon">📷</div>
+          <div class="upload-text">
+            <strong>Upload Schedule or Screenshot</strong>
+            <p>Drag and drop your HokieSpa schedule screenshot or PDF timetable here</p>
+          </div>
+          <input type="file" id="schedule-file-input" accept="image/*,.pdf" class="file-input-hidden" />
+          <button type="button" class="btn btn-outline btn-sm" id="btn-browse-file">Browse Files</button>
+        </div>
+
+        <!-- Preview container for uploaded screenshot -->
+        <div class="upload-preview hidden" id="upload-preview-container">
+          <img id="upload-preview-img" src="" alt="Schedule Preview" />
+          <div class="upload-preview-meta">
+            <span id="upload-file-name" class="file-name">schedule.png</span>
+            <span class="badge badge-success">✓ OCR Classes Detected</span>
+            <button type="button" class="btn-text-danger" id="btn-remove-file">Remove</button>
+          </div>
+        </div>
+      </section>
+
+      <!-- Option B: Interactive Weekly Calendar Grid -->
+      <section class="calendar-tool-section card">
+        <div class="calendar-toolbar">
+          <div class="calendar-legend">
+            <span class="legend-item"><span class="legend-box busy"></span> Busy / Class Block</span>
+            <span class="legend-item"><span class="legend-box free"></span> Free For Study</span>
+          </div>
+
+          <!-- Quick Preset Buttons -->
+          <div class="preset-buttons">
+            <button type="button" class="btn btn-xs btn-outline" id="btn-preset-weekday-busy">Weekdays 9-5 Busy</button>
+            <button type="button" class="btn btn-xs btn-outline" id="btn-preset-evenings-free">Evenings Free</button>
+            <button type="button" class="btn btn-xs btn-secondary" id="btn-preset-clear">Clear Grid</button>
+          </div>
+        </div>
+
+        <!-- The Interactive Weekly Grid -->
+        <div class="grid-table-wrapper">
+          <table class="availability-grid" id="availability-table" aria-label="Weekly availability selector">
+            <thead>
+              <tr>
+                <th scope="col" class="time-col-header">Time</th>
+                <th scope="col">Mon</th>
+                <th scope="col">Tue</th>
+                <th scope="col">Wed</th>
+                <th scope="col">Thu</th>
+                <th scope="col">Fri</th>
+                <th scope="col">Sat</th>
+                <th scope="col">Sun</th>
+              </tr>
+            </thead>
+            <tbody id="availability-tbody">
+              <!-- Dynamically populated rows via JavaScript -->
+            </tbody>
+          </table>
+        </div>
+
+        <div class="availability-summary">
+          <p>Available Free Study Time: <strong id="total-free-hours-label" class="text-maroon">28 hrs/week</strong></p>
+          <small class="text-muted">Click or drag across any cell to toggle between Busy and Free.</small>
+        </div>
+      </section>
+
+      <!-- Navigation Bar for Step 2 -->
+      <div class="step-actions">
+        <button type="button" class="btn btn-secondary" id="btn-back-to-1">&larr; Back to Goals</button>
+        <button type="button" class="btn btn-primary" id="btn-next-to-3">Generate Multi-Course Schedule &rarr;</button>
+      </div>
+    </main>
+
+    <!-- =============================================================== -->
+    <!-- PAGE 3: PERSONALIZED MULTI-COURSE STUDY SCHEDULE                -->
+    <!-- =============================================================== -->
+    <main class="page-view" id="page-3" aria-labelledby="page-3-heading">
+      <!-- Top Overview Stats -->
+      <section class="schedule-summary-bar card">
+        <div class="stat-cell">
+          <span class="stat-number" id="stat-total-sessions">12</span>
+          <span class="stat-label">Scheduled Sessions</span>
+        </div>
+        <div class="stat-cell">
+          <span class="stat-number text-maroon" id="stat-total-hours">13.0 hrs</span>
+          <span class="stat-label">Total Study Time</span>
+        </div>
+        <div class="stat-cell">
+          <span class="stat-number text-orange" id="stat-courses-scheduled">4 Classes</span>
+          <span class="stat-label">Covered This Week</span>
+        </div>
+        <div class="stat-cell">
+          <span class="stat-number" id="stat-next-exam">4 Days</span>
+          <span class="stat-label">MATH 1226 Midterm</span>
+        </div>
+      </section>
+
+      <!-- Control Toolbar: Add session, filter, export -->
+      <section class="schedule-controls">
+        <div class="filter-controls">
+          <label for="filter-course-select" class="sr-only">Filter by Course</label>
+          <select id="filter-course-select" class="form-control form-control-sm">
+            <option value="ALL">Show All Courses</option>
+            <!-- Injected by JavaScript based on active courses -->
+          </select>
+        </div>
+
+        <div class="action-btn-group">
+          <button type="button" class="btn btn-outline btn-sm" id="btn-open-add-session-modal">+ Add Session</button>
+          <button type="button" class="btn btn-outline btn-sm" id="btn-export-ics">📥 Export iCal (.ics)</button>
+          <button type="button" class="btn btn-outline btn-sm" id="btn-print-schedule">🖨️ Print</button>
+          <button type="button" class="btn btn-secondary btn-sm" id="btn-regenerate-schedule">⚡ Regenerate</button>
+        </div>
+      </section>
+
+      <!-- The Schedule Sessions List (Grouped by Day) -->
+      <section class="sessions-container" id="sessions-container" aria-live="polite">
+        <!-- Injected via JavaScript -->
+      </section>
+
+      <!-- Navigation Bar for Step 3 -->
+      <div class="step-actions">
+        <button type="button" class="btn btn-secondary" id="btn-back-to-2">&larr; Back to Availability</button>
+        <button type="button" class="btn btn-primary" id="btn-finish-done">Save Schedule</button>
+      </div>
+    </main>
+
+    <!-- =============================================================== -->
+    <!-- MODAL 1: ADD / EDIT COURSE MODAL                                -->
+    <!-- =============================================================== -->
+    <div class="modal-overlay hidden" id="course-modal" role="dialog" aria-modal="true" aria-labelledby="modal-course-title">
+      <div class="modal-card">
+        <div class="modal-header">
+          <h3 class="modal-title" id="modal-course-title">Add Course</h3>
+          <button type="button" class="btn-close" id="btn-close-course-modal" aria-label="Close modal">&times;</button>
+        </div>
+
+        <form id="form-course-editor">
+          <div class="grid-2-col">
+            <div class="form-group">
+              <label for="modal-course-code" class="form-label">Course Code / CRN:</label>
+              <input type="text" id="modal-course-code" class="form-control" placeholder="e.g. PSYC 1004 or 1226 (CRN 87487)" required />
+            </div>
+
+            <div class="form-group">
+              <label for="modal-course-term" class="form-label">Term:</label>
+              <input type="text" id="modal-course-term" class="form-control" value="2026 Fall" required />
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label for="modal-course-name" class="form-label">Course Title:</label>
+            <input type="text" id="modal-course-name" class="form-control" placeholder="e.g. Introductory Psychology" required />
+          </div>
+
+          <div class="grid-3-col">
+            <div class="form-group">
+              <label for="modal-course-current-grade" class="form-label">Current Grade (%):</label>
+              <input type="number" id="modal-course-current-grade" class="form-control" min="0" max="100" step="0.1" value="85.0" required />
+            </div>
+
+            <div class="form-group">
+              <label for="modal-course-goal-grade" class="form-label">Goal Grade:</label>
+              <select id="modal-course-goal-grade" class="form-control">
+                <option value="A">A (93-100%)</option>
+                <option value="A-" selected>A- (90-92%)</option>
+                <option value="B+">B+ (87-89%)</option>
+                <option value="B">B (83-86%)</option>
+              </select>
+            </div>
+
+            <div class="form-group">
+              <label for="modal-course-confidence" class="form-label">Confidence:</label>
+              <select id="modal-course-confidence" class="form-control">
+                <option value="low">Low</option>
+                <option value="medium" selected>Medium</option>
+                <option value="high">High</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label for="modal-course-hours" class="form-label">Weekly Study Hours Target:</label>
+            <input type="number" id="modal-course-hours" class="form-control" min="1" max="15" value="3" required />
+          </div>
+
+          <div class="form-group">
+            <label for="modal-course-topics" class="form-label">Key Topics / Focus Modules (comma separated):</label>
+            <input type="text" id="modal-course-topics" class="form-control" placeholder="e.g. Memory retention, Cognitive development" />
+          </div>
+
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" id="btn-cancel-course-modal">Cancel</button>
+            <button type="submit" class="btn btn-primary" id="btn-save-course">Add Course</button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <!-- =============================================================== -->
+    <!-- MODAL 2: ADD / EDIT STUDY SESSION MODAL                         -->
+    <!-- =============================================================== -->
+    <div class="modal-overlay hidden" id="session-modal" role="dialog" aria-modal="true" aria-labelledby="modal-session-title">
+      <div class="modal-card">
+        <div class="modal-header">
+          <h3 class="modal-title" id="modal-session-title">Add Study Session</h3>
+          <button type="button" class="btn-close" id="btn-close-session-modal" aria-label="Close modal">&times;</button>
+        </div>
+
+        <form id="form-session-editor">
+          <!-- Hidden session ID for edit mode -->
+          <input type="hidden" id="modal-session-id" value="" />
+
+          <div class="form-group">
+            <label for="modal-session-course" class="form-label">Course:</label>
+            <select id="modal-session-course" class="form-control" required>
+              <!-- Populated by JavaScript -->
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label for="modal-session-topic" class="form-label">Topic / Focus Assignment:</label>
+            <input type="text" id="modal-session-topic" class="form-control" placeholder="e.g. Integration by Parts Review" required />
+          </div>
+
+          <div class="grid-2-col">
+            <div class="form-group">
+              <label for="modal-session-day" class="form-label">Day of Week:</label>
+              <select id="modal-session-day" class="form-control" required>
+                <option value="Monday">Monday</option>
+                <option value="Tuesday">Tuesday</option>
+                <option value="Wednesday">Wednesday</option>
+                <option value="Thursday">Thursday</option>
+                <option value="Friday">Friday</option>
+                <option value="Saturday">Saturday</option>
+                <option value="Sunday">Sunday</option>
+              </select>
+            </div>
+
+            <div class="form-group">
+              <label for="modal-session-start-time" class="form-label">Start Time:</label>
+              <input type="time" id="modal-session-start-time" class="form-control" value="16:00" required />
+            </div>
+          </div>
+
+          <div class="grid-2-col">
+            <div class="form-group">
+              <label for="modal-session-duration" class="form-label">Duration:</label>
+              <select id="modal-session-duration" class="form-control" required>
+                <option value="30">30 Minutes</option>
+                <option value="45">45 Minutes</option>
+                <option value="60" selected>60 Minutes</option>
+                <option value="90">90 Minutes</option>
+                <option value="120">2 Hours</option>
+              </select>
+            </div>
+
+            <div class="form-group">
+              <label for="modal-session-format" class="form-label">Study Method:</label>
+              <select id="modal-session-format" class="form-control">
+                <option value="Practice Problems">Practice Problems</option>
+                <option value="Syllabus Review">Syllabus Review</option>
+                <option value="Mock Exam">Mock Exam</option>
+                <option value="Flashcards">Flashcards</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" id="btn-cancel-session-modal">Cancel</button>
+            <button type="submit" class="btn btn-primary" id="btn-save-session">Save Session</button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <!-- =============================================================== -->
+    <!-- MODAL 3: IMPORT CANVAS EXTENSION JSON MODAL                     -->
+    <!-- =============================================================== -->
+    <div class="modal-overlay hidden" id="import-json-modal" role="dialog" aria-modal="true" aria-labelledby="modal-json-title">
+      <div class="modal-card">
+        <div class="modal-header">
+          <h3 class="modal-title" id="modal-json-title">Import Data from Chrome Extension</h3>
+          <button type="button" class="btn-close" id="btn-close-json-modal" aria-label="Close modal">&times;</button>
+        </div>
+
+        <p class="section-desc">
+          Paste the JSON exported from the HokieTutor Chrome extension on VT Canvas, or upload the <code>canvas-export.json</code> file:
+        </p>
+
+        <div class="form-group">
+          <textarea id="json-paste-area" class="form-control" rows="8" placeholder='{"term": "2026 Fall", "courses": [...]}'></textarea>
+        </div>
+
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" id="btn-cancel-json-modal">Cancel</button>
+          <button type="button" class="btn btn-primary" id="btn-confirm-import-json">Import & Sync</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- TOAST NOTIFICATION CONTAINER -->
+    <div id="toast" class="toast hidden" role="status" aria-live="polite"></div>
+
+  </div>
+
+  <!-- External JavaScript Logic -->
+  <script>
+/**
+ * ============================================================================
+ * HOKIETUTOR - VT CANVAS AI STUDY SCHEDULER (WEB APPLICATION)
+ * Hackathon Project for VT Hacks
+ * ============================================================================
+ * This standalone web application receives scraped data from the HokieTutor
+ * Chrome extension, asks for individual course academic goals and weekly availability,
+ * and generates an intelligent, personalized multi-course study schedule.
+ *
+ * Detailed comments are provided on each line and block explaining functionality.
+ * ============================================================================
+ */
+
+// Strict mode ensures cleaner code and prevents silent errors
+'use strict';
+
+// ============================================================================
+// 1. DATA STRUCTURES & DEFAULT STATE (FALL 2026)
+// ============================================================================
+
+/**
+ * Days of the week used across the calendar grid and session grouping
+ */
+const DAYS_OF_WEEK = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"];
+
+/**
+ * Standard daily hour slots (8 AM to 10 PM) for the availability table
+ */
+const TIME_SLOTS = [
+  { hour: 8, label: "8:00 AM" },
+  { hour: 9, label: "9:00 AM" },
+  { hour: 10, label: "10:00 AM" },
+  { hour: 11, label: "11:00 AM" },
+  { hour: 12, label: "12:00 PM" },
+  { hour: 13, label: "1:00 PM" },
+  { hour: 14, label: "2:00 PM" },
+  { hour: 15, label: "3:00 PM" },
+  { hour: 16, label: "4:00 PM" },
+  { hour: 17, label: "5:00 PM" },
+  { hour: 18, label: "6:00 PM" },
+  { hour: 19, label: "7:00 PM" },
+  { hour: 20, label: "8:00 PM" },
+  { hour: 21, label: "9:00 PM" }
+];
+
+/**
+ * Initial Fall 2026 course data reflecting the student's active Canvas courses:
+ * - MATH 1226 (Juste CRN 87487) - Calculus II (Fall 2026)
+ * - PSYC 1004 - Introductory Psychology (Fall 2026)
+ * - ENGE 1215 - Foundations of Green Engineering (Fall 2026)
+ * - CS 2114 - Software Design & Data Structures (Fall 2026)
+ * Note: Past-year courses like PHYS 2306 are filtered out automatically.
+ */
+const DEFAULT_COURSES = [
+  {
+    id: "course_1226",
+    code: "MATH 1226 (Juste CRN 87487)",
+    name: "Calculus of a Single Variable II",
+    term: "2026 Fall",
+    currentGrade: 84.5,
+    letterGrade: "B",
+    goalGrade: "A",
+    confidence: "low",
+    weeklyHours: 4,
+    enabled: true,
+    color: "#861F41", // VT Maroon
+    focusTopics: "Integration by Parts, Power Series & Taylor Polynomials, Parametric Equations",
+    nextExam: { name: "Midterm 1: Integration & Series", daysAway: 4, date: "2026-09-23" }
+  },
+  {
+    id: "course_psyc",
+    code: "PSYC 1004",
+    name: "Introductory Psychology",
+    term: "2026 Fall",
+    currentGrade: 91.5,
+    letterGrade: "A-",
+    goalGrade: "A",
+    confidence: "high",
+    weeklyHours: 2,
+    enabled: true,
+    color: "#7c3aed", // Royal Purple
+    focusTopics: "Cognitive Development, Memory Consolidation, Behavioral Conditioning",
+    nextExam: { name: "Unit 2 Exam: Brain & Cognition", daysAway: 12, date: "2026-10-01" }
+  },
+  {
+    id: "course_enge",
+    code: "ENGE 1215",
+    name: "Foundations of Green Engineering",
+    term: "2026 Fall",
+    currentGrade: 87.0,
+    letterGrade: "B+",
+    goalGrade: "A-",
+    confidence: "medium",
+    weeklyHours: 3,
+    enabled: true,
+    color: "#059669", // Emerald Green
+    focusTopics: "Life Cycle Assessment (LCA), Carbon Metrics, Sustainable Materials",
+    nextExam: { name: "Design Milestone 1", daysAway: 8, date: "2026-09-27" }
+  },
+  {
+    id: "course_2114",
+    code: "CS 2114",
+    name: "Software Design & Data Structures",
+    term: "2026 Fall",
+    currentGrade: 83.2,
+    letterGrade: "B",
+    goalGrade: "A-",
+    confidence: "medium",
+    weeklyHours: 4,
+    enabled: true,
+    color: "#E87722", // VT Orange
+    focusTopics: "Binary Search Trees, Recursion, Memory Allocation",
+    nextExam: { name: "Project 2: Linked Deque", daysAway: 6, date: "2026-09-25" }
+  }
+];
+
+/**
+ * Global application state
+ */
+let appState = {
+  // Current active wizard step (1: Goals, 2: Availability, 3: Schedule)
+  currentStep: 1,
+
+  // Term information
+  activeTerm: "2026 Fall",
+
+  // List of active student courses with their individual goals
+  courses: JSON.parse(JSON.stringify(DEFAULT_COURSES)),
+
+  // General studying habits & format
+  studyHabits: {
+    studySpeed: "balanced",       // thorough | balanced | fast
+    sessionLength: 45,            // minutes per session (30, 45, 60, 90)
+    tutoringStyle: "practice"     // practice | theory | flashcards | past-exams
+  },
+
+  // Weekly availability matrix (key format: "Monday-9": true if busy, false if free)
+  busySlots: {},
+
+  // Generated personalized study sessions list
+  studySessions: []
+};
+
+// ============================================================================
+// 2. LOCAL STORAGE PERSISTENCE HELPER
+// ============================================================================
+
+/**
+ * Saves current application state to browser localStorage.
+ */
+function saveStateToStorage() {
+  try {
+    localStorage.setItem("hokieTutorAppState", JSON.stringify(appState));
+  } catch (err) {
+    console.warn("Could not save to localStorage:", err);
+  }
+}
+
+/**
+ * Loads previous state from browser localStorage if available.
+ */
+function loadStateFromStorage() {
+  try {
+    const raw = localStorage.getItem("hokieTutorAppState");
+    if (raw) {
+      const parsed = JSON.parse(raw);
+      // Merge saved properties into current state
+      appState = Object.assign(appState, parsed);
+    }
+  } catch (err) {
+    console.warn("Could not load from localStorage:", err);
+  }
+}
+
+// ============================================================================
+// 3. INITIALIZATION
+// ============================================================================
+
+/**
+ * Runs once DOM is loaded: restores state, builds UI components, and attaches events.
+ */
+document.addEventListener("DOMContentLoaded", () => {
+  // 1. Load state from localStorage
+  loadStateFromStorage();
+
+  // 2. Render Page 1 Course Goals Cards Deck
+  renderCourseCardsDeck();
+
+  // 3. Update summary metrics (total hours, active courses count)
+  updateGoalsSummaryMetrics();
+
+  // 4. Build interactive 7-day availability grid for Page 2
+  buildAvailabilityGrid();
+
+  // 5. Populate general study habits
+  hydrateStudyHabits();
+
+  // 6. Setup all button click and change events
+  setupNavigationEvents();
+  setupPage1Events();
+  setupPage2Events();
+  setupPage3Events();
+  setupModalEvents();
+
+  // 7. Navigate to active step (default: Step 1)
+  goToStep(appState.currentStep || 1);
+});
+
+// ============================================================================
+// 4. WIZARD STEP NAVIGATION
+// ============================================================================
+
+/**
+ * Switches the active page view and updates wizard step buttons.
+ * @param {number} stepNumber - Step to show (1, 2, or 3)
+ */
+function goToStep(stepNumber) {
+  if (stepNumber < 1 || stepNumber > 3) return;
+
+  appState.currentStep = stepNumber;
+  saveStateToStorage();
+
+  // Update navigation button active state
+  for (let i = 1; i <= 3; i++) {
+    const stepBtn = document.getElementById(`step-nav-${i}`);
+    const pageView = document.getElementById(`page-${i}`);
+
+    if (stepBtn) {
+      stepBtn.classList.toggle("active", i === stepNumber);
+    }
+    if (pageView) {
+      pageView.classList.toggle("active", i === stepNumber);
+    }
+  }
+
+  // Scroll to top of app container smoothly
+  window.scrollTo({ top: 0, behavior: "smooth" });
+
+  // If entering Page 3, ensure sessions are generated and rendered
+  if (stepNumber === 3) {
+    if (!appState.studySessions || appState.studySessions.length === 0) {
+      generateMultiCourseSchedule();
+    }
+    renderStudySessions();
+  }
+}
+
+/**
+ * Attaches navigation event listeners to wizard step buttons.
+ */
+function setupNavigationEvents() {
+  // Header step buttons
+  document.getElementById("step-nav-1").addEventListener("click", () => goToStep(1));
+  document.getElementById("step-nav-2").addEventListener("click", () => goToStep(2));
+  document.getElementById("step-nav-3").addEventListener("click", () => goToStep(3));
+
+  // Step 1 -> Step 2 button
+  document.getElementById("btn-next-to-2").addEventListener("click", () => {
+    saveHabitsFromForm();
+    goToStep(2);
+  });
+
+  // Step 2 -> Step 1 button
+  document.getElementById("btn-back-to-1").addEventListener("click", () => goToStep(1));
+
+  // Step 2 -> Step 3 button (Generate schedule)
+  document.getElementById("btn-next-to-3").addEventListener("click", () => {
+    generateMultiCourseSchedule();
+    goToStep(3);
+  });
+
+  // Step 3 -> Step 2 button
+  document.getElementById("btn-back-to-2").addEventListener("click", () => goToStep(2));
+
+  // Step 3 'Done' button
+  document.getElementById("btn-finish-done").addEventListener("click", () => {
+    saveStateToStorage();
+    showToast("🎉 HokieTutor schedule saved successfully!");
+  });
+}
+
+// ============================================================================
+// 5. PAGE 1: MULTI-COURSE GOALS DECK LOGIC
+// ============================================================================
+
+/**
+ * Renders individual course goal cards dynamically into the DOM.
+ */
+function renderCourseCardsDeck() {
+  const container = document.getElementById("course-cards-deck");
+  container.innerHTML = "";
+
+  if (appState.courses.length === 0) {
+    container.innerHTML = `
+      <div class="empty-state">
+        <p>No active courses found. Click "+ Add Course" to add a class.</p>
+      </div>
+    `;
+    return;
+  }
+
+  appState.courses.forEach(course => {
+    const card = document.createElement("div");
+    card.className = `course-card ${course.enabled ? '' : 'disabled'}`;
+    card.dataset.courseId = course.id;
+
+    // Split focus topics into pills
+    const topicsArr = course.focusTopics
+      ? course.focusTopics.split(",").map(t => t.trim()).filter(Boolean)
+      : [];
+    const topicsPillsHtml = topicsArr.map(t => `<span class="topic-pill">${escapeHtml(t)}</span>`).join("");
+
+    card.innerHTML = `
+      <!-- Top Row: Checkbox, Course Title/CRN, Grade Badge, Delete Button -->
+      <div class="course-card-top">
+        <div class="course-card-title-group">
+          <input type="checkbox" class="course-enable-checkbox" title="Include in study schedule" ${course.enabled ? 'checked' : ''} />
+          <div>
+            <span class="course-code-badge">${escapeHtml(course.code)}</span>
+            <span class="course-title-text">— ${escapeHtml(course.name)} (${course.term || 'Fall 2026'})</span>
+          </div>
+        </div>
+
+        <div class="course-card-top-right">
+          <span class="badge-current-grade">Current: ${course.currentGrade}% (${course.letterGrade || 'B'})</span>
+          <button type="button" class="btn-icon-subtle btn-delete-course" title="Remove course from active term">🗑️</button>
+        </div>
+      </div>
+
+      <!-- Settings Grid: Goal Grade, Confidence, Weekly Hours, Focus Topics -->
+      <div class="course-settings-grid">
+        <div class="form-group">
+          <label class="form-label">Target Grade:</label>
+          <select class="form-control form-control-sm select-goal-grade">
+            <option value="A" ${course.goalGrade === 'A' ? 'selected' : ''}>A (93 - 100%)</option>
+            <option value="A-" ${course.goalGrade === 'A-' ? 'selected' : ''}>A- (90 - 92%)</option>
+            <option value="B+" ${course.goalGrade === 'B+' ? 'selected' : ''}>B+ (87 - 89%)</option>
+            <option value="B" ${course.goalGrade === 'B' ? 'selected' : ''}>B (83 - 86%)</option>
+            <option value="Pass" ${course.goalGrade === 'Pass' ? 'selected' : ''}>Pass Only</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Subject Confidence:</label>
+          <select class="form-control form-control-sm select-confidence">
+            <option value="low" ${course.confidence === 'low' ? 'selected' : ''}>Low (Needs tutoring)</option>
+            <option value="medium" ${course.confidence === 'medium' ? 'selected' : ''}>Medium (Needs practice)</option>
+            <option value="high" ${course.confidence === 'high' ? 'selected' : ''}>High (Exam refinement)</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Weekly Hours Target:</label>
+          <input type="number" class="form-control form-control-sm input-weekly-hours" min="1" max="15" value="${course.weeklyHours || 3}" />
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Focus Topics:</label>
+          <div class="topic-pills-container">
+            ${topicsPillsHtml || '<span class="text-muted">General Review</span>'}
+          </div>
+        </div>
+      </div>
+    `;
+
+    // 1. Enable / Disable checkbox listener
+    const enableCheckbox = card.querySelector(".course-enable-checkbox");
+    enableCheckbox.addEventListener("change", (e) => {
+      course.enabled = e.target.checked;
+      card.classList.toggle("disabled", !course.enabled);
+      updateGoalsSummaryMetrics();
+      saveStateToStorage();
+    });
+
+    // 2. Goal grade change listener
+    const selectGoal = card.querySelector(".select-goal-grade");
+    selectGoal.addEventListener("change", (e) => {
+      course.goalGrade = e.target.value;
+      saveStateToStorage();
+    });
+
+    // 3. Confidence level change listener
+    const selectConf = card.querySelector(".select-confidence");
+    selectConf.addEventListener("change", (e) => {
+      course.confidence = e.target.value;
+      saveStateToStorage();
+    });
+
+    // 4. Weekly hours input listener
+    const inputHours = card.querySelector(".input-weekly-hours");
+    inputHours.addEventListener("change", (e) => {
+      course.weeklyHours = Math.max(1, parseInt(e.target.value, 10) || 1);
+      updateGoalsSummaryMetrics();
+      saveStateToStorage();
+    });
+
+    // 5. Delete course listener
+    const btnDelete = card.querySelector(".btn-delete-course");
+    btnDelete.addEventListener("click", () => {
+      deleteCourse(course.id);
+    });
+
+    container.appendChild(card);
+  });
+}
+
+/**
+ * Recalculates and updates top aggregated metrics: total weekly hours, active courses count.
+ */
+function updateGoalsSummaryMetrics() {
+  const activeCourses = appState.courses.filter(c => c.enabled);
+  const totalHours = activeCourses.reduce((sum, c) => sum + (c.weeklyHours || 0), 0);
+
+  document.getElementById("metric-active-courses").textContent = activeCourses.length;
+  document.getElementById("metric-total-hours").textContent = `${totalHours} hrs`;
+
+  // Update sync banner text
+  const syncBannerDetails = document.getElementById("sync-banner-details");
+  if (syncBannerDetails) {
+    syncBannerDetails.textContent = `${activeCourses.length} Active Courses included in study plan for ${appState.activeTerm}.`;
+  }
+}
+
+/**
+ * Removes a course from the active term list.
+ * @param {string} courseId - ID of course to remove
+ */
+function deleteCourse(courseId) {
+  appState.courses = appState.courses.filter(c => c.id !== courseId);
+  renderCourseCardsDeck();
+  updateGoalsSummaryMetrics();
+  saveStateToStorage();
+  showToast("Course removed from active term.");
+}
+
+/**
+ * Hydrates general study habits (speed, session length, tutoring style).
+ */
+function hydrateStudyHabits() {
+  const habits = appState.studyHabits;
+
+  // Set selected radio for speed
+  const speedRadio = document.querySelector(`input[name="study_speed"][value="${habits.studySpeed}"]`);
+  if (speedRadio) speedRadio.checked = true;
+
+  // Session length
+  document.getElementById("global-session-length").value = habits.sessionLength || 45;
+
+  // Tutoring style
+  document.getElementById("global-tutoring-style").value = habits.tutoringStyle || "practice";
+}
+
+/**
+ * Reads general habits from Page 1 inputs and saves to state.
+ */
+function saveHabitsFromForm() {
+  const selectedSpeed = document.querySelector('input[name="study_speed"]:checked');
+  if (selectedSpeed) {
+    appState.studyHabits.studySpeed = selectedSpeed.value;
+  }
+
+  appState.studyHabits.sessionLength = parseInt(document.getElementById("global-session-length").value, 10) || 45;
+  appState.studyHabits.tutoringStyle = document.getElementById("global-tutoring-style").value;
+
+  saveStateToStorage();
+}
+
+/**
+ * Attaches event listeners on Page 1.
+ */
+function setupPage1Events() {
+  // Save Draft button
+  document.getElementById("btn-save-draft-1").addEventListener("click", () => {
+    saveHabitsFromForm();
+    showToast("✓ Course goals saved!");
+  });
+
+  // Open Add Course Modal
+  document.getElementById("btn-open-add-course-modal").addEventListener("click", () => {
+    document.getElementById("course-modal").classList.remove("hidden");
+  });
+
+  // Header: Simulate Live Sync from Extension
+  document.getElementById("btn-sync-extension").addEventListener("click", () => {
+    simulateLiveSyncFromExtension();
+  });
+
+  // Header: Open Import Extension JSON modal
+  document.getElementById("btn-import-canvas-json").addEventListener("click", () => {
+    document.getElementById("import-json-modal").classList.remove("hidden");
+  });
+}
+
+// ============================================================================
+// 6. PAGE 2: SCHEDULE & AVAILABILITY GRID LOGIC
+// ============================================================================
+
+/**
+ * Dynamically builds 7-day x 14-hour table rows in DOM.
+ */
+function buildAvailabilityGrid() {
+  const tbody = document.getElementById("availability-tbody");
+  tbody.innerHTML = "";
+
+  TIME_SLOTS.forEach(slot => {
+    const tr = document.createElement("tr");
+
+    // Time label cell (e.g. "9:00 AM")
+    const thTime = document.createElement("th");
+    thTime.className = "time-label-cell";
+    thTime.scope = "row";
+    thTime.textContent = slot.label;
+    tr.appendChild(thTime);
+
+    // Create 7 day cells
+    DAYS_OF_WEEK.forEach(day => {
+      const td = document.createElement("td");
+      td.className = "time-slot-cell";
+      td.dataset.day = day;
+      td.dataset.hour = slot.hour;
+
+      const slotKey = `${day}-${slot.hour}`;
+      if (appState.busySlots[slotKey]) {
+        td.classList.add("busy");
+      }
+
+      tr.appendChild(td);
+    });
+
+    tbody.appendChild(tr);
+  });
+
+  updateAvailableHoursCount();
+}
+
+/**
+ * Sets up mouse drag and click toggling for availability grid.
+ */
+function setupPage2Events() {
+  const table = document.getElementById("availability-table");
+  let isMouseDown = false;
+  let targetState = null;
+
+  table.addEventListener("mousedown", (e) => {
+    const cell = e.target.closest(".time-slot-cell");
+    if (!cell) return;
+
+    isMouseDown = true;
+    const isBusy = cell.classList.contains("busy");
+    targetState = !isBusy;
+    toggleCellState(cell, targetState);
+  });
+
+  table.addEventListener("mouseover", (e) => {
+    if (!isMouseDown) return;
+    const cell = e.target.closest(".time-slot-cell");
+    if (cell && targetState !== null) {
+      toggleCellState(cell, targetState);
+    }
+  });
+
+  window.addEventListener("mouseup", () => {
+    if (isMouseDown) {
+      isMouseDown = false;
+      targetState = null;
+      saveStateToStorage();
+      updateAvailableHoursCount();
+    }
+  });
+
+  // Preset: Weekdays 9 AM - 5 PM Busy
+  document.getElementById("btn-preset-weekday-busy").addEventListener("click", () => {
+    const weekdays = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday"];
+    weekdays.forEach(day => {
+      for (let h = 9; h < 17; h++) {
+        appState.busySlots[`${day}-${h}`] = true;
+      }
+    });
+    applyBusySlotsToGrid();
+    showToast("Marked Weekdays 9-5 as Busy!");
+  });
+
+  // Preset: Evenings Free (5 PM to 10 PM)
+  document.getElementById("btn-preset-evenings-free").addEventListener("click", () => {
+    DAYS_OF_WEEK.forEach(day => {
+      for (let h = 17; h <= 21; h++) {
+        delete appState.busySlots[`${day}-${h}`];
+      }
+    });
+    applyBusySlotsToGrid();
+    showToast("Marked Evenings as Free for studying!");
+  });
+
+  // Preset: Clear All
+  document.getElementById("btn-preset-clear").addEventListener("click", () => {
+    appState.busySlots = {};
+    applyBusySlotsToGrid();
+    showToast("Cleared availability grid!");
+  });
+
+  // Timetable upload handling
+  setupFileUploadEvents();
+}
+
+/**
+ * Toggles a single grid cell state.
+ */
+function toggleCellState(cell, makeBusy) {
+  const day = cell.dataset.day;
+  const hour = cell.dataset.hour;
+  const slotKey = `${day}-${hour}`;
+
+  if (makeBusy) {
+    cell.classList.add("busy");
+    appState.busySlots[slotKey] = true;
+  } else {
+    cell.classList.remove("busy");
+    delete appState.busySlots[slotKey];
+  }
+}
+
+/**
+ * Syncs DOM cells to `appState.busySlots`.
+ */
+function applyBusySlotsToGrid() {
+  const cells = document.querySelectorAll(".time-slot-cell");
+  cells.forEach(cell => {
+    const day = cell.dataset.day;
+    const hour = cell.dataset.hour;
+    const slotKey = `${day}-${hour}`;
+
+    if (appState.busySlots[slotKey]) {
+      cell.classList.add("busy");
+    } else {
+      cell.classList.remove("busy");
+    }
+  });
+
+  updateAvailableHoursCount();
+  saveStateToStorage();
+}
+
+/**
+ * Calculates and updates available study hours.
+ */
+function updateAvailableHoursCount() {
+  const totalSlots = DAYS_OF_WEEK.length * TIME_SLOTS.length; // 7 * 14 = 98 slots
+  const busyCount = Object.keys(appState.busySlots).length;
+  const freeSlots = Math.max(0, totalSlots - busyCount);
+
+  const label = document.getElementById("total-free-hours-label");
+  if (label) {
+    label.textContent = `${freeSlots} hrs/week`;
+  }
+}
+
+/**
+ * File upload / Screenshot dropzone logic with OCR simulation.
+ */
+function setupFileUploadEvents() {
+  const dropzone = document.getElementById("schedule-dropzone");
+  const fileInput = document.getElementById("schedule-file-input");
+  const btnBrowse = document.getElementById("btn-browse-file");
+  const previewContainer = document.getElementById("upload-preview-container");
+  const previewImg = document.getElementById("upload-preview-img");
+  const previewName = document.getElementById("upload-file-name");
+  const btnRemoveFile = document.getElementById("btn-remove-file");
+
+  btnBrowse.addEventListener("click", (e) => {
+    e.stopPropagation();
+    fileInput.click();
+  });
+
+  dropzone.addEventListener("click", () => fileInput.click());
+
+  dropzone.addEventListener("dragover", (e) => {
+    e.preventDefault();
+    dropzone.classList.add("dragover");
+  });
+
+  dropzone.addEventListener("dragleave", () => {
+    dropzone.classList.remove("dragover");
+  });
+
+  dropzone.addEventListener("drop", (e) => {
+    e.preventDefault();
+    dropzone.classList.remove("dragover");
+    if (e.dataTransfer.files.length > 0) {
+      handleUploadedFile(e.dataTransfer.files[0]);
+    }
+  });
+
+  fileInput.addEventListener("change", () => {
+    if (fileInput.files.length > 0) {
+      handleUploadedFile(fileInput.files[0]);
+    }
+  });
+
+  function handleUploadedFile(file) {
+    previewName.textContent = file.name;
+    const reader = new FileReader();
+    reader.onload = (evt) => {
+      previewImg.src = evt.target.result;
+      previewContainer.classList.remove("hidden");
+
+      // Simulate OCR: Mark MWF 10-11 and TR 12-2 as class blocks
+      ["Monday", "Wednesday", "Friday"].forEach(day => {
+        appState.busySlots[`${day}-10`] = true;
+      });
+      ["Tuesday", "Thursday"].forEach(day => {
+        appState.busySlots[`${day}-12`] = true;
+        appState.busySlots[`${day}-13`] = true;
+      });
+
+      applyBusySlotsToGrid();
+      showToast("✓ Schedule scanned! Imported class hours into calendar.");
+    };
+    reader.readAsDataURL(file);
+  }
+
+  btnRemoveFile.addEventListener("click", (e) => {
+    e.stopPropagation();
+    fileInput.value = "";
+    previewImg.src = "";
+    previewContainer.classList.add("hidden");
+    showToast("Schedule removed.");
+  });
+}
+
+// ============================================================================
+// 7. PAGE 3: MULTI-COURSE STUDY SCHEDULE GENERATOR & CRUD
+// ============================================================================
+
+/**
+ * Generates an intelligent multi-course study schedule balancing all enabled
+ * courses based on their target weekly hours, confidence levels, and free calendar slots.
+ */
+function generateMultiCourseSchedule() {
+  const activeCourses = appState.courses.filter(c => c.enabled);
+  if (activeCourses.length === 0) {
+    appState.studySessions = [];
+    return;
+  }
+
+  const sessionDuration = appState.studyHabits.sessionLength || 45;
+  const sessions = [];
+
+  // Find all free (unblocked) calendar slots from Page 2
+  const freeSlots = [];
+  DAYS_OF_WEEK.forEach(day => {
+    TIME_SLOTS.forEach(slot => {
+      const slotKey = `${day}-${slot.hour}`;
+      if (!appState.busySlots[slotKey]) {
+        freeSlots.push({ day, hour: slot.hour, label: slot.label });
+      }
+    });
+  });
+
+  // Fallback: If no slots marked free, open evening hours
+  if (freeSlots.length === 0) {
+    DAYS_OF_WEEK.forEach(day => {
+      freeSlots.push({ day, hour: 17, label: "5:00 PM" });
+      freeSlots.push({ day, hour: 18, label: "6:00 PM" });
+      freeSlots.push({ day, hour: 19, label: "7:00 PM" });
+    });
+  }
+
+  // Build target session demands per course
+  // Lower confidence courses receive an extra boost
+  const courseDemands = [];
+  activeCourses.forEach(course => {
+    const weeklyMinutes = (course.weeklyHours || 3) * 60;
+    const sessionCount = Math.max(1, Math.round(weeklyMinutes / sessionDuration));
+
+    const topicsArr = course.focusTopics
+      ? course.focusTopics.split(",").map(t => t.trim()).filter(Boolean)
+      : ["Core Concept Review", "Practice Problem Set"];
+
+    for (let i = 0; i < sessionCount; i++) {
+      courseDemands.push({
+        courseCode: course.code,
+        courseName: course.name,
+        color: course.color,
+        topic: topicsArr[i % topicsArr.length] || "Exam Review",
+        confidence: course.confidence,
+        duration: sessionDuration
+      });
+    }
+  });
+
+  // Shuffle & interleave courses to balance study across the week (distributed practice)
+  courseDemands.sort(() => Math.random() - 0.5);
+
+  // Allocate sessions into available free slots
+  const totalSlots = freeSlots.length;
+  const step = Math.max(1, Math.floor(totalSlots / courseDemands.length));
+
+  courseDemands.forEach((demand, index) => {
+    const slotIndex = (index * step) % totalSlots;
+    const slot = freeSlots[slotIndex];
+
+    const hour24 = String(slot.hour).padStart(2, "0") + ":00";
+    const endTimeObj = calculateEndTime(hour24, demand.duration);
+
+    sessions.push({
+      id: "session_" + Date.now() + "_" + index,
+      course: demand.courseCode,
+      topic: demand.topic,
+      day: slot.day,
+      startTime: hour24,
+      endTime: endTimeObj.timeString,
+      displayTime: `${slot.label} - ${endTimeObj.displayString}`,
+      durationMinutes: demand.duration,
+      studyFormat: appState.studyHabits.tutoringStyle === "practice" ? "Practice Problems" : "Syllabus Review",
+      completed: false
+    });
+  });
+
+  appState.studySessions = sessions;
+  saveStateToStorage();
+}
+
+/**
+ * Calculates end time string and 12-hour formatted string.
+ */
+function calculateEndTime(startTime, durationMinutes) {
+  const parts = startTime.split(":");
+  const hours = parseInt(parts[0], 10);
+  const mins = parseInt(parts[1], 10);
+
+  const totalMins = hours * 60 + mins + durationMinutes;
+  const endHour = Math.floor(totalMins / 60) % 24;
+  const endMinute = totalMins % 60;
+
+  const timeString = `${String(endHour).padStart(2, "0")}:${String(endMinute).padStart(2, "0")}`;
+
+  const period = endHour >= 12 ? "PM" : "AM";
+  const displayHour = endHour % 12 === 0 ? 12 : endHour % 12;
+  const displayString = `${displayHour}:${String(endMinute).padStart(2, "0")} ${period}`;
+
+  return { timeString, displayString };
+}
+
+/**
+ * Renders all scheduled sessions onto Page 3 grouped by day of the week.
+ */
+function renderStudySessions() {
+  const container = document.getElementById("sessions-container");
+  const filterSelect = document.getElementById("filter-course-select");
+  const selectedFilter = filterSelect.value;
+
+  // Refresh filter options dropdown with currently active courses
+  updateCourseFilterDropdown();
+
+  container.innerHTML = "";
+
+  // Apply filter
+  const filtered = appState.studySessions.filter(s => {
+    return selectedFilter === "ALL" || s.course === selectedFilter;
+  });
+
+  if (filtered.length === 0) {
+    container.innerHTML = `
+      <div class="empty-state">
+        <p>No study sessions found for the current filter.</p>
+        <button type="button" class="btn btn-outline btn-sm" id="btn-add-first-session">+ Add First Session</button>
+      </div>
+    `;
+    const btnAddFirst = document.getElementById("btn-add-first-session");
+    if (btnAddFirst) {
+      btnAddFirst.addEventListener("click", openAddSessionModal);
+    }
+    updatePage3Stats(0, 0);
+    return;
+  }
+
+  // Group by day of week
+  const groupedByDay = {};
+  DAYS_OF_WEEK.forEach(d => { groupedByDay[d] = []; });
+  filtered.forEach(s => {
+    if (!groupedByDay[s.day]) groupedByDay[s.day] = [];
+    groupedByDay[s.day].push(s);
+  });
+
+  let totalMinutes = 0;
+
+  DAYS_OF_WEEK.forEach(day => {
+    const daySessions = groupedByDay[day];
+    if (daySessions.length === 0) return;
+
+    const dayGroup = document.createElement("div");
+    dayGroup.className = "day-group";
+
+    const dayHeader = document.createElement("h3");
+    dayHeader.className = "day-heading";
+    dayHeader.innerHTML = `${day} <span class="day-pill-count">${daySessions.length} sessions</span>`;
+    dayGroup.appendChild(dayHeader);
+
+    daySessions.forEach(session => {
+      totalMinutes += session.durationMinutes;
+
+      const card = document.createElement("div");
+      card.className = `session-card ${session.completed ? 'completed' : ''}`;
+      card.dataset.id = session.id;
+      card.dataset.course = session.course;
+
+      card.innerHTML = `
+        <input type="checkbox" class="session-checkbox" title="Mark as completed" ${session.completed ? 'checked' : ''} />
+
+        <div class="session-time-col">
+          <span class="session-time-str">${session.displayTime || session.startTime}</span>
+          <span class="session-duration">${session.durationMinutes} min block</span>
+        </div>
+
+        <div class="session-details">
+          <span class="session-course-tag">${escapeHtml(session.course)}</span>
+          <div class="session-topic-title">${escapeHtml(session.topic)}</div>
+          <div class="session-meta-note">Method: ${session.studyFormat}</div>
+        </div>
+
+        <div class="session-actions">
+          <button type="button" class="btn-icon-subtle btn-reschedule" title="Move / Reschedule Session">🕒</button>
+          <button type="button" class="btn-icon-subtle btn-delete" title="Delete Session">🗑️</button>
+        </div>
+      `;
+
+      // Checkbox complete
+      const checkbox = card.querySelector(".session-checkbox");
+      checkbox.addEventListener("change", (e) => {
+        session.completed = e.target.checked;
+        card.classList.toggle("completed", session.completed);
+        saveStateToStorage();
+      });
+
+      // Move / Reschedule
+      const btnReschedule = card.querySelector(".btn-reschedule");
+      btnReschedule.addEventListener("click", () => {
+        openEditSessionModal(session);
+      });
+
+      // Delete
+      const btnDelete = card.querySelector(".btn-delete");
+      btnDelete.addEventListener("click", () => {
+        deleteSession(session.id);
+      });
+
+      dayGroup.appendChild(card);
+    });
+
+    container.appendChild(dayGroup);
+  });
+
+  updatePage3Stats(filtered.length, totalMinutes);
+}
+
+/**
+ * Updates course filter dropdown options on Page 3.
+ */
+function updateCourseFilterDropdown() {
+  const select = document.getElementById("filter-course-select");
+  const currentVal = select.value;
+
+  const coursesSet = new Set(appState.studySessions.map(s => s.course));
+  select.innerHTML = `<option value="ALL">Show All Courses</option>`;
+
+  coursesSet.forEach(courseCode => {
+    const opt = document.createElement("option");
+    opt.value = courseCode;
+    opt.textContent = courseCode;
+    if (courseCode === currentVal) opt.selected = true;
+    select.appendChild(opt);
+  });
+}
+
+/**
+ * Updates stats widgets at top of Page 3.
+ */
+function updatePage3Stats(count, minutes) {
+  const hours = (minutes / 60).toFixed(1);
+  document.getElementById("stat-total-sessions").textContent = count;
+  document.getElementById("stat-total-hours").textContent = `${hours} hrs`;
+
+  const distinctCourses = new Set(appState.studySessions.map(s => s.course)).size;
+  document.getElementById("stat-courses-scheduled").textContent = `${distinctCourses} Classes`;
+}
+
+/**
+ * Deletes a session by ID and refreshes view.
+ */
+function deleteSession(sessionId) {
+  appState.studySessions = appState.studySessions.filter(s => s.id !== sessionId);
+  saveStateToStorage();
+  renderStudySessions();
+  showToast("Session deleted.");
+}
+
+/**
+ * Attaches event listeners for Page 3 controls.
+ */
+function setupPage3Events() {
+  document.getElementById("filter-course-select").addEventListener("change", () => {
+    renderStudySessions();
+  });
+
+  document.getElementById("btn-open-add-session-modal").addEventListener("click", openAddSessionModal);
+
+  document.getElementById("btn-regenerate-schedule").addEventListener("click", () => {
+    generateMultiCourseSchedule();
+    renderStudySessions();
+    showToast("⚡ Multi-course schedule regenerated!");
+  });
+
+  document.getElementById("btn-export-ics").addEventListener("click", exportScheduleToIcs);
+
+  document.getElementById("btn-print-schedule").addEventListener("click", () => {
+    window.print();
+  });
+}
+
+// ============================================================================
+// 8. MODAL DIALOGS: ADD COURSE & ADD/EDIT SESSION
+// ============================================================================
+
+/**
+ * Opens modal to add a new study session.
+ */
+function openAddSessionModal() {
+  document.getElementById("modal-session-title").textContent = "Add Study Session";
+  document.getElementById("modal-session-id").value = "";
+  document.getElementById("modal-session-topic").value = "";
+  document.getElementById("modal-session-day").value = "Monday";
+  document.getElementById("modal-session-start-time").value = "17:00";
+  document.getElementById("modal-session-duration").value = "60";
+
+  // Populate course dropdown with active courses
+  const courseSelect = document.getElementById("modal-session-course");
+  courseSelect.innerHTML = "";
+  appState.courses.forEach(c => {
+    const opt = document.createElement("option");
+    opt.value = c.code;
+    opt.textContent = `${c.code} - ${c.name}`;
+    courseSelect.appendChild(opt);
+  });
+
+  document.getElementById("session-modal").classList.remove("hidden");
+}
+
+/**
+ * Opens modal prefilled to edit/reschedule an existing session.
+ */
+function openEditSessionModal(session) {
+  document.getElementById("modal-session-title").textContent = "Move / Edit Study Session";
+  document.getElementById("modal-session-id").value = session.id;
+  document.getElementById("modal-session-topic").value = session.topic;
+  document.getElementById("modal-session-day").value = session.day;
+  document.getElementById("modal-session-start-time").value = session.startTime || "17:00";
+  document.getElementById("modal-session-duration").value = session.durationMinutes;
+  document.getElementById("modal-session-format").value = session.studyFormat || "Practice Problems";
+
+  const courseSelect = document.getElementById("modal-session-course");
+  courseSelect.innerHTML = "";
+  appState.courses.forEach(c => {
+    const opt = document.createElement("option");
+    opt.value = c.code;
+    opt.textContent = `${c.code} - ${c.name}`;
+    if (c.code === session.course) opt.selected = true;
+    courseSelect.appendChild(opt);
+  });
+
+  document.getElementById("session-modal").classList.remove("hidden");
+}
+
+/**
+ * Attaches modal form submit and close handlers.
+ */
+function setupModalEvents() {
+  // Course Modal
+  const courseModal = document.getElementById("course-modal");
+  const closeCourseModal = () => courseModal.classList.add("hidden");
+  document.getElementById("btn-close-course-modal").addEventListener("click", closeCourseModal);
+  document.getElementById("btn-cancel-course-modal").addEventListener("click", closeCourseModal);
+
+  document.getElementById("form-course-editor").addEventListener("submit", (e) => {
+    e.preventDefault();
+    const code = document.getElementById("modal-course-code").value.trim();
+    const term = document.getElementById("modal-course-term").value.trim();
+    const name = document.getElementById("modal-course-name").value.trim();
+    const currentGrade = parseFloat(document.getElementById("modal-course-current-grade").value) || 85.0;
+    const goalGrade = document.getElementById("modal-course-goal-grade").value;
+    const confidence = document.getElementById("modal-course-confidence").value;
+    const weeklyHours = parseInt(document.getElementById("modal-course-hours").value, 10) || 3;
+    const topics = document.getElementById("modal-course-topics").value.trim();
+
+    const newCourse = {
+      id: "course_" + Date.now(),
+      code,
+      name,
+      term,
+      currentGrade,
+      letterGrade: currentGrade >= 90 ? "A" : currentGrade >= 80 ? "B" : "C",
+      goalGrade,
+      confidence,
+      weeklyHours,
+      enabled: true,
+      color: "#2563eb",
+      focusTopics: topics || "General Topic Review"
+    };
+
+    appState.courses.push(newCourse);
+    renderCourseCardsDeck();
+    updateGoalsSummaryMetrics();
+    saveStateToStorage();
+    closeCourseModal();
+    showToast(`✓ Added ${code} to Fall 2026!`);
+  });
+
+  // Session Modal
+  const sessionModal = document.getElementById("session-modal");
+  const closeSessionModal = () => sessionModal.classList.add("hidden");
+  document.getElementById("btn-close-session-modal").addEventListener("click", closeSessionModal);
+  document.getElementById("btn-cancel-session-modal").addEventListener("click", closeSessionModal);
+
+  document.getElementById("form-session-editor").addEventListener("submit", (e) => {
+    e.preventDefault();
+    const sessionId = document.getElementById("modal-session-id").value;
+    const course = document.getElementById("modal-session-course").value;
+    const topic = document.getElementById("modal-session-topic").value;
+    const day = document.getElementById("modal-session-day").value;
+    const startTime = document.getElementById("modal-session-start-time").value;
+    const durationMinutes = parseInt(document.getElementById("modal-session-duration").value, 10);
+    const studyFormat = document.getElementById("modal-session-format").value;
+
+    const endTimeObj = calculateEndTime(startTime, durationMinutes);
+
+    if (sessionId) {
+      const existing = appState.studySessions.find(s => s.id === sessionId);
+      if (existing) {
+        existing.course = course;
+        existing.topic = topic;
+        existing.day = day;
+        existing.startTime = startTime;
+        existing.endTime = endTimeObj.timeString;
+        existing.displayTime = `${formatTimeAmPm(startTime)} - ${endTimeObj.displayString}`;
+        existing.durationMinutes = durationMinutes;
+        existing.studyFormat = studyFormat;
+      }
+      showToast("✓ Session updated!");
+    } else {
+      const newSession = {
+        id: "session_" + Date.now(),
+        course,
+        topic,
+        day,
+        startTime,
+        endTime: endTimeObj.timeString,
+        displayTime: `${formatTimeAmPm(startTime)} - ${endTimeObj.displayString}`,
+        durationMinutes,
+        studyFormat,
+        completed: false
+      };
+      appState.studySessions.push(newSession);
+      showToast("✓ New study session added!");
+    }
+
+    saveStateToStorage();
+    renderStudySessions();
+    closeSessionModal();
+  });
+
+  // Import JSON Modal
+  const jsonModal = document.getElementById("import-json-modal");
+  const closeJsonModal = () => jsonModal.classList.add("hidden");
+  document.getElementById("btn-close-json-modal").addEventListener("click", closeJsonModal);
+  document.getElementById("btn-cancel-json-modal").addEventListener("click", closeJsonModal);
+
+  document.getElementById("btn-confirm-import-json").addEventListener("click", () => {
+    const rawJson = document.getElementById("json-paste-area").value;
+    try {
+      const data = JSON.parse(rawJson);
+      if (data.courses && Array.isArray(data.courses)) {
+        appState.courses = data.courses;
+        renderCourseCardsDeck();
+        updateGoalsSummaryMetrics();
+        saveStateToStorage();
+        closeJsonModal();
+        showToast("✓ Successfully imported Canvas data from extension!");
+      } else {
+        alert("Invalid JSON format: missing 'courses' array.");
+      }
+    } catch (err) {
+      alert("Error parsing JSON: " + err.message);
+    }
+  });
+}
+
+// ============================================================================
+// 9. EXTENSION SYNC SIMULATION & EXPORT
+// ============================================================================
+
+/**
+ * Simulates a live sync from the HokieTutor Chrome extension, importing
+ * all Fall 2026 courses and discarding concluded past-year courses.
+ */
+function simulateLiveSyncFromExtension() {
+  appState.courses = JSON.parse(JSON.stringify(DEFAULT_COURSES));
+  renderCourseCardsDeck();
+  updateGoalsSummaryMetrics();
+  saveStateToStorage();
+  showToast("⚡ Synced with VT Canvas! Loaded 4 Fall 2026 courses.");
+}
+
+/**
+ * Exports study schedule to an RFC 5545 .ics calendar file.
+ */
+function exportScheduleToIcs() {
+  if (!appState.studySessions || appState.studySessions.length === 0) {
+    showToast("No study sessions to export!");
+    return;
+  }
+
+  let icsLines = [
+    "BEGIN:VCALENDAR",
+    "VERSION:2.0",
+    "PRODID:-//HokieTutor Web App//VT Hacks//EN",
+    "CALSCALE:GREGORIAN",
+    "METHOD:PUBLISH"
+  ];
+
+  const now = new Date();
+  const dateStamp = now.toISOString().replace(/[-:]/g, "").split(".")[0] + "Z";
+
+  appState.studySessions.forEach((session, index) => {
+    icsLines.push("BEGIN:VEVENT");
+    icsLines.push(`UID:hokietutor-${session.id || index}@vt.edu`);
+    icsLines.push(`DTSTAMP:${dateStamp}`);
+    icsLines.push(`SUMMARY:[HokieTutor] ${session.course} - ${session.topic}`);
+    icsLines.push(`DESCRIPTION:Study Session\\nCourse: ${session.course}\\nFormat: ${session.studyFormat}\\nDuration: ${session.durationMinutes} mins`);
+    icsLines.push("STATUS:CONFIRMED");
+    icsLines.push("END:VEVENT");
+  });
+
+  icsLines.push("END:VCALENDAR");
+
+  const blob = new Blob([icsLines.join("\r\n")], { type: "text/calendar;charset=utf-8" });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = "HokieTutor_Fall2026_Schedule.ics";
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+
+  showToast("📥 Exported HokieTutor_Fall2026_Schedule.ics!");
+}
+
+// ============================================================================
+// 10. UTILITIES
+// ============================================================================
+
+function formatTimeAmPm(time24) {
+  if (!time24) return "";
+  const parts = time24.split(":");
+  let hours = parseInt(parts[0], 10);
+  const minutes = parts[1] || "00";
+  const ampm = hours >= 12 ? "PM" : "AM";
+  hours = hours % 12;
+  hours = hours ? hours : 12;
+  return `${hours}:${minutes} ${ampm}`;
+}
+
+function escapeHtml(str) {
+  if (!str) return "";
+  const div = document.createElement("div");
+  div.textContent = str;
+  return div.innerHTML;
+}
+
+function showToast(message) {
+  const toast = document.getElementById("toast");
+  if (!toast) return;
+
+  toast.textContent = message;
+  toast.classList.remove("hidden");
+
+  setTimeout(() => {
+    toast.classList.add("hidden");
+  }, 2800);
+}
+
+</script>
+</body>
+</html>

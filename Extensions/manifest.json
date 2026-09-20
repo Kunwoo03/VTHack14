@@ -1,0 +1,17 @@
+{
+  "manifest_version": 3,
+  "name": "HokieTutor Canvas Sync",
+  "version": "1.0",
+  "description": "Extracts active courses and 30-day upcoming assignments from Virginia Tech Canvas.",
+  "permissions": [
+    "activeTab",
+    "cookies"
+  ],
+  "host_permissions": [
+    "https://canvas.vt.edu/*"
+  ],
+  "action": {
+    "default_popup": "popup.html",
+    "default_title": "Sync Canvas Tasks"
+  }
+}

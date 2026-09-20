@@ -2,52 +2,52 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>StudySmart Onboarding</title>
+<title>StudySmart - Gemini AI Scheduler</title>
 <style>
-  body { font-family: system-ui, sans-serif; max-width: 540px; margin: 40px auto; padding: 0 16px; color: #222; }
-  h1 { font-size: 22px; }
-  label { display: block; margin-top: 16px; font-weight: 600; font-size: 14px; }
-  input, select, textarea { width: 100%; padding: 8px; margin-top: 4px; box-sizing: border-box; font-size: 14px; font-family: inherit; }
+  body { font-family: system-ui, sans-serif; max-width: 580px; margin: 40px auto; padding: 0 16px; color: #222; background: #f9fafb; }
+  h1 { font-size: 24px; color: #861f41; margin-bottom: 8px; }
+  label { display: block; margin-top: 16px; font-weight: 600; font-size: 14px; color: #374151; }
+  input, select, textarea { width: 100%; padding: 10px; margin-top: 4px; box-sizing: border-box; font-size: 14px; font-family: inherit; border: 1px solid #d1d5db; border-radius: 6px; background: #fff; }
   
   .btn-row { display: flex; gap: 12px; margin-top: 24px; }
-  button { padding: 10px 18px; font-size: 15px; cursor: pointer; border-radius: 6px; border: 1px solid #ccc; font-weight: 600; }
-  .btn-primary { background: #0070f3; color: white; border: none; flex: 1; }
+  button { padding: 12px 20px; font-size: 15px; cursor: pointer; border-radius: 6px; border: none; font-weight: 600; }
+  .btn-primary { background: #861f41; color: white; flex: 1; }
+  .btn-primary:hover { background: #6d1834; }
   .btn-secondary { background: #f3f4f6; color: #374151; border: 1px solid #d1d5db; }
   .btn-secondary:hover { background: #e5e7eb; }
-  button:disabled { background: #aaa; cursor: not-allowed; }
 
-  pre { background: #f4f4f4; padding: 12px; border-radius: 6px; white-space: pre-wrap; word-break: break-all; font-size: 12px; }
-  .help { font-size: 13px; color: #666; margin-top: 4px; line-height: 1.5; }
-  
+  .help { font-size: 13px; color: #6b7280; margin-top: 4px; line-height: 1.5; }
   .block-row { display: flex; gap: 8px; align-items: center; margin-top: 6px; }
   .block-row select, .block-row input { width: auto; margin-top: 0; }
   
-  #estimate-list li { background: #f4f4f4; padding: 12px 14px; border-radius: 6px; margin-bottom: 8px; font-size: 14px; border-left: 4px solid #0070f3; }
-  #estimate-list .est-title { font-weight: 600; font-size: 15px; }
-  #estimate-list .est-meta { font-size: 12px; color: #555; margin-top: 4px; }
-  #estimate-total { font-size: 16px; margin: 16px 0; color: #111; padding: 10px; background: #e0f2fe; border-radius: 6px; }
+  #estimate-list li { background: #fff; padding: 14px; border-radius: 8px; margin-bottom: 8px; font-size: 14px; border: 1px solid #e5e7eb; border-left: 5px solid #861f41; box-shadow: 0 1px 3px rgba(0,0,0,0.05); }
+  .est-title { font-weight: 700; font-size: 15px; color: #111; }
+  .est-meta { font-size: 12px; color: #555; margin-top: 4px; }
+  #estimate-total { font-size: 16px; margin: 16px 0; color: #111; padding: 12px; background: #ffedd5; border-radius: 6px; font-weight: 700; border: 1px solid #fed7aa; }
 
-  .section-box { margin-top: 16px; padding: 12px; background: #f9fafb; border: 1px solid #e5e7eb; border-radius: 8px; }
-  .section-box h3 { font-size: 15px; margin: 0 0 8px 0; color: #111; }
+  .section-box { margin-top: 16px; padding: 16px; background: #fff; border: 1px solid #e5e7eb; border-radius: 8px; box-shadow: 0 1px 3px rgba(0,0,0,0.05); }
+  .section-box h3 { font-size: 16px; margin: 0 0 12px 0; color: #861f41; }
   .section-box ul { list-style: none; padding: 0; margin: 0; }
-  .section-box li { background: #fff; padding: 8px 12px; border-radius: 6px; margin-bottom: 6px; border: 1px solid #e5e7eb; font-size: 13px; }
+  .section-box li { background: #f9fafb; padding: 10px 12px; border-radius: 6px; margin-bottom: 8px; border: 1px solid #e5e7eb; font-size: 13px; }
   .cal-title { font-weight: 600; color: #111; display: flex; align-items: center; justify-content: space-between; }
-  .cal-time { font-size: 12px; color: #6b7280; margin-top: 2px; }
-  .study-badge { background: #e0f2fe; color: #0369a1; padding: 2px 8px; border-radius: 12px; font-size: 11px; font-weight: 600; }
+  .cal-time { font-size: 12px; color: #6b7280; margin-top: 4px; }
+  .study-badge { background: #dcfce7; color: #166534; padding: 2px 8px; border-radius: 12px; font-size: 11px; font-weight: 700; }
+  
+  .card-container { background: #fff; padding: 24px; border-radius: 12px; border: 1px solid #e5e7eb; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05); margin-bottom: 20px; }
 </style>
 </head>
 <body>
 
   <!-- STEP 1: Canvas JSON Import -->
-  <div id="step-canvas">
-    <h1>Canvas Connection</h1>
-    <p class="help">Paste the assignment list copied from the extension below.</p>
+  <div id="step-canvas" class="card-container">
+    <h1>1. Canvas Connection</h1>
+    <p class="help">Paste the assignment list copied from the HokieTutor extension below.</p>
     <form id="canvas-form">
       <label>Name
-        <input type="text" id="name" placeholder="Your name" required value="">
+        <input type="text" id="name" placeholder="Your name (e.g. Andrew Park)" required value="">
       </label>
       <label>Assignment JSON
-        <textarea id="assignmentJson" rows="8" required></textarea>
+        <textarea id="assignmentJson" rows="8" required placeholder='[{"id": 1, "title": "Homework 1", "due_at": "2026-09-25T23:59:00Z", "points_possible": 100}]'></textarea>
       </label>
       <div class="btn-row">
         <button type="submit" id="btn-sync" class="btn-primary">Next &rarr;</button>
@@ -56,8 +56,8 @@
   </div>
 
   <!-- STEP 2: Onboarding -->
-  <div id="step-onboarding" style="display:none;">
-    <h1>Onboarding: My Study Profile</h1>
+  <div id="step-onboarding" class="card-container" style="display:none;">
+    <h1>2. Onboarding: My Study Profile</h1>
     <form id="onboarding-form">
       <label>Learning Pace
         <select id="learningPace">
@@ -75,10 +75,9 @@
         <input type="number" id="targetGpa" step="0.01" min="0" max="4" value="3.6">
       </label>
       <label>Daily Study Hours Available
-        <input type="number" id="dailyStudyHours" step="0.5" min="0" max="24" value="2.5">
+        <input type="number" id="dailyStudyHours" step="0.5" min="0" max="24" value="3.0">
       </label>
 
-      <!-- 유저가 직접 설정하는 수면 시간 보호 범위 -->
       <label>Sleep Time Protection Range (No study during this time)
         <div class="block-row">
           <input type="time" id="sleepStart" value="02:00">
@@ -95,11 +94,11 @@
   </div>
 
   <!-- STEP 3: AI Dynamic Estimates -->
-  <div id="step-done" style="display:none;">
-    <h1>This Week's Assignments</h1>
+  <div id="step-done" class="card-container" style="display:none;">
+    <h1>3. This Week's Assignments</h1>
     <p class="help">AI-powered workload estimates based on your profile.</p>
-    <div id="estimate-loading" style="padding:12px; background:#fef3c7; border-radius:6px; margin: 12px 0;">Analyzing assignments...</div>
-    <div id="estimate-total" style="display:none; font-weight:700;"></div>
+    <div id="estimate-loading" style="padding:12px; background:#fef3c7; border-radius:6px; margin: 12px 0; border: 1px solid #fde68a;">Analyzing assignments with Gemini AI...</div>
+    <div id="estimate-total" style="display:none;"></div>
     <ul id="estimate-list" style="list-style:none; padding:0;"></ul>
     <div class="btn-row">
       <button type="button" id="btn-back-to-step2" class="btn-secondary">&larr; Back</button>
@@ -107,10 +106,10 @@
     </div>
   </div>
 
-  <!-- STEP 4: Google Calendar (.ics Upload & Conflict-Free Generation) -->
-  <div id="step-calendar" style="display:none;">
-    <h1>Google Calendar & Conflict Avoidance</h1>
-    <p class="help">Upload your existing timetable (.ics). AI will parse your classes, protect your custom sleep hours, and generate a conflict-free study schedule.</p>
+  <!-- STEP 4: Google Calendar (.ics Upload & Gemini AI Schedule Generation) -->
+  <div id="step-calendar" class="card-container" style="display:none;">
+    <h1>4. Google Calendar & Gemini AI Scheduler</h1>
+    <p class="help">Upload your existing timetable (.ics). Gemini AI will analyze your classes, protect your sleep & work hours, and generate a 100% conflict-free schedule.</p>
     
     <label>Upload Existing Timetable (.ics)
       <input type="file" id="ics-upload-input" accept=".ics,text/calendar">
@@ -118,7 +117,7 @@
 
     <div id="ics-upload-result"></div>
 
-    <button type="button" id="btn-download-ics" class="btn-primary" style="width:100%; margin-top: 24px; display:none;">Download Conflict-Free AI Study Schedule (.ics)</button>
+    <button type="button" id="btn-download-ics" class="btn-primary" style="width:100%; margin-top: 24px; display:none;">Download Gemini AI Study Schedule (.ics)</button>
 
     <div class="btn-row" style="margin-top: 20px;">
       <button type="button" id="btn-back-to-step3" class="btn-secondary" style="flex:1;">&larr; Back</button>
@@ -195,13 +194,11 @@
             dailyStudyHours: userStudyProfile.dailyStudyHours,
             sleepStart: userStudyProfile.sleepStart,
             sleepEnd: userStudyProfile.sleepEnd,
-            // 백엔드의 @NotEmpty 검증을 통과하도록 기본 스터디 블록 추가
             preferredStudyBlocks: [
               { dayOfWeek: "MONDAY", startTime: "18:00", endTime: "20:00" }
             ]
           })
         });
-        
         if (res.ok) {
           stepOnboarding.style.display = 'none';
           stepDone.style.display = 'block';
@@ -238,7 +235,7 @@
 
         body.assignments.forEach(a => {
           const li = document.createElement('li');
-          li.innerHTML = `<div class="est-title">${a.title}</div><div class="est-meta">Due: ${a.dueAt} &middot; <strong style="color:#0070f3;">~${a.estimatedHours.toFixed(1)}h</strong></div>`;
+          li.innerHTML = `<div class="est-title">${a.title}</div><div class="est-meta">Due: ${a.dueAt} &middot; <strong style="color:#861f41;">~${a.estimatedHours.toFixed(1)}h</strong></div>`;
           listEl.appendChild(li);
         });
       } catch (err) {
@@ -251,124 +248,78 @@
       stepCalendar.style.display = 'block';
     };
 
-    // 유저가 설정한 수면 시간 체크 함수
-    function isDuringSleep(targetDate, sleepStartStr, sleepEndStr) {
-      const h = targetDate.getHours();
-      const m = targetDate.getMinutes();
-      const totalMin = h * 60 + m;
-
-      const [sH, sM] = sleepStartStr.split(':').map(Number);
-      const [eH, eM] = sleepEndStr.split(':').map(Number);
-      const startMin = sH * 60 + sM;
-      const endMin = eH * 60 + eM;
-
-      if (startMin <= endMin) {
-        return totalMin >= startMin && totalMin < endMin;
-      } else {
-        // 자정을 넘어가는 경우 (예: 23:00 ~ 07:00)
-        return totalMin >= startMin || totalMin < endMin;
-      }
-    }
-
-    // 기존 타임라인(.ics) 업로드 및 유저 설정 수면 시간 반영 충돌 회피 + 7일 분산 스케줄링
-    // 기존 타임라인(.ics) 업로드 및 과제 중복 생성 방지 + 충돌 회피 스케줄링
+    // [핵심] 백엔드의 Gemini AI 서버(/api/schedule)에 .ics 내용과 유저 프로필을 통째로 보내서 AI가 직접 일정을 짜오도록 요청
     document.getElementById('ics-upload-input').addEventListener('change', async (e) => {
       const file = e.target.files[0];
       const resultEl = document.getElementById('ics-upload-result');
       const downloadBtn = document.getElementById('btn-download-ics');
       if (!file) return;
 
-      resultEl.innerHTML = '<div style="padding:10px; background:#fef3c7; border-radius:6px; margin-top:12px;">Parsing timetable and scheduling tasks uniquely...</div>';
+      resultEl.innerHTML = '<div style="padding:12px; background:#fef3c7; border-radius:6px; margin-top:12px; border:1px solid #fde68a;">Asking Gemini AI to generate a conflict-free schedule...</div>';
       downloadBtn.style.display = 'none';
 
       const reader = new FileReader();
       reader.onload = async (evt) => {
-        const rawText = evt.target.result;
-        const busyIntervals = parseIcsBusyTimes(rawText);
+        const icsRawText = evt.target.result;
 
-        generatedStudyBlocks = [];
-        const assignments = lastWeeklyEstimate && lastWeeklyEstimate.assignments ? lastWeeklyEstimate.assignments : [];
-        const sorted = [...assignments].sort((a, b) => new Date(a.dueAt) - new Date(b.dueAt));
+        try {
+          // 백엔드 ScheduleController로 보낼 페이로드 구성
+          const payload = {
+            studentName: currentStudentName,
+            sleepStart: userStudyProfile.sleepStart,
+            sleepEnd: userStudyProfile.sleepEnd,
+            learningPace: userStudyProfile.learningPace,
+            dailyStudyHours: userStudyProfile.dailyStudyHours,
+            icsContent: icsRawText,
+            assignments: lastWeeklyEstimate ? lastWeeklyEstimate.assignments : []
+          };
 
-        let currentDate = new Date();
-        const sleepStart = userStudyProfile.sleepStart || "02:00";
-        const sleepEnd = userStudyProfile.sleepEnd || "07:00";
-
-        // 각 과제별로 중복 없이 딱 1개씩만 스케줄 블록 할당
-        sorted.forEach(a => {
-          let totalHours = a.estimatedHours || 2.0;
-          let dueDate = new Date(a.dueAt);
-          if (isNaN(dueDate)) return;
-
-          // 마감일 하루 전 혹은 당일 오후 시간대로 목표 설정
-          let targetDate = new Date(dueDate.getTime() - (24 * 60 * 60 * 1000));
-          if (targetDate < currentDate) {
-            targetDate = new Date(currentDate);
-          }
-
-          targetDate.setHours(15, 0, 0, 0);
-          let sessionEnd = new Date(targetDate.getTime() + totalHours * 3600000);
-
-          // 수면 시간 및 기존 수업 시간(busyIntervals)과 겹치면 피해서 빈 시간 찾기
-          let hour = targetDate.getHours();
-          while (isDuringSleep(targetDate, sleepStart, sleepEnd) || hasConflict(targetDate, sessionEnd, busyIntervals)) {
-            targetDate.setHours(targetDate.getHours() + 1);
-            sessionEnd = new Date(targetDate.getTime() + totalHours * 3600000);
-            
-            if (targetDate.getHours() >= 22) {
-              targetDate.setDate(targetDate.getDate() + 1);
-              targetDate.setHours(10, 0, 0, 0);
-              sessionEnd = new Date(targetDate.getTime() + totalHours * 3600000);
-            }
-          }
-
-          generatedStudyBlocks.push({
-            title: `[Study] ${a.title}`,
-            start: new Date(targetDate),
-            end: new Date(sessionEnd),
-            hours: totalHours
+          const response = await fetch('/api/schedule', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(payload)
           });
-        });
 
-        let htmlContent = `<div class="section-box" style="margin-top:12px; background:#f0f9ff; border-color:#bae6fd;"><h3>🤖 Conflict-Free AI Study Schedule (${generatedStudyBlocks.length} sessions)</h3><ul>`;
-        generatedStudyBlocks.forEach(sb => {
-          htmlContent += `<li><div class="cal-title"><span>${sb.title}</span><span class="study-badge">~${sb.hours.toFixed(1)}h</span></div><div class="cal-time">${sb.start.toLocaleString()} &rarr; ${sb.end.toLocaleString()}</div></li>`;
-        });
-        htmlContent += `</ul></div>`;
+          const responseText = await response.text();
+          if (!response.ok) throw new Error(responseText);
 
-        resultEl.innerHTML = htmlContent;
-        if (generatedStudyBlocks.length > 0) {
-          downloadBtn.style.display = 'block';
+          // Gemini가 반환한 JSON 스케줄 파싱
+          let aiScheduleData;
+          try {
+            aiScheduleData = JSON.parse(responseText);
+          } catch (err) {
+            // 만약 순수 텍스트로 왔다면 파싱 시도
+            aiScheduleData = JSON.parse(responseText.replace(/```json/g, '').replace(/```/g, '').trim());
+          }
+
+          generatedStudyBlocks = [];
+          const sessions = Array.isArray(aiScheduleData) ? aiScheduleData : (aiScheduleData.sessions || aiScheduleData.blocks || []);
+
+          sessions.forEach(s => {
+            generatedStudyBlocks.push({
+              title: s.title || s.summary || "[Study] Assignment",
+              start: new Date(s.start || s.startTime),
+              end: new Date(s.end || s.endTime),
+              hours: s.hours || s.durationHours || 2.0
+            });
+          });
+
+          let htmlContent = `<div class="section-box" style="margin-top:16px;"><h3>🤖 Gemini AI Study Schedule (${generatedStudyBlocks.length} sessions)</h3><ul>`;
+          generatedStudyBlocks.forEach(sb => {
+            htmlContent += `<li><div class="cal-title"><span>${sb.title}</span><span class="study-badge">~${sb.hours.toFixed(1)}h</span></div><div class="cal-time">${sb.start.toLocaleString()} &rarr; ${sb.end.toLocaleString()}</div></li>`;
+          });
+          htmlContent += `</ul></div>`;
+
+          resultEl.innerHTML = htmlContent;
+          if (generatedStudyBlocks.length > 0) {
+            downloadBtn.style.display = 'block';
+          }
+        } catch (err) {
+          resultEl.innerHTML = `<div style="padding:12px; background:#fee2e2; color:#991b1b; border-radius:6px; margin-top:12px;">Gemini AI Scheduling Error: ${err.message}</div>`;
         }
       };
       reader.readAsText(file);
     });
-
-    function parseIcsBusyTimes(text) {
-      const busy = [];
-      const blocks = text.split('BEGIN:VEVENT').slice(1);
-      blocks.forEach(b => {
-        const startMatch = b.match(/DTSTART[^:]*:(\S+)/);
-        const endMatch = b.match(/DTEND[^:]*:(\S+)/);
-        if (startMatch) {
-          const start = parseIcsDate(startMatch[1].trim());
-          const end = endMatch ? parseIcsDate(endMatch[1].trim()) : new Date(start.getTime() + 3600000);
-          busy.push({ start, end });
-        }
-      });
-      return busy;
-    }
-
-    function parseIcsDate(raw) {
-      const match = raw.match(/^(\d{4})(\d{2})(\d{2})T(\d{2})(\d{2})(\d{2})/);
-      if (!match) return new Date();
-      const [, y, mo, d, h, mi, s] = match;
-      return new Date(`${y}-${mo}-${d}T${h}:${mi}:${s}Z`);
-    }
-
-    function hasConflict(start, end, busyIntervals) {
-      return busyIntervals.some(b => start < b.end && end > b.start);
-    }
 
     document.getElementById('btn-download-ics').onclick = () => {
       if (generatedStudyBlocks.length === 0) return;
@@ -377,16 +328,16 @@
       const formatIcs = d => `${d.getUTCFullYear()}${pad(d.getUTCMonth() + 1)}${pad(d.getUTCDate())}T${pad(d.getUTCHours())}${pad(d.getUTCMinutes())}00Z`;
       const now = formatIcs(new Date());
 
-      let lines = ['BEGIN:VCALENDAR', 'VERSION:2.0', 'PRODID:-//StudySmart//Conflict-Free AI Schedule//EN'];
+      let lines = ['BEGIN:VCALENDAR', 'VERSION:2.0', 'PRODID:-//StudySmart//Gemini AI Schedule//EN'];
       generatedStudyBlocks.forEach((sb, idx) => {
         lines.push(
           'BEGIN:VEVENT',
-          `UID:studysmart-free-${idx}-${Date.now()}@vt.edu`,
+          `UID:gemini-study-${idx}-${Date.now()}@vt.edu`,
           `DTSTAMP:${now}`,
           `DTSTART:${formatIcs(sb.start)}`,
           `DTEND:${formatIcs(sb.end)}`,
           `SUMMARY:${sb.title}`,
-          `DESCRIPTION:AI Study Block (~${sb.hours.toFixed(1)}h). Conflict-free & custom sleep protected.`,
+          `DESCRIPTION:Gemini AI Study Block (~${sb.hours.toFixed(1)}h). Conflict-free & sleep protected.`,
           'END:VEVENT'
         );
       });
@@ -396,7 +347,7 @@
       const url = URL.createObjectURL(blob);
       const a = document.createElement('a');
       a.href = url;
-      a.download = 'StudySmart_AI_Study_Schedule.ics';
+      a.download = 'StudySmart_Gemini_AI_Schedule.ics';
       a.click();
       URL.revokeObjectURL(url);
     };

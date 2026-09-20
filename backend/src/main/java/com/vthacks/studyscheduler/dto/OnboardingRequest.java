@@ -16,6 +16,8 @@ public record OnboardingRequest(
         @DecimalMin("0.0") @DecimalMax("4.0") Double currentGpa,
         @DecimalMin("0.0") @DecimalMax("4.0") Double targetGpa,
         @NotEmpty @Valid List<StudyBlockRequest> preferredStudyBlocks,
-        @NotNull @DecimalMin("0.0") @DecimalMax("24.0") Double dailyStudyHours
+        @NotNull @DecimalMin("0.0") @DecimalMax("24.0") Double dailyStudyHours,
+        String sleepStart, // 수면 시작 시간 필드 추가
+        String sleepEnd    // 수면 종료 시간 필드 추가
 ) {
 }

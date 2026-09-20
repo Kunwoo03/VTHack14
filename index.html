@@ -7,9 +7,6 @@
   <link rel="stylesheet" href="styles.css" />
 </head>
 <body>
-  <!-- ================================================================= -->
-  <!-- MAIN WEB APPLICATION CONTAINER                                    -->
-  <!-- ================================================================= -->
   <div class="app-container">
 
     <!-- HEADER: Virginia Tech Maroon & Burnt Orange Branding -->
@@ -25,26 +22,17 @@
 
         <!-- Extension Sync & Data Integration Status -->
         <div class="header-actions">
-          <!-- Themes Switcher Tab -->
           <div class="theme-tabs-pill" id="theme-tabs-pill" role="tablist" aria-label="Select Theme">
-            <button type="button" class="theme-tab-btn active" id="theme-tab-light" data-theme="light" role="tab" aria-selected="true" title="Hokie Classic Light Theme">
-              ☀️ Classic
-            </button>
-            <button type="button" class="theme-tab-btn" id="theme-tab-dark" data-theme="dark" role="tab" aria-selected="false" title="Hokie Dark Mode">
-              🌙 Dark
-            </button>
+            <button type="button" class="theme-tab-btn active" id="theme-tab-light" data-theme="light" role="tab" aria-selected="true" title="Hokie Classic Light Theme">☀️ Classic</button>
+            <button type="button" class="theme-tab-btn" id="theme-tab-dark" data-theme="dark" role="tab" aria-selected="false" title="Hokie Dark Mode">🌙 Dark</button>
           </div>
 
           <div class="extension-status-badge disconnected" id="header-extension-badge" title="HokieTutor Chrome Extension Status">
             <span class="badge-dot"></span>
             <span class="badge-text" id="header-extension-text">Extension: Disconnected</span>
           </div>
-          <button type="button" class="btn btn-sm btn-outline-light" id="btn-import-canvas-json" title="Import Canvas data JSON exported by the Chrome extension">
-            📂 Import Data
-          </button>
-          <button type="button" class="btn btn-sm btn-orange" id="btn-sync-extension" title="Trigger sync from HokieTutor Canvas extension">
-            ⚡ Extension Sync
-          </button>
+          <button type="button" class="btn btn-sm btn-outline-light" id="btn-import-canvas-json" title="Import Canvas data JSON exported by the Chrome extension">📂 Import Data</button>
+          <button type="button" class="btn btn-sm btn-orange" id="btn-sync-extension" title="Trigger sync from HokieTutor Canvas extension">⚡ Extension Sync</button>
         </div>
       </div>
 
@@ -71,16 +59,12 @@
     <!-- PAGE 1: MULTI-COURSE GOALS & STUDY HABITS                       -->
     <!-- =============================================================== -->
     <main class="page-view active" id="page-1" aria-labelledby="page-1-heading">
-
-      <!-- Extension Sync Telemetry Banner -->
       <div class="card sync-status-banner">
         <div class="sync-banner-left">
           <div class="sync-status-icon">🎓</div>
-          <div class="sync-status-text">
+          <div class="sync-banner-text">
             <strong class="sync-banner-title">VT Canvas Synced (Active Term: Fall 2026)</strong>
-            <p class="sync-banner-desc" id="sync-banner-details">
-              4 Active Courses detected. Past course (PHYS 2306) automatically filtered out.
-            </p>
+            <p class="sync-banner-desc" id="sync-banner-details">4 Active Courses detected. Past course (PHYS 2306) automatically filtered out.</p>
           </div>
         </div>
         <div class="sync-banner-right">
@@ -88,7 +72,6 @@
         </div>
       </div>
 
-      <!-- Aggregated Goals Metrics Bar -->
       <section class="goals-summary-bar card">
         <div class="goal-metric">
           <span class="metric-val" id="metric-active-courses">4</span>
@@ -108,27 +91,17 @@
         </div>
       </section>
 
-      <!-- Section: Course-by-Course Goal Cards -->
       <section class="form-section">
         <div class="section-header-row">
           <div>
             <h2 class="section-title" id="page-1-heading">1. Individual Course Goals & Target Grades</h2>
-            <p class="section-desc">
-              Customize your target final grade, current confidence, and weekly study time commitment for each class independently:
-            </p>
+            <p class="section-desc">Customize your target final grade, current confidence, and weekly study time commitment for each class independently:</p>
           </div>
-          <button type="button" class="btn btn-outline btn-sm" id="btn-open-add-course-modal">
-            + Add Course
-          </button>
+          <button type="button" class="btn btn-outline btn-sm" id="btn-open-add-course-modal">+ Add Course</button>
         </div>
-
-        <!-- The Course Cards Deck (Dynamically populated from appState.courses) -->
-        <div class="course-cards-deck" id="course-cards-deck">
-          <!-- Populated by JavaScript -->
-        </div>
+        <div class="course-cards-deck" id="course-cards-deck"></div>
       </section>
 
-      <!-- Section: General Study Habits & Intensity -->
       <section class="form-section">
         <h2 class="section-title">2. Study Habits & Learning Speed</h2>
         <p class="section-desc">Set your overall learning pace and tutoring methodology:</p>
@@ -143,7 +116,6 @@
                 <span class="pill-subtitle">1.5x time per topic. Extensive notes, concept maps, and video reviews.</span>
               </div>
             </label>
-
             <label class="radio-pill">
               <input type="radio" name="study_speed" value="balanced" checked />
               <div class="pill-card">
@@ -151,7 +123,6 @@
                 <span class="pill-subtitle">1.0x standard pace. Equal mix of theory comprehension and problem solving.</span>
               </div>
             </label>
-
             <label class="radio-pill">
               <input type="radio" name="study_speed" value="fast" />
               <div class="pill-card">
@@ -172,7 +143,6 @@
               <option value="90">90 minutes (Deep Focus Deep-Dive)</option>
             </select>
           </div>
-
           <div class="form-group">
             <label for="global-tutoring-style" class="form-label">Primary Tutoring Style:</label>
             <select id="global-tutoring-style" class="form-control">
@@ -185,7 +155,6 @@
         </div>
       </section>
 
-      <!-- Navigation Actions for Page 1 -->
       <div class="step-actions">
         <button type="button" class="btn btn-secondary" id="btn-save-draft-1">Save Draft</button>
         <button type="button" class="btn btn-primary" id="btn-next-to-2">Proceed to Availability &rarr;</button>
@@ -198,12 +167,9 @@
     <main class="page-view" id="page-2" aria-labelledby="page-2-heading">
       <div class="section-header-box">
         <h2 class="section-title" id="page-2-heading">Weekly Schedule & Free Study Time</h2>
-        <p class="section-desc">
-          Upload your timetable screenshot or click the calendar cells below to mark your busy class/work commitments. Unmarked slots become your available study time.
-        </p>
+        <p class="section-desc">Upload your timetable screenshot or click the calendar cells below to mark your busy class/work commitments. Unmarked slots become your available study time.</p>
       </div>
 
-      <!-- Option A: File Upload / Timetable Screenshot -->
       <section class="upload-section card">
         <div class="upload-dropzone" id="schedule-dropzone">
           <div class="upload-icon">📷</div>
@@ -215,7 +181,6 @@
           <button type="button" class="btn btn-outline btn-sm" id="btn-browse-file">Browse Files</button>
         </div>
 
-        <!-- Preview container for uploaded screenshot -->
         <div class="upload-preview hidden" id="upload-preview-container">
           <img id="upload-preview-img" src="" alt="Schedule Preview" />
           <div class="upload-preview-meta">
@@ -226,15 +191,12 @@
         </div>
       </section>
 
-      <!-- Option B: Interactive Weekly Calendar Grid -->
       <section class="calendar-tool-section card">
         <div class="calendar-toolbar">
           <div class="calendar-legend">
             <span class="legend-item"><span class="legend-box busy"></span> Busy / Class Block</span>
             <span class="legend-item"><span class="legend-box free"></span> Free For Study</span>
           </div>
-
-          <!-- Quick Preset Buttons -->
           <div class="preset-buttons">
             <button type="button" class="btn btn-xs btn-outline" id="btn-preset-weekday-busy">Weekdays 9-5 Busy</button>
             <button type="button" class="btn btn-xs btn-outline" id="btn-preset-evenings-free">Evenings Free</button>
@@ -242,7 +204,6 @@
           </div>
         </div>
 
-        <!-- The Interactive Weekly Grid -->
         <div class="grid-table-wrapper">
           <table class="availability-grid" id="availability-table" aria-label="Weekly availability selector">
             <thead>
@@ -257,9 +218,7 @@
                 <th scope="col">Sun</th>
               </tr>
             </thead>
-            <tbody id="availability-tbody">
-              <!-- Dynamically populated rows via JavaScript -->
-            </tbody>
+            <tbody id="availability-tbody"></tbody>
           </table>
         </div>
 
@@ -269,7 +228,6 @@
         </div>
       </section>
 
-      <!-- Navigation Bar for Step 2 -->
       <div class="step-actions">
         <button type="button" class="btn btn-secondary" id="btn-back-to-1">&larr; Back to Goals</button>
         <button type="button" class="btn btn-primary" id="btn-next-to-3">Generate Multi-Course Schedule &rarr;</button>
@@ -280,7 +238,6 @@
     <!-- PAGE 3: PERSONALIZED MULTI-COURSE STUDY SCHEDULE                -->
     <!-- =============================================================== -->
     <main class="page-view" id="page-3" aria-labelledby="page-3-heading">
-      <!-- Top Overview Stats -->
       <section class="schedule-summary-bar card">
         <div class="stat-cell">
           <span class="stat-number" id="stat-total-sessions">12</span>
@@ -300,13 +257,11 @@
         </div>
       </section>
 
-      <!-- Control Toolbar: Add session, filter, export -->
       <section class="schedule-controls">
         <div class="filter-controls">
           <label for="filter-course-select" class="sr-only">Filter by Course</label>
           <select id="filter-course-select" class="form-control form-control-sm">
             <option value="ALL">Show All Courses</option>
-            <!-- Injected by JavaScript based on active courses -->
           </select>
         </div>
 
@@ -314,198 +269,35 @@
           <button type="button" class="btn btn-outline btn-sm" id="btn-open-add-session-modal">+ Add Session</button>
           <button type="button" class="btn btn-outline btn-sm" id="btn-export-ics">📥 Export iCal (.ics)</button>
           <button type="button" class="btn btn-outline btn-sm" id="btn-print-schedule">🖨️ Print</button>
-          <button type="button" class="btn btn-secondary btn-sm" id="btn-regenerate-schedule" title="Calls upon the HokieTutor Chrome Extension to refresh Canvas data and recalculate schedule">
+          <button type="button" class="btn btn-secondary btn-sm" id="btn-regenerate-schedule" title="Call Extension & Regenerate">
             <span id="btn-regenerate-icon">⚡</span> <span id="btn-regenerate-text">Call Extension & Regenerate</span>
           </button>
         </div>
       </section>
 
-      <!-- The Schedule Sessions List (Grouped by Day) -->
-      <section class="sessions-container" id="sessions-container" aria-live="polite">
-        <!-- Injected via JavaScript -->
-      </section>
+      <section class="sessions-container" id="sessions-container" aria-live="polite"></section>
 
-      <!-- Navigation Bar for Step 3 -->
       <div class="step-actions">
         <button type="button" class="btn btn-secondary" id="btn-back-to-2">&larr; Back to Availability</button>
         <button type="button" class="btn btn-primary" id="btn-finish-done">Save Schedule</button>
       </div>
     </main>
 
-    <!-- =============================================================== -->
-    <!-- MODAL 1: ADD / EDIT COURSE MODAL                                -->
-    <!-- =============================================================== -->
-    <div class="modal-overlay hidden" id="course-modal" role="dialog" aria-modal="true" aria-labelledby="modal-course-title">
-      <div class="modal-card">
-        <div class="modal-header">
-          <h3 class="modal-title" id="modal-course-title">Add Course</h3>
-          <button type="button" class="btn-close" id="btn-close-course-modal" aria-label="Close modal">&times;</button>
-        </div>
-
-        <form id="form-course-editor">
-          <div class="grid-2-col">
-            <div class="form-group">
-              <label for="modal-course-code" class="form-label">Course Code / CRN:</label>
-              <input type="text" id="modal-course-code" class="form-control" placeholder="e.g. PSYC 1004 or 1226 (CRN 87487)" required />
-            </div>
-
-            <div class="form-group">
-              <label for="modal-course-term" class="form-label">Term:</label>
-              <input type="text" id="modal-course-term" class="form-control" value="2026 Fall" required />
-            </div>
-          </div>
-
-          <div class="form-group">
-            <label for="modal-course-name" class="form-label">Course Title:</label>
-            <input type="text" id="modal-course-name" class="form-control" placeholder="e.g. Introductory Psychology" required />
-          </div>
-
-          <div class="grid-3-col">
-            <div class="form-group">
-              <label for="modal-course-current-grade" class="form-label">Current Grade (%):</label>
-              <input type="number" id="modal-course-current-grade" class="form-control" min="0" max="100" step="0.1" value="85.0" required />
-            </div>
-
-            <div class="form-group">
-              <label for="modal-course-goal-grade" class="form-label">Goal Grade:</label>
-              <select id="modal-course-goal-grade" class="form-control">
-                <option value="A">A (93-100%)</option>
-                <option value="A-" selected>A- (90-92%)</option>
-                <option value="B+">B+ (87-89%)</option>
-                <option value="B">B (83-86%)</option>
-              </select>
-            </div>
-
-            <div class="form-group">
-              <label for="modal-course-confidence" class="form-label">Confidence:</label>
-              <select id="modal-course-confidence" class="form-control">
-                <option value="low">Low</option>
-                <option value="medium" selected>Medium</option>
-                <option value="high">High</option>
-              </select>
-            </div>
-          </div>
-
-          <div class="form-group">
-            <label for="modal-course-hours" class="form-label">Weekly Study Hours Target:</label>
-            <input type="number" id="modal-course-hours" class="form-control" min="1" max="15" value="3" required />
-          </div>
-
-          <div class="form-group">
-            <label for="modal-course-topics" class="form-label">Key Topics / Focus Modules (comma separated):</label>
-            <input type="text" id="modal-course-topics" class="form-control" placeholder="e.g. Memory retention, Cognitive development" />
-          </div>
-
-          <div class="modal-footer">
-            <button type="button" class="btn btn-secondary" id="btn-cancel-course-modal">Cancel</button>
-            <button type="submit" class="btn btn-primary" id="btn-save-course">Add Course</button>
-          </div>
-        </form>
-      </div>
-    </div>
-
-    <!-- =============================================================== -->
-    <!-- MODAL 2: ADD / EDIT STUDY SESSION MODAL                         -->
-    <!-- =============================================================== -->
-    <div class="modal-overlay hidden" id="session-modal" role="dialog" aria-modal="true" aria-labelledby="modal-session-title">
-      <div class="modal-card">
-        <div class="modal-header">
-          <h3 class="modal-title" id="modal-session-title">Add Study Session</h3>
-          <button type="button" class="btn-close" id="btn-close-session-modal" aria-label="Close modal">&times;</button>
-        </div>
-
-        <form id="form-session-editor">
-          <!-- Hidden session ID for edit mode -->
-          <input type="hidden" id="modal-session-id" value="" />
-
-          <div class="form-group">
-            <label for="modal-session-course" class="form-label">Course:</label>
-            <select id="modal-session-course" class="form-control" required>
-              <!-- Populated by JavaScript -->
-            </select>
-          </div>
-
-          <div class="form-group">
-            <label for="modal-session-topic" class="form-label">Topic / Focus Assignment:</label>
-            <input type="text" id="modal-session-topic" class="form-control" placeholder="e.g. Integration by Parts Review" required />
-          </div>
-
-          <div class="grid-2-col">
-            <div class="form-group">
-              <label for="modal-session-day" class="form-label">Day of Week:</label>
-              <select id="modal-session-day" class="form-control" required>
-                <option value="Monday">Monday</option>
-                <option value="Tuesday">Tuesday</option>
-                <option value="Wednesday">Wednesday</option>
-                <option value="Thursday">Thursday</option>
-                <option value="Friday">Friday</option>
-                <option value="Saturday">Saturday</option>
-                <option value="Sunday">Sunday</option>
-              </select>
-            </div>
-
-            <div class="form-group">
-              <label for="modal-session-start-time" class="form-label">Start Time:</label>
-              <input type="time" id="modal-session-start-time" class="form-control" value="16:00" required />
-            </div>
-          </div>
-
-          <div class="grid-2-col">
-            <div class="form-group">
-              <label for="modal-session-duration" class="form-label">Duration:</label>
-              <select id="modal-session-duration" class="form-control" required>
-                <option value="30">30 Minutes</option>
-                <option value="45">45 Minutes</option>
-                <option value="60" selected>60 Minutes</option>
-                <option value="90">90 Minutes</option>
-                <option value="120">2 Hours</option>
-              </select>
-            </div>
-
-            <div class="form-group">
-              <label for="modal-session-format" class="form-label">Study Method:</label>
-              <select id="modal-session-format" class="form-control">
-                <option value="Practice Problems">Practice Problems</option>
-                <option value="Syllabus Review">Syllabus Review</option>
-                <option value="Mock Exam">Mock Exam</option>
-                <option value="Flashcards">Flashcards</option>
-              </select>
-            </div>
-          </div>
-
-          <div class="modal-footer">
-            <button type="button" class="btn btn-secondary" id="btn-cancel-session-modal">Cancel</button>
-            <button type="submit" class="btn btn-primary" id="btn-save-session">Save Session</button>
-          </div>
-        </form>
-      </div>
-    </div>
-
-    <!-- =============================================================== -->
-    <!-- MODAL 3: IMPORT CANVAS EXTENSION JSON MODAL                     -->
-    <!-- =============================================================== -->
+    <!-- MODAL 3: IMPORT CANVAS EXTENSION JSON MODAL -->
     <div class="modal-overlay hidden" id="import-json-modal" role="dialog" aria-modal="true" aria-labelledby="modal-json-title">
       <div class="modal-card">
         <div class="modal-header">
           <h3 class="modal-title" id="modal-json-title">Import Data from Chrome Extension</h3>
           <button type="button" class="btn-close" id="btn-close-json-modal" aria-label="Close modal">&times;</button>
         </div>
-
-        <p class="section-desc">
-          Paste the assignment list copied from the HokieTutor Chrome extension. Courses are created
-          automatically from whatever <code>course_id</code>s show up, and the assignments are saved to
-          your HokieTutor account on the backend.
-        </p>
-
+        <p class="section-desc">Paste the assignment list copied from the HokieTutor Chrome extension.</p>
         <div class="form-group">
           <label for="json-vt-email" class="form-label">VT Email:</label>
           <input type="email" id="json-vt-email" class="form-control" placeholder="hokie@vt.edu" required />
         </div>
-
         <div class="form-group">
-          <textarea id="json-paste-area" class="form-control" rows="8" placeholder='[{"id": 123, "title": "...", "course_id": 234299, "due_at": "2026-09-21T18:30:00Z", "points_possible": 100, "html_url": "...", "description_raw": "..."}]'></textarea>
+          <textarea id="json-paste-area" class="form-control" rows="8" placeholder='[{"id": 123, "title": "...", "due_at": "2026-09-21T18:30:00Z", "points_possible": 100}]'></textarea>
         </div>
-
         <div class="modal-footer">
           <button type="button" class="btn btn-secondary" id="btn-cancel-json-modal">Cancel</button>
           <button type="button" class="btn btn-primary" id="btn-confirm-import-json">Import & Sync</button>
@@ -513,63 +305,11 @@
       </div>
     </div>
 
-    <!-- =============================================================== -->
-    <!-- CO-DEPENDENCE BARRIER: EXTENSION REQUIRED TO OPERATE           -->
-    <!-- =============================================================== -->
-    <div class="extension-guard-backdrop" id="extension-guard-overlay" role="dialog" aria-modal="true" aria-labelledby="guard-title">
-      <div class="extension-guard-card">
-        <div class="extension-guard-header">
-          <div class="guard-icon-lock">🔒</div>
-          <div style="flex-grow: 1;">
-            <h2 class="guard-title" id="guard-title">HokieTutor Extension Required</h2>
-            <span class="guard-req-badge">Co-Dependent Application</span>
-          </div>
-          <button type="button" class="btn-close" id="btn-close-guard-overlay" aria-label="Dismiss screen" title="Dismiss screen">&times;</button>
-        </div>
-
-        <p class="guard-intro">
-          This application is <strong>co-dependent</strong> and strictly requires the companion <strong>HokieTutor Chrome Extension</strong> to operate.
-          The extension securely scrapes your active Fall 2026 courses from Canvas, synchronizes assignments, and coordinates with the Spring Boot backend AI scheduler.
-        </p>
-
-        <div class="guard-status-box">
-          <div class="status-pulse-group">
-            <span class="status-pulse-dot" id="guard-pulse-dot"></span>
-            <span id="guard-status-message">Listening for HokieTutor Extension...</span>
-          </div>
-          <button type="button" class="btn btn-sm btn-orange" id="btn-detect-extension">
-            🔍 Ping Extension
-          </button>
-        </div>
-
-        <div class="guard-steps-container">
-          <h4 class="guard-steps-title">How to Connect the Extension:</h4>
-          <ol class="guard-steps-list">
-            <li>Open <code>chrome://extensions</code> (or <code>edge://extensions</code>) in your browser.</li>
-            <li>Enable <strong>Developer mode</strong> using the toggle switch in the upper-right corner.</li>
-            <li>Click <strong>Load unpacked</strong> and select the <code>extension</code> folder inside this repository.</li>
-            <li>Once loaded, click <strong>Ping Extension</strong> above (or refresh) to unlock the application!</li>
-          </ol>
-        </div>
-
-        <div class="guard-footer">
-          <button type="button" class="btn-demo-link" id="btn-demo-override" title="Developer presentation & test bypass mode">
-            ⚡ Developer / Presentation Bypass Mode
-          </button>
-          <button type="button" class="btn btn-sm btn-secondary" id="btn-dismiss-guard" title="Dismiss this screen">
-            Dismiss Screen &rarr;
-          </button>
-        </div>
-      </div>
-    </div>
-
-    <!-- TOAST NOTIFICATION CONTAINER -->
+    <!-- TOAST NOTIFICATION -->
     <div id="toast" class="toast hidden" role="status" aria-live="polite"></div>
 
   </div>
 
-  <!-- External JavaScript Logic -->
   <script src="app.js"></script>
-  <!-- test -->
 </body>
 </html>

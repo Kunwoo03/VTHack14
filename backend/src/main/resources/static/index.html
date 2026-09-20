@@ -1,587 +1,315 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<title>StudySmart Onboarding</title>
-<style>
-  body { font-family: system-ui, sans-serif; max-width: 540px; margin: 40px auto; padding: 0 16px; color: #222; }
-  h1 { font-size: 22px; }
-  label { display: block; margin-top: 16px; font-weight: 600; font-size: 14px; }
-  input, select, textarea { width: 100%; padding: 8px; margin-top: 4px; box-sizing: border-box; font-size: 14px; font-family: inherit; }
-  
-  .btn-row { display: flex; gap: 12px; margin-top: 24px; align-items: center; }
-  button { padding: 10px 18px; font-size: 15px; cursor: pointer; border-radius: 6px; border: 1px solid #ccc; font-weight: 600; }
-  .btn-primary { background: #0070f3; color: white; border: none; flex: 2; }
-  .btn-primary:hover { background: #005bb5; }
-  .btn-secondary { background: #f3f4f6; color: #374151; border: 1px solid #d1d5db; flex: 1; }
-  .btn-secondary:hover { background: #e5e7eb; }
-  button:disabled { background: #aaa; cursor: not-allowed; }
-
-  pre { background: #f4f4f4; padding: 12px; border-radius: 6px; white-space: pre-wrap; word-break: break-all; font-size: 12px; }
-  .help { font-size: 13px; color: #666; margin-top: 4px; line-height: 1.5; }
-  .badge { display: inline-block; padding: 2px 8px; border-radius: 12px; font-size: 12px; margin-left: 8px; }
-  .badge.ok { background: #dcfce7; color: #166534; }
-  .badge.no { background: #fee2e2; color: #991b1b; }
-  
-  .block-row { display: flex; gap: 8px; align-items: center; margin-top: 6px; }
-  .block-row select, .block-row input { width: auto; margin-top: 0; }
-  .block-row button { margin-top: 0; padding: 8px 12px; font-size: 14px; background: #eee; color: #333; }
-  #block-list { list-style: none; padding: 0; margin: 10px 0 0; }
-  #block-list li { display: flex; justify-content: space-between; align-items: center; background: #f4f4f4; padding: 6px 10px; border-radius: 6px; margin-bottom: 6px; font-size: 14px; }
-  #block-list button { margin-top: 0; padding: 2px 8px; font-size: 12px; background: #fee2e2; border: none; border-radius: 4px; cursor: pointer; color: #991b1b; }
-  
-  #estimate-list li { background: #f4f4f4; padding: 12px 14px; border-radius: 6px; margin-bottom: 8px; font-size: 14px; border-left: 4px solid #0070f3; }
-  #estimate-list .est-title { font-weight: 600; font-size: 15px; }
-  #estimate-list .est-meta { font-size: 12px; color: #555; margin-top: 4px; }
-  #estimate-total { font-size: 16px; margin: 16px 0; color: #111; padding: 10px; background: #e0f2fe; border-radius: 6px; }
-
-  .section-box { margin-top: 16px; padding: 12px; background: #f9fafb; border: 1px solid #e5e7eb; border-radius: 8px; }
-  .section-box h3 { font-size: 15px; margin: 0 0 8px 0; color: #111; }
-  .section-box ul { list-style: none; padding: 0; margin: 0; }
-  .section-box li { background: #fff; padding: 8px 12px; border-radius: 6px; margin-bottom: 6px; border: 1px solid #e5e7eb; font-size: 13px; }
-  
-  .cal-title { font-weight: 600; color: #111; display: flex; align-items: center; justify-content: space-between; }
-  .cal-time { font-size: 12px; color: #6b7280; margin-top: 2px; }
-  .repeat-badge { background: #ede9fe; color: #6d28d9; padding: 2px 8px; border-radius: 12px; font-size: 11px; font-weight: 600; }
-  .study-badge { background: #e0f2fe; color: #0369a1; padding: 2px 8px; border-radius: 12px; font-size: 11px; font-weight: 600; }
-</style>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>HokieTutor - VT Canvas AI Study Scheduler Application</title>
+  <link rel="stylesheet" href="styles.css" />
 </head>
 <body>
+  <div class="app-container">
 
-  <!-- STEP 1: Canvas JSON Import -->
-  <div id="step-canvas">
-    <h1>Canvas Connection <span id="canvas-badge"></span></h1>
-    <p class="help">Paste the assignment list copied from the extension below.</p>
-    <form id="canvas-form">
-      <label>Name
-        <input type="text" id="name" placeholder="Your name" required>
-      </label>
-
-      <label>Assignment JSON
-        <textarea id="assignmentJson" rows="8" required></textarea>
-      </label>
-
-      <div class="btn-row">
-        <button type="submit" id="btn-sync" class="btn-primary">Next &rarr;</button>
-      </div>
-    </form>
-  </div>
-
-  <!-- STEP 2: Onboarding -->
-  <div id="step-onboarding" style="display:none;">
-    <h1>Onboarding: My Study Profile</h1>
-    <form id="onboarding-form">
-      <label>Learning Pace
-        <select id="learningPace">
-          <option value="VERY_FAST">Very fast</option>
-          <option value="FAST">Fast</option>
-          <option value="AVERAGE" selected>Average</option>
-          <option value="SLOW">Slow</option>
-          <option value="VERY_SLOW">Very slow</option>
-        </select>
-      </label>
-
-      <label>Current GPA (0.0 - 4.0)
-        <input type="number" id="currentGpa" step="0.01" min="0" max="4" value="3.2">
-      </label>
-
-      <label>Target GPA (0.0 - 4.0)
-        <input type="number" id="targetGpa" step="0.01" min="0" max="4" value="3.6">
-      </label>
-
-      <label>Preferred Study Time Blocks
-        <div class="block-row">
-          <select id="blockDay">
-            <option value="MONDAY">Mon</option>
-            <option value="TUESDAY">Tue</option>
-            <option value="WEDNESDAY" selected>Wed</option>
-            <option value="THURSDAY">Thu</option>
-            <option value="FRIDAY">Fri</option>
-            <option value="SATURDAY">Sat</option>
-            <option value="SUNDAY">Sun</option>
-          </select>
-          <input type="time" id="blockStart" value="18:00">
-          <span>to</span>
-          <input type="time" id="blockEnd" value="20:00">
-          <button type="button" id="addBlockBtn">+ Add</button>
+    <!-- HEADER: Virginia Tech Maroon & Burnt Orange Branding -->
+    <header class="app-header">
+      <div class="header-content">
+        <div class="brand-row">
+          <div class="logo-mark">VT</div>
+          <div class="brand-text">
+            <h1 class="app-title">HokieTutor <span class="badge badge-accent">Web Application</span></h1>
+            <p class="app-subtitle">Intelligent Tutoring & Study Plan Scheduler for Virginia Tech</p>
+          </div>
         </div>
-      </label>
-      <ul id="block-list"></ul>
 
-      <label>Daily Study Hours Available
-        <input type="number" id="dailyStudyHours" step="0.5" min="0" max="24" value="2.5">
-      </label>
+        <!-- Extension Sync & Data Integration Status -->
+        <div class="header-actions">
+          <div class="theme-tabs-pill" id="theme-tabs-pill" role="tablist" aria-label="Select Theme">
+            <button type="button" class="theme-tab-btn active" id="theme-tab-light" data-theme="light" role="tab" aria-selected="true" title="Hokie Classic Light Theme">☀️ Classic</button>
+            <button type="button" class="theme-tab-btn" id="theme-tab-dark" data-theme="dark" role="tab" aria-selected="false" title="Hokie Dark Mode">🌙 Dark</button>
+          </div>
 
-      <div class="btn-row">
-        <button type="button" id="btn-back-step2" class="btn-secondary">&larr; Back</button>
-        <button type="submit" id="btn-onboard" class="btn-primary">Next &rarr;</button>
+          <div class="extension-status-badge disconnected" id="header-extension-badge" title="HokieTutor Chrome Extension Status">
+            <span class="badge-dot"></span>
+            <span class="badge-text" id="header-extension-text">Extension: Disconnected</span>
+          </div>
+          <button type="button" class="btn btn-sm btn-outline-light" id="btn-import-canvas-json" title="Import Canvas data JSON exported by the Chrome extension">📂 Import Data</button>
+          <button type="button" class="btn btn-sm btn-orange" id="btn-sync-extension" title="Trigger sync from HokieTutor Canvas extension">⚡ Extension Sync</button>
+        </div>
       </div>
-    </form>
+
+      <!-- STEP PROGRESS WIZARD NAVIGATION -->
+      <nav class="step-indicator" aria-label="Setup Navigation Steps">
+        <button class="step-btn active" id="step-nav-1" data-step="1">
+          <span class="step-num">1</span>
+          <span class="step-label">Course Goals & Habits</span>
+        </button>
+        <div class="step-divider"></div>
+        <button class="step-btn" id="step-nav-2" data-step="2">
+          <span class="step-num">2</span>
+          <span class="step-label">Weekly Availability</span>
+        </button>
+        <div class="step-divider"></div>
+        <button class="step-btn" id="step-nav-3" data-step="3">
+          <span class="step-num">3</span>
+          <span class="step-label">AI Study Schedule</span>
+        </button>
+      </nav>
+    </header>
+
+    <!-- =============================================================== -->
+    <!-- PAGE 1: MULTI-COURSE GOALS & STUDY HABITS                       -->
+    <!-- =============================================================== -->
+    <main class="page-view active" id="page-1" aria-labelledby="page-1-heading">
+      <div class="card sync-status-banner">
+        <div class="sync-banner-left">
+          <div class="sync-status-icon">🎓</div>
+          <div class="sync-banner-text">
+            <strong class="sync-banner-title">VT Canvas Synced (Active Term: Fall 2026)</strong>
+            <p class="sync-banner-desc" id="sync-banner-details">4 Active Courses detected. Past course (PHYS 2306) automatically filtered out.</p>
+          </div>
+        </div>
+        <div class="sync-banner-right">
+          <span class="badge badge-term">2026 Fall Term</span>
+        </div>
+      </div>
+
+      <section class="goals-summary-bar card">
+        <div class="goal-metric">
+          <span class="metric-val" id="metric-active-courses">4</span>
+          <span class="metric-label">Active Courses</span>
+        </div>
+        <div class="goal-metric">
+          <span class="metric-val text-maroon" id="metric-total-hours">13 hrs</span>
+          <span class="metric-label">Total Study Time / Wk</span>
+        </div>
+        <div class="goal-metric">
+          <span class="metric-val text-orange" id="metric-avg-goal">A / A-</span>
+          <span class="metric-label">Target Grades</span>
+        </div>
+        <div class="goal-metric">
+          <span class="metric-val" id="metric-upcoming-exams">2 Exams</span>
+          <span class="metric-label">Next 14 Days</span>
+        </div>
+      </section>
+
+      <section class="form-section">
+        <div class="section-header-row">
+          <div>
+            <h2 class="section-title" id="page-1-heading">1. Individual Course Goals & Target Grades</h2>
+            <p class="section-desc">Customize your target final grade, current confidence, and weekly study time commitment for each class independently:</p>
+          </div>
+          <button type="button" class="btn btn-outline btn-sm" id="btn-open-add-course-modal">+ Add Course</button>
+        </div>
+        <div class="course-cards-deck" id="course-cards-deck"></div>
+      </section>
+
+      <section class="form-section">
+        <h2 class="section-title">2. Study Habits & Learning Speed</h2>
+        <p class="section-desc">Set your overall learning pace and tutoring methodology:</p>
+
+        <div class="form-group">
+          <label class="form-label">Studying Pace / Speed:</label>
+          <div class="radio-pill-group" role="radiogroup" aria-label="Studying Pace">
+            <label class="radio-pill">
+              <input type="radio" name="study_speed" value="thorough" />
+              <div class="pill-card">
+                <span class="pill-title">Deep & Thorough</span>
+                <span class="pill-subtitle">1.5x time per topic. Extensive notes, concept maps, and video reviews.</span>
+              </div>
+            </label>
+            <label class="radio-pill">
+              <input type="radio" name="study_speed" value="balanced" checked />
+              <div class="pill-card">
+                <span class="pill-title">Balanced & Steady</span>
+                <span class="pill-subtitle">1.0x standard pace. Equal mix of theory comprehension and problem solving.</span>
+              </div>
+            </label>
+            <label class="radio-pill">
+              <input type="radio" name="study_speed" value="fast" />
+              <div class="pill-card">
+                <span class="pill-title">Fast-Track / Sprint</span>
+                <span class="pill-subtitle">High-intensity cram mode. High-yield exam topics and past midterms only.</span>
+              </div>
+            </label>
+          </div>
+        </div>
+
+        <div class="grid-2-col">
+          <div class="form-group">
+            <label for="global-session-length" class="form-label">Preferred Session Duration:</label>
+            <select id="global-session-length" class="form-control">
+              <option value="30">30 minutes (Micro-bursts / Quick drills)</option>
+              <option value="45" selected>45 minutes (Pomodoro Friendly)</option>
+              <option value="60">60 minutes (Standard block)</option>
+              <option value="90">90 minutes (Deep Focus Deep-Dive)</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label for="global-tutoring-style" class="form-label">Primary Tutoring Style:</label>
+            <select id="global-tutoring-style" class="form-control">
+              <option value="practice" selected>Active Recall & Problem Sets (Recommended for STEM)</option>
+              <option value="theory">Concept Breakdown & Lecture Slide Review</option>
+              <option value="flashcards">Flashcard Drills & Definition Retention</option>
+              <option value="past-exams">Mock Exam Questions & Time-Trial Testing</option>
+            </select>
+          </div>
+        </div>
+      </section>
+
+      <div class="step-actions">
+        <button type="button" class="btn btn-secondary" id="btn-save-draft-1">Save Draft</button>
+        <button type="button" class="btn btn-primary" id="btn-next-to-2">Proceed to Availability &rarr;</button>
+      </div>
+    </main>
+
+    <!-- =============================================================== -->
+    <!-- PAGE 2: SCHEDULE & AVAILABILITY INPUT                           -->
+    <!-- =============================================================== -->
+    <main class="page-view" id="page-2" aria-labelledby="page-2-heading">
+      <div class="section-header-box">
+        <h2 class="section-title" id="page-2-heading">Weekly Schedule & Free Study Time</h2>
+        <p class="section-desc">Upload your timetable screenshot or click the calendar cells below to mark your busy class/work commitments. Unmarked slots become your available study time.</p>
+      </div>
+
+      <section class="upload-section card">
+        <div class="upload-dropzone" id="schedule-dropzone">
+          <div class="upload-icon">📷</div>
+          <div class="upload-text">
+            <strong>Upload Schedule or Screenshot</strong>
+            <p>Drag and drop your HokieSpa schedule screenshot or PDF timetable here</p>
+          </div>
+          <input type="file" id="schedule-file-input" accept="image/*,.pdf" class="file-input-hidden" />
+          <button type="button" class="btn btn-outline btn-sm" id="btn-browse-file">Browse Files</button>
+        </div>
+
+        <div class="upload-preview hidden" id="upload-preview-container">
+          <img id="upload-preview-img" src="" alt="Schedule Preview" />
+          <div class="upload-preview-meta">
+            <span id="upload-file-name" class="file-name">schedule.png</span>
+            <span class="badge badge-success">✓ OCR Classes Detected</span>
+            <button type="button" class="btn-text-danger" id="btn-remove-file">Remove</button>
+          </div>
+        </div>
+      </section>
+
+      <section class="calendar-tool-section card">
+        <div class="calendar-toolbar">
+          <div class="calendar-legend">
+            <span class="legend-item"><span class="legend-box busy"></span> Busy / Class Block</span>
+            <span class="legend-item"><span class="legend-box free"></span> Free For Study</span>
+          </div>
+          <div class="preset-buttons">
+            <button type="button" class="btn btn-xs btn-outline" id="btn-preset-weekday-busy">Weekdays 9-5 Busy</button>
+            <button type="button" class="btn btn-xs btn-outline" id="btn-preset-evenings-free">Evenings Free</button>
+            <button type="button" class="btn btn-xs btn-secondary" id="btn-preset-clear">Clear Grid</button>
+          </div>
+        </div>
+
+        <div class="grid-table-wrapper">
+          <table class="availability-grid" id="availability-table" aria-label="Weekly availability selector">
+            <thead>
+              <tr>
+                <th scope="col" class="time-col-header">Time</th>
+                <th scope="col">Mon</th>
+                <th scope="col">Tue</th>
+                <th scope="col">Wed</th>
+                <th scope="col">Thu</th>
+                <th scope="col">Fri</th>
+                <th scope="col">Sat</th>
+                <th scope="col">Sun</th>
+              </tr>
+            </thead>
+            <tbody id="availability-tbody"></tbody>
+          </table>
+        </div>
+
+        <div class="availability-summary">
+          <p>Available Free Study Time: <strong id="total-free-hours-label" class="text-maroon">28 hrs/week</strong></p>
+          <small class="text-muted">Click or drag across any cell to toggle between Busy and Free.</small>
+        </div>
+      </section>
+
+      <div class="step-actions">
+        <button type="button" class="btn btn-secondary" id="btn-back-to-1">&larr; Back to Goals</button>
+        <button type="button" class="btn btn-primary" id="btn-next-to-3">Generate Multi-Course Schedule &rarr;</button>
+      </div>
+    </main>
+
+    <!-- =============================================================== -->
+    <!-- PAGE 3: PERSONALIZED MULTI-COURSE STUDY SCHEDULE                -->
+    <!-- =============================================================== -->
+    <main class="page-view" id="page-3" aria-labelledby="page-3-heading">
+      <section class="schedule-summary-bar card">
+        <div class="stat-cell">
+          <span class="stat-number" id="stat-total-sessions">12</span>
+          <span class="stat-label">Scheduled Sessions</span>
+        </div>
+        <div class="stat-cell">
+          <span class="stat-number text-maroon" id="stat-total-hours">13.0 hrs</span>
+          <span class="stat-label">Total Study Time</span>
+        </div>
+        <div class="stat-cell">
+          <span class="stat-number text-orange" id="stat-courses-scheduled">4 Classes</span>
+          <span class="stat-label">Covered This Week</span>
+        </div>
+        <div class="stat-cell">
+          <span class="stat-number" id="stat-next-exam">4 Days</span>
+          <span class="stat-label">MATH 1226 Midterm</span>
+        </div>
+      </section>
+
+      <section class="schedule-controls">
+        <div class="filter-controls">
+          <label for="filter-course-select" class="sr-only">Filter by Course</label>
+          <select id="filter-course-select" class="form-control form-control-sm">
+            <option value="ALL">Show All Courses</option>
+          </select>
+        </div>
+
+        <div class="action-btn-group">
+          <button type="button" class="btn btn-outline btn-sm" id="btn-open-add-session-modal">+ Add Session</button>
+          <button type="button" class="btn btn-outline btn-sm" id="btn-export-ics">📥 Export iCal (.ics)</button>
+          <button type="button" class="btn btn-outline btn-sm" id="btn-print-schedule">🖨️ Print</button>
+          <button type="button" class="btn btn-secondary btn-sm" id="btn-regenerate-schedule" title="Call Extension & Regenerate">
+            <span id="btn-regenerate-icon">⚡</span> <span id="btn-regenerate-text">Call Extension & Regenerate</span>
+          </button>
+        </div>
+      </section>
+
+      <section class="sessions-container" id="sessions-container" aria-live="polite"></section>
+
+      <div class="step-actions">
+        <button type="button" class="btn btn-secondary" id="btn-back-to-2">&larr; Back to Availability</button>
+        <button type="button" class="btn btn-primary" id="btn-finish-done">Save Schedule</button>
+      </div>
+    </main>
+
+    <!-- MODAL 3: IMPORT CANVAS EXTENSION JSON MODAL -->
+    <div class="modal-overlay hidden" id="import-json-modal" role="dialog" aria-modal="true" aria-labelledby="modal-json-title">
+      <div class="modal-card">
+        <div class="modal-header">
+          <h3 class="modal-title" id="modal-json-title">Import Data from Chrome Extension</h3>
+          <button type="button" class="btn-close" id="btn-close-json-modal" aria-label="Close modal">&times;</button>
+        </div>
+        <p class="section-desc">Paste the assignment list copied from the HokieTutor Chrome extension.</p>
+        <div class="form-group">
+          <label for="json-vt-email" class="form-label">VT Email:</label>
+          <input type="email" id="json-vt-email" class="form-control" placeholder="hokie@vt.edu" required />
+        </div>
+        <div class="form-group">
+          <textarea id="json-paste-area" class="form-control" rows="8" placeholder='[{"id": 123, "title": "...", "due_at": "2026-09-21T18:30:00Z", "points_possible": 100}]'></textarea>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" id="btn-cancel-json-modal">Cancel</button>
+          <button type="button" class="btn btn-primary" id="btn-confirm-import-json">Import & Sync</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- TOAST NOTIFICATION -->
+    <div id="toast" class="toast hidden" role="status" aria-live="polite"></div>
+
   </div>
 
-  <!-- STEP 3: AI Dynamic Estimates -->
-  <div id="step-done" style="display:none;">
-    <h1>This Week's Assignments</h1>
-    <p class="help">AI-powered workload estimates based on difficulty, points, and your pace.</p>
-    
-    <div id="estimate-loading" style="padding:12px; background:#fef3c7; border-radius:6px; margin: 12px 0;">
-      Analyzing assignments with Gemini AI...
-    </div>
-    
-    <div id="estimate-total" style="display:none; font-weight:700;"></div>
-    <ul id="estimate-list" style="list-style:none; padding:0;"></ul>
-
-    <div class="btn-row">
-      <button type="button" id="btn-back-step3" class="btn-secondary">&larr; Back</button>
-      <button type="button" id="btn-to-calendar" class="btn-primary">Next &rarr;</button>
-    </div>
-  </div>
-
-  <!-- STEP 4: Google Calendar -->
-  <div id="step-calendar" style="display:none;">
-    <h1>Google Calendar & Schedule Comparison</h1>
-    <p class="help">Upload your calendar (.ics). StudySmart will parse your classes and generate conflict-free study blocks.</p>
-    
-    <label>Calendar file (.ics)
-      <input type="file" id="ics-upload-input" accept=".ics,text/calendar">
-    </label>
-
-    <div id="ics-upload-result"></div>
-
-    <!-- 순수 AI 공부 일정만 다운로드하도록 버튼 수정 -->
-    <button type="button" id="btn-download-ics" class="btn-primary" style="width:100%; margin-top: 24px; display:none;">Download AI Study Schedule (.ics)</button>
-
-    <div class="btn-row" style="margin-top: 20px;">
-      <button type="button" id="btn-back-step4" class="btn-secondary" style="flex:1;">&larr; Back</button>
-    </div>
-  </div>
-
-  <script>
-    let currentStudentName = '';
-    let lastWeeklyEstimate = null;
-    let generatedStudyBlocks = [];
-
-    const DAY_LABELS = { MONDAY: 'Mon', TUESDAY: 'Tue', WEDNESDAY: 'Wed', THURSDAY: 'Thu', FRIDAY: 'Fri', SATURDAY: 'Sat', SUNDAY: 'Sun' };
-    let studyBlocks = [
-      { dayOfWeek: 'MONDAY', startTime: '18:00', endTime: '20:00' },
-      { dayOfWeek: 'WEDNESDAY', startTime: '18:00', endTime: '20:00' }
-    ];
-
-    const stepCanvas = document.getElementById('step-canvas');
-    const stepOnboarding = document.getElementById('step-onboarding');
-    const stepDone = document.getElementById('step-done');
-    const stepCalendar = document.getElementById('step-calendar');
-
-    function showStep(stepToShow) {
-      [stepCanvas, stepOnboarding, stepDone, stepCalendar].forEach(s => s.style.display = 'none');
-      stepToShow.style.display = 'block';
-    }
-
-    document.getElementById('btn-back-step2').onclick = () => showStep(stepCanvas);
-    document.getElementById('btn-back-step3').onclick = () => showStep(stepOnboarding);
-    document.getElementById('btn-back-step4').onclick = () => showStep(stepDone);
-
-    const blockListEl = document.getElementById('block-list');
-    function renderBlocks() {
-      blockListEl.innerHTML = '';
-      studyBlocks.forEach((block, index) => {
-        const li = document.createElement('li');
-        li.innerHTML = `<span>${DAY_LABELS[block.dayOfWeek]} ${block.startTime}-${block.endTime}</span>`;
-        const removeBtn = document.createElement('button');
-        removeBtn.type = 'button';
-        removeBtn.textContent = 'Remove';
-        removeBtn.onclick = () => { studyBlocks.splice(index, 1); renderBlocks(); };
-        li.appendChild(removeBtn);
-        blockListEl.appendChild(li);
-      });
-    }
-    renderBlocks();
-
-    document.getElementById('addBlockBtn').onclick = () => {
-      const dayOfWeek = document.getElementById('blockDay').value;
-      const startTime = document.getElementById('blockStart').value;
-      const endTime = document.getElementById('blockEnd').value;
-      if (!startTime || !endTime || startTime >= endTime) {
-        alert('Invalid time block selection.');
-        return;
-      }
-      studyBlocks.push({ dayOfWeek, startTime, endTime });
-      renderBlocks();
-    };
-
-    document.getElementById('canvas-form').onsubmit = async (e) => {
-      e.preventDefault();
-      currentStudentName = document.getElementById('name').value.trim();
-      const rawJson = document.getElementById('assignmentJson').value.trim();
-
-      let assignments;
-      try {
-        const data = JSON.parse(rawJson);
-        assignments = Array.isArray(data) ? data : (Array.isArray(data.assignments) ? data.assignments : null);
-        if (!assignments) throw new Error('Invalid JSON format');
-      } catch (err) {
-        alert('Could not parse assignment JSON: ' + err.message);
-        return;
-      }
-
-      const btnSync = document.getElementById('btn-sync');
-      btnSync.disabled = true;
-      btnSync.textContent = 'Syncing...';
-
-      try {
-        const res = await fetch('/api/assignments/import', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ name: currentStudentName, assignments })
-        });
-        if (res.ok) {
-          showStep(stepOnboarding);
-        } else {
-          alert('Sync failed');
-        }
-      } catch (err) {
-        alert('Network request error: ' + err.message);
-      } finally {
-        btnSync.disabled = false;
-        btnSync.textContent = 'Next →';
-      }
-    };
-
-    document.getElementById('onboarding-form').onsubmit = async (e) => {
-      e.preventDefault();
-      const payload = {
-        name: currentStudentName,
-        learningPace: document.getElementById('learningPace').value,
-        currentGpa: parseFloat(document.getElementById('currentGpa').value),
-        targetGpa: parseFloat(document.getElementById('targetGpa').value),
-        preferredStudyBlocks: studyBlocks,
-        dailyStudyHours: parseFloat(document.getElementById('dailyStudyHours').value)
-      };
-
-      try {
-        const res = await fetch('/api/onboarding', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(payload)
-        });
-        if (res.ok) {
-          showStep(stepDone);
-          loadWeeklyEstimate(currentStudentName);
-        } else {
-          alert('Onboarding failed');
-        }
-      } catch (err) {
-        alert('Error: ' + err.message);
-      }
-    };
-
-    async function loadWeeklyEstimate(name) {
-      const loadingEl = document.getElementById('estimate-loading');
-      const totalEl = document.getElementById('estimate-total');
-      const listEl = document.getElementById('estimate-list');
-
-      loadingEl.style.display = 'block';
-      loadingEl.textContent = 'Contacting Gemini 3.6 Flash & evaluating workload...';
-      totalEl.style.display = 'none';
-      listEl.innerHTML = '';
-
-      try {
-        const res = await fetch(`/api/schedule/estimate/${encodeURIComponent(name)}`);
-        const textData = await res.text();
-        const body = JSON.parse(textData);
-
-        if (!res.ok) {
-          loadingEl.textContent = `Error: ${body.message || res.statusText}`;
-          return;
-        }
-
-        loadingEl.style.display = 'none';
-        lastWeeklyEstimate = body;
-
-        if (!body.assignments || body.assignments.length === 0) {
-          listEl.innerHTML = '<li>No upcoming assignments found for ' + name + '.</li>';
-          return;
-        }
-
-        totalEl.style.display = 'block';
-        totalEl.textContent = `Total Workload: ${body.totalHours.toFixed(1)} hours scheduled`;
-
-        body.assignments.forEach(a => {
-          const li = document.createElement('li');
-          li.innerHTML = `
-            <div class="est-title">${a.title}</div>
-            <div class="est-meta">Due: ${a.dueAt} &middot; <strong style="color:#0070f3;">~${a.estimatedHours.toFixed(1)}h</strong> (AI estimated)</div>
-          `;
-          listEl.appendChild(li);
-        });
-      } catch (err) {
-        loadingEl.textContent = 'Failed to load: ' + err.message;
-      }
-    }
-
-    document.getElementById('btn-to-calendar').onclick = () => showStep(stepCalendar);
-
-    // [Step 4] ICS 업로드 시 기존 일정 파싱 및 충돌 없는 AI 공부 일정 생성
-    document.getElementById('ics-upload-input').addEventListener('change', async (e) => {
-      const file = e.target.files[0];
-      const resultEl = document.getElementById('ics-upload-result');
-      const downloadBtn = document.getElementById('btn-download-ics');
-      if (!file) return;
-
-      resultEl.innerHTML = '<div style="padding:10px; background:#fef3c7; border-radius:6px; margin-top:12px;">Analyzing schedule and generating conflict-free study blocks...</div>';
-      downloadBtn.style.display = 'none';
-
-      if (!lastWeeklyEstimate && currentStudentName) {
-        try {
-          const res = await fetch(`/api/schedule/estimate/${encodeURIComponent(currentStudentName)}`);
-          const body = await res.json();
-          if (res.ok) {
-            lastWeeklyEstimate = body;
-          }
-        } catch (err) {
-          console.error(err);
-        }
-      }
-
-      const reader = new FileReader();
-      reader.onload = async (evt) => {
-        const rawText = evt.target.result;
-        const parsed = parseIcsWithRecurrence(rawText);
-        const displayEvents = parsed.displayEvents;
-        const busyIntervals = parsed.busyIntervals;
-
-        generatedStudyBlocks = [];
-        const assignments = lastWeeklyEstimate && lastWeeklyEstimate.assignments ? lastWeeklyEstimate.assignments : [];
-
-        const sorted = [...assignments].sort((a, b) => new Date(a.dueAt) - new Date(b.dueAt));
-        const scheduledUntilByDate = {};
-
-        sorted.forEach(a => {
-          const dueDate = new Date(a.dueAt);
-          if (isNaN(dueDate.getTime())) return;
-
-          const dateKey = dueDate.toISOString().slice(0, 10);
-          const hours = a.estimatedHours && a.estimatedHours > 0 ? a.estimatedHours : 2.0;
-          const durationMs = Math.round(hours * 60 * 60 * 1000);
-
-          let blockEnd = scheduledUntilByDate[dateKey] 
-            ? new Date(Math.min(dueDate.getTime() - (3600000), scheduledUntilByDate[dateKey].getTime()))
-            : new Date(dueDate.getTime() - (60 * 60 * 1000));
-
-          let blockStart = new Date(blockEnd.getTime() - durationMs);
-
-          const dayOfWeek = blockStart.getDay();
-          let startMin = blockStart.getHours() * 60 + blockStart.getMinutes();
-          let endMin = blockEnd.getHours() * 60 + blockEnd.getMinutes();
-
-          let hasConflict = true;
-          let loopCount = 0;
-          while (hasConflict && loopCount < 5) {
-            hasConflict = false;
-            busyIntervals.forEach(b => {
-              if (b.day === dayOfWeek) {
-                if (startMin < b.endMin && endMin > b.startMin) {
-                  hasConflict = true;
-                  blockEnd = new Date(blockStart);
-                  blockStart = new Date(blockEnd.getTime() - durationMs);
-                  startMin = blockStart.getHours() * 60 + blockStart.getMinutes();
-                  endMin = blockEnd.getHours() * 60 + blockEnd.getMinutes();
-                }
-              }
-            });
-            loopCount++;
-          }
-
-          scheduledUntilByDate[dateKey] = blockStart;
-
-          generatedStudyBlocks.push({
-            title: `[Study] ${a.title}`,
-            start: blockStart,
-            end: blockEnd,
-            hours: hours
-          });
-        });
-
-        let htmlContent = '';
-
-        htmlContent += `<div class="section-box"><h3>📅 Your Calendar Events (${displayEvents.length})</h3><ul>`;
-        displayEvents.forEach(ev => {
-          const recurrenceTag = ev.recurrence ? `<span class="repeat-badge">🔁 ${ev.recurrence}</span>` : `<span style="font-size:11px; color:#888;">One-time</span>`;
-          const timeDisplay = ev.recurrence 
-            ? `${formatIcsTimeOnly(ev.rawStart)}${ev.rawEnd ? ' &rarr; ' + formatIcsTimeOnly(ev.rawEnd) : ''}`
-            : `${ev.start}${ev.end ? ' &rarr; ' + ev.end : ''}`;
-
-          htmlContent += `
-            <li>
-              <div class="cal-title"><span>${ev.summary}</span>${recurrenceTag}</div>
-              <div class="cal-time">${timeDisplay}</div>
-            </li>`;
-        });
-        htmlContent += `</ul></div>`;
-
-        htmlContent += `<div class="section-box" style="border-color:#bae6fd; background:#f0f9ff;"><h3>🤖 Conflict-Free AI Study Schedule (${generatedStudyBlocks.length})</h3><ul>`;
-        if (generatedStudyBlocks.length === 0) {
-          htmlContent += `<li style="color:#e11d48; font-weight:600;">No assignments found. Please make sure you completed Step 1 & Step 2 first!</li>`;
-        } else {
-          generatedStudyBlocks.forEach(sb => {
-            htmlContent += `
-              <li>
-                <div class="cal-title"><span>${sb.title}</span><span class="study-badge">~${sb.hours.toFixed(1)}h</span></div>
-                <div class="cal-time">${sb.start.toLocaleString()} &rarr; ${sb.end.toLocaleString()}</div>
-              </li>`;
-          });
-        }
-        htmlContent += `</ul></div>`;
-
-        resultEl.innerHTML = htmlContent;
-        if (generatedStudyBlocks.length > 0) {
-          downloadBtn.style.display = 'block';
-        }
-      };
-      reader.onerror = () => {
-        resultEl.textContent = 'Could not read that file.';
-      };
-      reader.readAsText(file);
-    });
-
-    // [핵심 수정] 다운로드 버튼 누르면 오직 AI가 생성한 새로운 과제 공부 일정들만 .ics 파일로 묶어서 다운로드
-    document.getElementById('btn-download-ics').onclick = () => {
-      if (generatedStudyBlocks.length === 0) {
-        alert('No study blocks generated yet.');
-        return;
-      }
-
-      const pad = n => String(n).padStart(2, '0');
-      const toIcsDate = d => {
-        return `${d.getUTCFullYear()}${pad(d.getUTCMonth() + 1)}${pad(d.getUTCDate())}T${pad(d.getUTCHours())}${pad(d.getUTCMinutes())}${pad(d.getUTCSeconds())}Z`;
-      };
-      const now = toIcsDate(new Date());
-
-      let studyOnlyLines = ['BEGIN:VCALENDAR', 'VERSION:2.0', 'PRODID:-//StudySmart//AI Study Schedule//EN'];
-
-      generatedStudyBlocks.forEach((sb, idx) => {
-        studyOnlyLines.push(
-          'BEGIN:VEVENT',
-          `UID:studysmart-ai-study-${idx}-${Date.now()}@vt.edu`,
-          `DTSTAMP:${now}`,
-          `DTSTART:${toIcsDate(sb.start)}`,
-          `DTEND:${toIcsDate(sb.end)}`,
-          `SUMMARY:${sb.title}`,
-          `DESCRIPTION:AI Estimated Workload: ${sb.hours.toFixed(1)} hours (Conflict-free study block).`,
-          'END:VEVENT'
-        );
-      });
-
-      studyOnlyLines.push('END:VCALENDAR');
-
-      const blob = new Blob([studyOnlyLines.join('\r\n')], { type: 'text/calendar;charset=utf-8' });
-      const url = URL.createObjectURL(blob);
-      const link = document.createElement('a');
-      link.href = url;
-      link.download = 'StudySmart_AI_Study_Schedule.ics';
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
-      URL.revokeObjectURL(url);
-    };
-
-    function parseIcsWithRecurrence(text) {
-      const displayEvents = [];
-      const busyIntervals = [];
-      const veventBlocks = text.split('BEGIN:VEVENT').slice(1);
-
-      const dayCodeMap = { SU: 0, MO: 1, TU: 2, WE: 3, TH: 4, FR: 5, SA: 6 };
-
-      veventBlocks.forEach(block => {
-        const summaryMatch = block.match(/SUMMARY:(.*)/);
-        const startMatch = block.match(/DTSTART[^:]*:(\S+)/);
-        const endMatch = block.match(/DTEND[^:]*:(\S+)/);
-        const rruleMatch = block.match(/RRULE:(.*)/);
-
-        if (summaryMatch && startMatch) {
-          const summary = summaryMatch[1].trim();
-          let recurrence = null;
-          const rawStart = startMatch[1].trim();
-          const rawEnd = endMatch ? endMatch[1].trim() : null;
-
-          const startDate = parseIcsRawDate(rawStart);
-          const endDate = rawEnd ? parseIcsRawDate(rawEnd) : new Date(startDate.getTime() + 3600000);
-
-          let targetDays = [startDate.getDay()];
-
-          if (rruleMatch) {
-            const rrule = rruleMatch[1].trim();
-            recurrence = formatRRule(rrule);
-
-            const parts = rrule.split(';');
-            parts.forEach(p => {
-              if (p.startsWith('BYDAY=')) {
-                const daysStr = p.split('=')[1];
-                targetDays = daysStr.split(',').map(d => dayCodeMap[d.trim()]).filter(d => d !== undefined);
-              }
-            });
-          }
-
-          const startMin = startDate.getHours() * 60 + startDate.getMinutes();
-          const endMin = endDate.getHours() * 60 + endDate.getMinutes();
-
-          targetDays.forEach(d => {
-            busyIntervals.push({ day: d, startMin, endMin });
-          });
-
-          displayEvents.push({
-            summary: summary,
-            start: startDate.toLocaleString(),
-            end: endDate.toLocaleString(),
-            rawStart: rawStart,
-            rawEnd: rawEnd,
-            recurrence: recurrence
-          });
-        }
-      });
-
-      return { displayEvents, busyIntervals };
-    }
-
-    function formatRRule(rrule) {
-      const parts = rrule.split(';');
-      const map = {};
-      parts.forEach(p => {
-        const [k, v] = p.split('=');
-        if (k && v) map[k] = v;
-      });
-
-      const dayMap = { MO: 'Mon', TU: 'Tue', WE: 'Wed', TH: 'Thu', FR: 'Fri', SA: 'Sat', SU: 'Sun' };
-
-      if (map.FREQ === 'WEEKLY') {
-        if (map.BYDAY) {
-          const days = map.BYDAY.split(',').map(d => dayMap[d] || d).join(', ');
-          return `Every ${days}`;
-        }
-        return 'Every week';
-      } else if (map.FREQ === 'DAILY') {
-        return 'Every day';
-      } else if (map.FREQ === 'MONTHLY') {
-        return 'Every month';
-      }
-
-      return 'Recurring';
-    }
-
-    function parseIcsRawDate(raw) {
-      const match = raw.match(/^(\d{4})(\d{2})(\d{2})T(\d{2})(\d{2})(\d{2})/);
-      if (!match) return new Date();
-      const [, y, mo, d, h, mi, s] = match;
-      return new Date(`${y}-${mo}-${d}T${h}:${mi}:${s}Z`);
-    }
-
-    function formatIcsTimeOnly(raw) {
-      const match = raw.match(/^(\d{4})(\d{2})(\d{2})T(\d{2})(\d{2})(\d{2})/);
-      if (!match) return raw;
-      const [, y, mo, d, h, mi, s] = match;
-      const date = new Date(`${y}-${mo}-${d}T${h}:${mi}:${s}Z`);
-      return date.toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' });
-    }
-  </script>
+  <script src="app.js"></script>
 </body>
 </html>

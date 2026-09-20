@@ -1,0 +1,35 @@
+{
+  "manifest_version": 3,
+  "name": "Canvas Task Sync",
+  "version": "1.5",
+  "description": "Extracts active Canvas courses, modules, grades, upcoming exams, and projects with estimated study hours.",
+  "permissions": [
+    "activeTab",
+    "cookies",
+    "scripting",
+    "tabs",
+    "storage",
+    "clipboardWrite"
+  ],
+  "host_permissions": [
+    "https://canvas.vt.edu/*",
+    "http://localhost/*",
+    "http://127.0.0.1/*",
+    "file:///*"
+  ],
+  "action": {
+    "default_popup": "popup.html",
+    "default_title": "Sync Canvas Tasks & Launch VT BrainWyrms AI"
+  },
+  "web_accessible_resources": [
+    {
+      "resources": [
+        "app.html",
+        "app.js"
+      ],
+      "matches": [
+        "<all_urls>"
+      ]
+    }
+  ]
+}

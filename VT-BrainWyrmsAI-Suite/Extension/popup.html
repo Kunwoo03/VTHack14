@@ -1,0 +1,400 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>VT BrainWyrms — Canvas AI Sync</title>
+  <style>
+    :root {
+      --vt-maroon: #861F41;
+      --vt-maroon-dark: #5e142c;
+      --vt-orange: #E87722;
+      --vt-orange-dark: #c55e12;
+      --ai-emerald: #047857;
+      --ai-emerald-light: #10b981;
+      --ai-bg: #064e3b;
+      --text-main: #0f172a;
+      --text-muted: #64748b;
+      --bg-card: #ffffff;
+      --border-color: #e2e8f0;
+      --radius-md: 12px;
+    }
+
+    body {
+      width: 360px;
+      margin: 0;
+      padding: 0;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      color: var(--text-main);
+      background: #f8fafc;
+      box-sizing: border-box;
+      user-select: none;
+    }
+
+    /* VT BrainWyrms AI Header */
+    .app-header {
+      background: linear-gradient(135deg, var(--vt-maroon) 0%, var(--vt-maroon-dark) 100%);
+      color: #ffffff;
+      padding: 14px 16px;
+      box-shadow: 0 4px 14px rgba(134, 31, 65, 0.25);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .app-header::after {
+      content: "";
+      position: absolute;
+      top: -30px;
+      right: -30px;
+      width: 90px;
+      height: 90px;
+      background: radial-gradient(circle, rgba(232, 119, 34, 0.35) 0%, transparent 70%);
+      pointer-events: none;
+    }
+
+    .header-top {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .brand-group {
+      display: flex;
+      align-items: center;
+      gap: 9px;
+    }
+
+    .brand-icon {
+      font-size: 24px;
+      filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.3));
+    }
+
+    .brand-title {
+      font-size: 15px;
+      font-weight: 800;
+      letter-spacing: 0.2px;
+      margin: 0;
+      color: #ffffff;
+      line-height: 1.2;
+    }
+
+    .brand-subtitle {
+      font-size: 10.5px;
+      color: #f1f5f9;
+      opacity: 0.85;
+      margin: 2px 0 0 0;
+    }
+
+    .ai-badge {
+      background: linear-gradient(135deg, var(--vt-orange) 0%, #f59146 100%);
+      color: #ffffff;
+      font-size: 9.5px;
+      font-weight: 800;
+      padding: 3px 8px;
+      border-radius: 99px;
+      letter-spacing: 0.4px;
+      box-shadow: 0 2px 6px rgba(232, 119, 34, 0.4);
+    }
+
+    /* Tab Status Bar */
+    .status-strip {
+      display: flex;
+      align-items: center;
+      gap: 7px;
+      padding: 7px 16px;
+      background: #ffffff;
+      border-bottom: 1px solid var(--border-color);
+      font-size: 11px;
+      font-weight: 600;
+      color: var(--text-muted);
+    }
+
+    .status-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: #94a3b8;
+      transition: all 0.2s;
+    }
+
+    .status-dot.connected {
+      background: var(--ai-emerald-light);
+      box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.25);
+    }
+
+    .container {
+      padding: 14px 16px 16px 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    /* Hero Action Button: Instant 1-Click Launch */
+    .btn-hero {
+      width: 100%;
+      padding: 12px 14px;
+      background: linear-gradient(135deg, var(--vt-maroon) 0%, #a3264f 100%);
+      color: #ffffff;
+      border: none;
+      border-radius: 10px;
+      font-size: 13.5px;
+      font-weight: 800;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      box-shadow: 0 4px 14px rgba(134, 31, 65, 0.3);
+      transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    .btn-hero:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 6px 18px rgba(134, 31, 65, 0.4);
+      background: linear-gradient(135deg, #9b244c 0%, #b32a56 100%);
+    }
+
+    .btn-hero:disabled {
+      background: #cbd5e1;
+      box-shadow: none;
+      transform: none;
+      cursor: not-allowed;
+      color: #64748b;
+    }
+
+    /* Secondary Action Buttons */
+    .btn-demo {
+      width: 100%;
+      padding: 9px 12px;
+      background: #f0fdf4;
+      color: var(--ai-emerald);
+      border: 1.5px solid #a7f3d0;
+      border-radius: 8px;
+      font-size: 12px;
+      font-weight: 700;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      transition: all 0.15s;
+    }
+
+    .btn-demo:hover {
+      background: var(--ai-emerald);
+      color: #ffffff;
+      border-color: var(--ai-emerald);
+    }
+
+    /* Status notification */
+    #status {
+      display: none;
+      font-size: 11.5px;
+      line-height: 1.4;
+      padding: 9px 12px;
+      border-radius: 8px;
+      animation: fadeIn 0.2s ease-in-out;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(-4px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    #status.info {
+      display: block;
+      background: #eff6ff;
+      color: #1e40af;
+      border: 1px solid #bfdbfe;
+    }
+
+    #status.success {
+      display: block;
+      background: #ecfdf5;
+      color: #065f46;
+      border: 1px solid #a7f3d0;
+    }
+
+    #status.error {
+      display: block;
+      background: #fef2f2;
+      color: #991b1b;
+      border: 1px solid #fecaca;
+    }
+
+    /* Data Preview & Actions Card */
+    .data-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border-color);
+      border-radius: var(--radius-md);
+      padding: 12px;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+    }
+
+    .data-tabs {
+      display: flex;
+      gap: 6px;
+      margin-bottom: 8px;
+    }
+
+    .tab-btn {
+      flex: 1;
+      padding: 5px 8px;
+      font-size: 11px;
+      font-weight: 700;
+      background: #f1f5f9;
+      color: var(--text-muted);
+      border: 1px solid var(--border-color);
+      border-radius: 6px;
+      cursor: pointer;
+    }
+
+    .tab-btn.active {
+      background: var(--vt-maroon);
+      color: #ffffff;
+      border-color: var(--vt-maroon);
+    }
+
+    #result-box {
+      max-height: 140px;
+      overflow-y: auto;
+      background: #0f172a;
+      color: #e2e8f0;
+      padding: 8px 10px;
+      border-radius: 6px;
+      font-family: Consolas, Monaco, monospace;
+      font-size: 10px;
+      margin: 0 0 10px 0;
+      white-space: pre-wrap;
+      word-break: break-all;
+    }
+
+    .button-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+    }
+
+    .btn-action {
+      padding: 8px 10px;
+      font-size: 11px;
+      font-weight: 700;
+      border-radius: 7px;
+      border: none;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 5px;
+      transition: all 0.15s;
+    }
+
+    .btn-save-py {
+      background: #1e3a8a;
+      color: #ffffff;
+    }
+
+    .btn-save-py:hover {
+      background: #172554;
+    }
+
+    .btn-copy {
+      background: #f1f5f9;
+      color: var(--text-main);
+      border: 1px solid #cbd5e1;
+    }
+
+    .btn-copy:hover {
+      background: #e2e8f0;
+    }
+
+    .btn-open-app {
+      grid-column: 1 / -1;
+      background: linear-gradient(135deg, var(--vt-orange) 0%, var(--vt-orange-dark) 100%);
+      color: #ffffff;
+      box-shadow: 0 2px 8px rgba(232, 119, 34, 0.3);
+    }
+
+    .btn-open-app:hover {
+      background: linear-gradient(135deg, #f59146 0%, var(--vt-orange) 100%);
+    }
+  </style>
+</head>
+<body>
+
+  <!-- VT-BrainWyrms-AI Header -->
+  <header class="app-header">
+    <div class="header-top">
+      <div class="brand-group">
+        <span class="brand-icon">🐉</span>
+        <div>
+          <h1 class="brand-title">VT BrainWyrmsAI</h1>
+          <p class="brand-subtitle">Canvas AI Task Sync · Fall 2026</p>
+        </div>
+      </div>
+      <span class="ai-badge">AI STUDY ENGINE</span>
+    </div>
+  </header>
+
+  <!-- Connection Status Strip -->
+  <div class="status-strip">
+    <div class="status-dot" id="tab-dot"></div>
+    <span id="tab-status-text">Detecting active Canvas tab...</span>
+  </div>
+
+  <div class="container">
+    <!-- Primary Hero Action -->
+    <button id="fetch-btn" class="btn-hero" title="Extracts live Canvas data and launches your study schedule in VT-BrainWyrms-AI">
+      <span>⚡ Sync & Launch Study Plan</span>
+    </button>
+
+    <!-- Demo / Test Action -->
+    <button id="demo-btn" class="btn-demo" type="button" title="Test instant sync & launch with verified collegiate VT profile">
+      <span>🧪 Demo Sync & Launch</span>
+    </button>
+
+    <!-- Always Visible Direct Web App Launcher -->
+    <button id="open-app-btn" class="btn-action btn-open-app" type="button" style="margin-top: 8px; width: 100%; padding: 9px 12px; font-size: 11.5px;" title="Open VT BrainWyrms AI dashboard directly in your browser">
+      <span>🚀 Launch Web Application</span>
+    </button>
+
+    <!-- Always Visible Direct Web App Launcher -->
+    <button id="open-app-btn" class="btn-action btn-open-app" type="button" style="margin-top: 8px; width: 100%; padding: 9px 12px; font-size: 11.5px;" title="Open VT BrainWyrms AI dashboard directly in your browser">
+      <span>🚀 Launch Web Application</span>
+    </button>
+
+    <!-- Always Visible Direct Web App Launcher -->
+    <button id="open-app-btn" class="btn-action btn-open-app" type="button" style="margin-top: 8px; width: 100%; padding: 9px 12px; font-size: 11.5px;" title="Open VT BrainWyrms AI dashboard directly in your browser">
+      <span>🚀 Launch Web Application</span>
+    </button>
+
+    <!-- Feedback Message Box -->
+    <div id="status"></div>
+
+    <!-- Scraped Courses Live Preview -->
+    <div id="course-preview-container" class="data-card" style="display: none;">
+      <div style="font-size: 11px; font-weight: 700; color: var(--vt-maroon); margin-bottom: 6px; display: flex; align-items: center; justify-content: space-between;">
+        <span>Active Fall 2026 Classes (<span id="preview-course-count">0</span>):</span>
+        <span style="font-size: 10px; color: var(--ai-emerald); font-weight: 600;">✓ Ready to Ingest</span>
+      </div>
+      <div id="course-preview-list" style="display: flex; flex-direction: column; gap: 6px; max-height: 150px; overflow-y: auto;"></div>
+    </div>
+
+    <!-- Export & Data Card -->
+    <div id="export-controls" class="data-card" style="display: none;">
+      <div class="data-tabs">
+        <button class="tab-btn active" id="view-py-btn" type="button">Python (canvas_data.py)</button>
+        <button class="tab-btn" id="view-json-btn" type="button">JSON Payload</button>
+      </div>
+
+      <pre id="result-box"></pre>
+
+      <div class="button-grid">
+        <button id="download-py-btn" class="btn-action btn-save-py" type="button">💾 Save File</button>
+        <button id="copy-btn" class="btn-action btn-copy" type="button">📋 Copy Code</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="popup.js"></script>
+</body>
+</html>

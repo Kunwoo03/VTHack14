@@ -1,0 +1,235 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>VT BrainWyrms AI — Suite Launchpad</title>
+  <style>
+    :root {
+      --vt-maroon: #861F41;
+      --vt-maroon-dark: #581128;
+      --vt-orange: #E87722;
+      --vt-orange-dark: #b85710;
+      --ai-emerald: #047857;
+      --bg-light: #f8fafc;
+      --text-main: #0f172a;
+      --text-muted: #64748b;
+      --border-color: #e2e8f0;
+      --radius-lg: 16px;
+      --radius-md: 10px;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      padding: 0;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      background: linear-gradient(145deg, #f1f5f9 0%, #e2e8f0 100%);
+      color: var(--text-main);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 24px;
+    }
+
+    .launchpad-card {
+      background: #ffffff;
+      border-radius: var(--radius-lg);
+      box-shadow: 0 12px 36px rgba(0, 0, 0, 0.08);
+      border: 1px solid var(--border-color);
+      max-width: 760px;
+      width: 100%;
+      overflow: hidden;
+    }
+
+    .hero-header {
+      background: linear-gradient(135deg, var(--vt-maroon) 0%, var(--vt-maroon-dark) 100%);
+      color: #ffffff;
+      padding: 32px 36px;
+      text-align: center;
+      position: relative;
+    }
+
+    .hero-title {
+      font-size: 28px;
+      font-weight: 800;
+      margin: 0 0 8px 0;
+      letter-spacing: -0.5px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 12px;
+    }
+
+    .hero-subtitle {
+      font-size: 14px;
+      color: #f1f5f9;
+      opacity: 0.9;
+      margin: 0;
+      line-height: 1.5;
+    }
+
+    .launch-options-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 20px;
+      padding: 32px 36px;
+    }
+
+    @media (max-width: 640px) {
+      .launch-options-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .option-card {
+      border: 1.5px solid var(--border-color);
+      border-radius: var(--radius-md);
+      padding: 22px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      transition: all 0.2s ease;
+      background: #fafbfc;
+    }
+
+    .option-card:hover {
+      border-color: var(--vt-maroon);
+      background: #ffffff;
+      box-shadow: 0 8px 24px rgba(134, 31, 65, 0.08);
+      transform: translateY(-2px);
+    }
+
+    .option-icon {
+      font-size: 32px;
+      margin-bottom: 12px;
+    }
+
+    .option-title {
+      font-size: 18px;
+      font-weight: 800;
+      color: var(--text-main);
+      margin: 0 0 6px 0;
+    }
+
+    .option-desc {
+      font-size: 13px;
+      color: var(--text-muted);
+      line-height: 1.5;
+      margin: 0 0 18px 0;
+      flex-grow: 1;
+    }
+
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      font-weight: 700;
+      font-size: 13.5px;
+      padding: 12px 18px;
+      border-radius: 8px;
+      text-decoration: none;
+      cursor: pointer;
+      border: none;
+      transition: all 0.15s ease;
+    }
+
+    .btn-maroon {
+      background: var(--vt-maroon);
+      color: #ffffff;
+    }
+
+    .btn-maroon:hover {
+      background: var(--vt-maroon-dark);
+      color: #ffffff;
+    }
+
+    .btn-orange {
+      background: var(--vt-orange);
+      color: #ffffff;
+    }
+
+    .btn-orange:hover {
+      background: var(--vt-orange-dark);
+      color: #ffffff;
+    }
+
+    .suite-footer {
+      background: #f8fafc;
+      border-top: 1px solid var(--border-color);
+      padding: 16px 36px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 12px;
+      font-size: 12px;
+      color: var(--text-muted);
+    }
+
+    .tag-badge {
+      background: #ecfdf5;
+      color: var(--ai-emerald);
+      border: 1px solid #a7f3d0;
+      padding: 3px 8px;
+      border-radius: 99px;
+      font-weight: 700;
+      font-size: 11px;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="launchpad-card">
+    <div class="hero-header">
+      <h1 class="hero-title">🐉 VT BrainWyrms AI</h1>
+      <p class="hero-subtitle">
+        Virginia Tech Canvas AI Task Sync & Adaptive Practice Engine · VTHacks 14
+      </p>
+    </div>
+
+    <div class="launch-options-grid">
+      <!-- Option 1: Web Application -->
+      <div class="option-card">
+        <div>
+          <div class="option-icon">🖥️</div>
+          <h2 class="option-title">Web Application</h2>
+          <p class="option-desc">
+            Open the full standalone study dashboard in your browser. Preloaded with authentic Virginia Tech courses, syllabus learning goals, adaptive schedules, and interactive exam quizzes.
+          </p>
+        </div>
+        <a href="Application/VT-BrainWyrmsAI.html" class="btn btn-maroon" target="_blank">
+          🚀 Open Web App
+        </a>
+      </div>
+
+      <!-- Option 2: Chrome Extension -->
+      <div class="option-card">
+        <div>
+          <div class="option-icon">🧩</div>
+          <h2 class="option-title">Chrome Extension</h2>
+          <p class="option-desc">
+            Load the Manifest V3 extension into Chrome, Edge, or Brave to scrape live Canvas courses, upcoming exams, and major projects directly from <code>canvas.vt.edu</code>.
+          </p>
+        </div>
+        <a href="Extension/HOW_TO_INSTALL.txt" class="btn btn-orange" target="_blank">
+          📋 View Setup Guide
+        </a>
+      </div>
+    </div>
+
+    <div class="suite-footer">
+      <div style="display:flex;align-items:center;gap:8px;">
+        <span class="tag-badge">✓ 100% Self-Contained</span>
+        <span>Zero server dependencies · Standalone & Extension Parity</span>
+      </div>
+      <div>Virginia Tech HokieTutor Suite</div>
+    </div>
+  </div>
+
+</body>
+</html>

@@ -1,3 +1,16 @@
+# 🐉 VT BrainWyrms AI (HokieTutor) — Complete Suite
+
+> **🚀 Complete Unified Suite Available!**  
+> We have added the full standalone **VT BrainWyrms AI** suite (with syllabus-grounded learning objectives, administrative noise filters, autonomous AI practice problem generator with step-by-step derivations, full-semester recurring `.ics` export, and 1-click Google Calendar sync) in:  
+> 📁 **[`VT-BrainWyrmsAI-Suite/`](./VT-BrainWyrmsAI-Suite)**  
+> 
+> **To run immediately:**  
+> • Double-click **[`VT-BrainWyrmsAI-Suite/Launch.bat`](./VT-BrainWyrmsAI-Suite/Launch.bat)** (Windows interactive launcher)  
+> • Or open **[`VT-BrainWyrmsAI-Suite/START_HERE.html`](./VT-BrainWyrmsAI-Suite/START_HERE.html)** in any browser.  
+> • Or download the pre-packaged zip: **[`VT-BrainWyrmsAI-Suite.zip`](./VT-BrainWyrmsAI-Suite.zip)**.
+
+---
+
 # HokieTutor - VT Canvas AI Study Scheduler (Web Application)
 
 **VT Hacks Project**  
